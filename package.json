@@ -4,6 +4,7 @@
   "description": "Ella Rises INTEX project for Fall 2025. Node/Express app, PostgreSQL database, AWS deployment, analytics dashboard, and presentation.",
   "main": "app.js",
   "scripts": {
+    "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
