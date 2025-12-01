@@ -15,6 +15,8 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", require("./routes/home"));
 app.use("/", require("./routes/ping"));
 
+app.use("/teapot", require("./routes/teapot"));
+
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
