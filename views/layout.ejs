@@ -2,8 +2,19 @@
 <html>
   <head>
     <title><%= title || "Ella Rises" %></title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+      }
+      a {
+        color: #007bff;
+      }
+    </style>
   </head>
   <body>
-    <%- body %>
+    <%- include('partials/header') %>
+    <main style="padding: 1rem"><%- body %></main>
+    <%- include('partials/footer') %>
   </body>
 </html>

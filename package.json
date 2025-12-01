@@ -18,14 +18,15 @@
   },
   "homepage": "https://github.com/gswoolley/ella-arises-intex#readme",
   "dependencies": {
+    "bcrypt": "^5.1.1",
+    "connect-flash": "^0.1.1",
+    "dotenv": "^16.6.1",
     "ejs": "^3.1.10",
     "express": "^5.2.0",
     "express-ejs-layouts": "^2.5.1",
-    "knex": "^3.1.0",
-    "pg": "^8.11.3",
     "express-session": "^1.17.3",
-    "connect-flash": "^0.1.1",
-    "bcrypt": "^5.1.1",
-    "helmet": "^7.1.0"
+    "helmet": "^7.1.0",
+    "knex": "^3.1.0",
+    "pg": "^8.11.3"
   }
 }

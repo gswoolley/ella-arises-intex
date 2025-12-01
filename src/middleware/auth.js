@@ -37,4 +37,3 @@ exports.ensureCommonUser = (req, res, next) => {
   req.flash("error", "This page is for common users only.");
   res.status(403).redirect("/");
 };
-
