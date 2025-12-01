@@ -1,0 +1,25 @@
+{
+  "name": "ella-arises-intex",
+  "version": "1.0.0",
+  "description": "Ella Rises INTEX project for Fall 2025. Node/Express app, PostgreSQL database, AWS deployment, analytics dashboard, and presentation.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gswoolley/ella-arises-intex.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gswoolley/ella-arises-intex/issues"
+  },
+  "homepage": "https://github.com/gswoolley/ella-arises-intex#readme",
+  "dependencies": {
+    "ejs": "^3.1.10",
+    "express": "^5.2.0",
+    "express-ejs-layouts": "^2.5.1"
+  }
+}
