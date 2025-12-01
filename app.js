@@ -17,6 +17,21 @@ app.use("/", require("./routes/ping"));
 
 app.use("/teapot", require("./routes/teapot"));
 
+// --- Scaffolded application routes ---
+// The following route modules are placeholders created to match the
+// project rubric. Implement controllers, models, and auth checks in
+// the corresponding files under `src/` (e.g. `src/controllers`,
+// `src/models`, `src/middleware`) and keep mounting them here.
+//
+// Note: these files are intentionally lightweight so you can iterate
+// quickly during development. Update the require paths if you move
+// files later.
+app.use("/participants", require("./src/routes/participants"));
+app.use("/events", require("./src/routes/events"));
+app.use("/surveys", require("./src/routes/surveys"));
+app.use("/milestones", require("./src/routes/milestones"));
+app.use("/donations", require("./src/routes/donations"));
+
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
