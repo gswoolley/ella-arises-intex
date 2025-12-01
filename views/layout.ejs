@@ -1,20 +1,14 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><%= title || "Ella Rises" %></title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-      }
-      a {
-        color: #007bff;
-      }
-    </style>
+    <link rel="stylesheet" href="/css/styles.css" />
   </head>
   <body>
     <%- include('partials/header') %>
-    <main style="padding: 1rem"><%- body %></main>
+    <main><%- body %></main>
     <%- include('partials/footer') %>
   </body>
 </html>

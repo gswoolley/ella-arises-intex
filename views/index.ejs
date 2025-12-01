@@ -1,38 +1,12 @@
-<div style="padding: 2rem">
+<main>
   <h1>Welcome to Ella Rises</h1>
-
-  <section style="margin: 2rem 0">
-    <h2>About Our Mission</h2>
-    <p>
-      Ella Rises empowers the rising generation of women to pursue higher
-      education and embrace their heritage through mentoring, creative
-      workshops, and leadership opportunities. We build technical competence and
-      artistic confidence through STEAM programs at partnerships with UVU and
-      BYU.
-    </p>
-  </section>
-
-  <section style="margin: 2rem 0">
-    <h2>Our Impact</h2>
-    <p>
-      We measure success through participant satisfaction, program
-      effectiveness, and long-term milestones achieved. Together, we're building
-      a community of empowered women leaders.
-    </p>
-  </section>
+  <p>Empowering women through STEAM mentorship & leadership</p>
 
   <% if (currentUser) { %>
-  <section
-    style="
-      margin: 2rem 0;
-      padding: 1rem;
-      background: #f0f8ff;
-      border-radius: 0.5rem;
-    "
-  >
-    <p><strong>Welcome back, <%= currentUser.name %>!</strong></p>
+  <section>
+    <h2>Welcome back, <%= currentUser.name %>!</h2>
     <% if (currentUser.role === 'manager') { %>
-    <p>You have manager access to maintain all data.</p>
+    <p><strong>Manager Access</strong></p>
     <ul>
       <li><a href="/participants">Manage Participants</a></li>
       <li><a href="/events">Manage Events</a></li>
@@ -50,44 +24,38 @@
     <% } %>
   </section>
   <% } else { %>
-  <section
-    style="
-      margin: 2rem 0;
-      padding: 1rem;
-      background: #f0f0f0;
-      border-radius: 0.5rem;
-    "
-  >
-    <p><strong>Get Started</strong></p>
+  <section>
+    <h2>Our Mission</h2>
     <p>
-      <a href="/auth/login">Login</a> or
-      <a href="/auth/register">Register</a> to access the dashboard.
+      Ella Rises empowers the rising generation of women to pursue higher
+      education and embrace their heritage through mentoring, creative
+      workshops, and leadership opportunities. We build technical competence and
+      artistic confidence through STEAM programs at partnerships with UVU and
+      BYU.
+    </p>
+  </section>
+
+  <section>
+    <h2>Our Impact</h2>
+    <p>
+      We measure success through participant satisfaction, program
+      effectiveness, and long-term milestones achieved. Together, we're building
+      a community of empowered women leaders.
+    </p>
+  </section>
+
+  <section>
+    <h2>Get Started</h2>
+    <p>
+      <a href="/auth/login" class="btn">Login</a> or
+      <a href="/auth/register" class="btn">Register</a>
     </p>
   </section>
   <% } %>
 
-  <section
-    style="
-      margin: 2rem 0;
-      padding: 1rem;
-      background: #fff8dc;
-      border-radius: 0.5rem;
-    "
-  >
-    <h3>Support Our Mission</h3>
-    <p>
-      Help us empower more women in STEAM. Your donation makes a difference.
-    </p>
-    <a
-      href="/donations/new"
-      style="
-        padding: 0.5rem 1rem;
-        background: #ff69b4;
-        color: white;
-        text-decoration: none;
-        border-radius: 0.25rem;
-      "
-      >Donate Now</a
-    >
+  <section>
+    <h2>Support Our Mission</h2>
+    <p>Help us empower more women in STEAM.</p>
+    <p><a href="/donations" class="btn">Donate Now</a></p>
   </section>
-</div>
+</main>
