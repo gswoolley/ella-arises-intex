@@ -28,10 +28,9 @@ app.get('/upload', (req, res) => {
 });
 
 
-
 // Root route: send the index.html file from public
-app.use('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'ella-rises-landingpage', 'index.html'));
 });
 
 // Upload endpoint: accept CSV, stream rows into staging table, then normalize
