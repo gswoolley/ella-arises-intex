@@ -19,9 +19,19 @@ app.use(express.urlencoded({ extended: true }));
 // Configure Multer to store uploaded CSV files temporarily on disk
 const upload = multer({ dest: path.join(__dirname, 'uploads') });
 
+// Serve static assets from the public directory
+app.use(express.static(path.join(__dirname, 'public', 'ella-rises-landingpage')));
+
 // Home page: render single-page upload form
-app.get('/', (req, res) => {
+app.get('/upload', (req, res) => {
   res.render('upload', { message: null, error: null });
+});
+
+
+
+// Root route: send the index.html file from public
+app.use('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Upload endpoint: accept CSV, stream rows into staging table, then normalize
