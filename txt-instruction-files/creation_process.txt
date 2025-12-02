@@ -11,7 +11,7 @@ First, create the database:
         participantlastname         varchar(50),
         participantdob              date,
         participantrole             varchar(20),
-        participantphone            int,
+        participantphone            varchar(20),
         participantcity             varchar(80),
         participantstate            varchar(2),
         participantzip              varchar(10),
@@ -57,7 +57,7 @@ First, create the database:
         attendanceinstanceid      serial primary key,
         participantid             int references participantinfo(participantid),
         instanceid                int references eventinstances(instanceid),
-        eventdatetimestart        date,
+        eventdatetimestart        timestamp,
         registrationstatus        varchar(20),
         registrationattendedflag  boolean,
         registrationcheckintime   timestamp,
@@ -72,7 +72,7 @@ First, create the database:
         surveyrecommendationscore numeric(3,1),
         surveyoverallscore        numeric(3,1),
         surveynpsbucket           varchar(20) check (surveynpsbucket in ('Passive','Promoter','Detractor')),
-        surveycomments            varchar(700),
+        surveycomments            varchar(3000),
         surveysubmissiondate      timestamp
     );
 
@@ -416,6 +416,7 @@ ETL (Extract, Transform, Load) pipeline flow:
     - Convert datetime text fields → TIMESTAMP when valid.
         registrationcheckintime will start in this format as TEXT: YYYY-MM-DD HH:MM:SS
         registrationcreatedat will start in this format as TEXT: YYYY-MM-DD HH:MM:SS
+        eventdatetimestart will start in this format as TEXT: YYYY-MM-DD HH:MM:SS
     Uniqueness rule:
     - One attendance row per (participantid, instanceid).
 

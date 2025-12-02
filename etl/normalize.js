@@ -18,10 +18,37 @@ function parseDate(value) {
 function parseDateOnly(value) {
   const v = toNullIfBlank(value);
   if (!v) return null;
-  const dt = DateTime.fromFormat(v, 'yyyy-MM-dd', { zone: 'utc' });
+  // First try a plain date (YYYY-MM-DD)
+  let dt = DateTime.fromFormat(v, 'yyyy-MM-dd', { zone: 'utc' });
   if (dt.isValid) return dt.toJSDate();
+
+  // Then try a full datetime as described in creation_process.txt (YYYY-MM-DD HH:MM:SS)
+  dt = DateTime.fromFormat(v, 'yyyy-MM-dd HH:mm:ss', { zone: 'utc' });
+  if (dt.isValid) return dt.toJSDate();
+
+  // Finally, fall back to generic ISO parsing
   const dt2 = DateTime.fromISO(v, { zone: 'utc' });
   return dt2.isValid ? dt2.toJSDate() : null;
+}
+
+// For TIMESTAMP WITHOUT TIME ZONE columns we want to preserve the literal
+// wall-clock time from the CSV (e.g., "2024-10-06 10:00:00") without any
+// timezone shifts. This helper normalizes the string format but still returns
+// a string, so Postgres parses it directly as-is.
+function toTimestampLiteral(value) {
+  const v = toNullIfBlank(value);
+  if (!v) return null;
+
+  // Try to parse common formats and then reformat to a canonical
+  // 'yyyy-MM-dd HH:mm:ss' string. If parsing fails, return the original
+  // trimmed value so Postgres can attempt to interpret it.
+  let dt = DateTime.fromFormat(v, 'yyyy-MM-dd HH:mm:ss');
+  if (dt.isValid) return dt.toFormat('yyyy-MM-dd HH:mm:ss');
+
+  dt = DateTime.fromISO(v);
+  if (dt.isValid) return dt.toFormat('yyyy-MM-dd HH:mm:ss');
+
+  return v;
 }
 
 function parseIntOrNull(value) {
@@ -166,11 +193,11 @@ async function getOrCreateEventInstance(knex, row) {
   const [inserted] = await knex('eventinstances')
     .insert({
       eventname: eventName,
-      eventdatetimestart: start,
-      eventdatetimeend: parseDate(row.eventdatetimeend),
+      eventdatetimestart: toTimestampLiteral(row.eventdatetimestart),
+      eventdatetimeend: toTimestampLiteral(row.eventdatetimeend),
       eventlocation: toNullIfBlank(row.eventlocation),
       eventcapacity: parseIntOrNull(row.eventcapacity),
-      eventregistrationdeadline: parseDate(row.eventregistrationdeadline),
+      eventregistrationdeadline: toTimestampLiteral(row.eventregistrationdeadline),
     })
     .returning('instanceid');
 
@@ -195,11 +222,11 @@ async function getOrCreateAttendance(knex, participantId, instanceId, row) {
     .insert({
       participantid: participantId,
       instanceid: instanceId,
-      eventdatetimestart: parseDateOnly(row.eventdatetimestart),
+      eventdatetimestart: toTimestampLiteral(row.eventdatetimestart),
       registrationstatus: toNullIfBlank(row.registrationstatus),
       registrationattendedflag: parseBoolean(row.registrationattendedflag),
-      registrationcheckintime: parseDate(row.registrationcheckintime),
-      registrationcreateddate: parseDate(row.registrationcreatedat),
+      registrationcheckintime: toTimestampLiteral(row.registrationcheckintime),
+      registrationcreateddate: toTimestampLiteral(row.registrationcreatedat),
     })
     .returning('attendanceinstanceid');
 
@@ -246,7 +273,7 @@ async function createSurveyIfNeeded(knex, attendanceId, row) {
     surveyoverallscore: parseFloatOrNull(row.surveyoverallscore),
     surveynpsbucket: normalizeNpsBucket(row.surveynpsbucket),
     surveycomments: toNullIfBlank(row.surveycomments),
-    surveysubmissiondate: parseDate(row.surveysubmissiondate),
+    surveysubmissiondate: toTimestampLiteral(row.surveysubmissiondate),
   });
   console.log('[survey] Inserted survey for attendance', { attendanceId });
 }
