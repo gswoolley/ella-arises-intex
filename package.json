@@ -1,32 +1,24 @@
 {
-  "name": "ella-arises-intex",
+  "name": "practice-final",
   "version": "1.0.0",
-  "description": "Ella Rises INTEX project for Fall 2025. Node/Express app, PostgreSQL database, AWS deployment, analytics dashboard, and presentation.",
-  "main": "app.js",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "start": "node app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/gswoolley/ella-arises-intex.git"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
   },
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/gswoolley/ella-arises-intex/issues"
-  },
-  "homepage": "https://github.com/gswoolley/ella-arises-intex#readme",
   "dependencies": {
-    "bcrypt": "^5.1.1",
-    "connect-flash": "^0.1.1",
-    "dotenv": "^16.6.1",
+    "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
-    "express": "^5.2.0",
-    "express-ejs-layouts": "^2.5.1",
-    "express-session": "^1.17.3",
-    "helmet": "^7.1.0",
+    "express": "^5.1.0",
+    "express-session": "^1.18.2",
     "knex": "^3.1.0",
-    "pg": "^8.11.3"
+    "multer": "^1.4.5-lts.1",
+    "csv-parser": "^3.0.0",
+    "luxon": "^3.5.0",
+    "nodemon": "^3.1.11",
+    "pg": "^8.13.1"
   }
 }
