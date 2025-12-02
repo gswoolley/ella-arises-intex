@@ -1,3 +1,6 @@
+// Map of incoming CSV column names (as they appear in the file) to the
+// corresponding column names in the stagingrawsurvey table. This lets us
+// decouple the external CSV schema from the internal database schema.
 const COLUMN_MAP = {
   ParticipantEmail: 'participantemail',
   ParticipantFirstName: 'participantfirstname',
@@ -49,7 +52,8 @@ function normalizeHeaderKey(key) {
 function mapRow(rawRow) {
   const normalized = {};
 
-  // Build a normalized view of the row keyed by cleaned header names
+  // Build a normalized view of the row keyed by cleaned header names. This
+  // ensures later lookups are not impacted by BOMs or stray whitespace.
   for (const [key, value] of Object.entries(rawRow)) {
     const cleanKey = normalizeHeaderKey(key);
     normalized[cleanKey] = value;
@@ -57,6 +61,8 @@ function mapRow(rawRow) {
 
   const mapped = {};
 
+  // Walk over every known CSV header and copy values into the matching
+  // staging table column. Unknown CSV columns are ignored by design.
   for (const [csvKey, dbColumn] of Object.entries(COLUMN_MAP)) {
     const value = normalized[csvKey];
     mapped[dbColumn] = value === undefined ? null : String(value);
@@ -81,12 +87,14 @@ async function mapCsvRowsToStaging(knex, rows) {
     return mapped;
   });
 
-  // Insert in batches to avoid very large single INSERTs
+  // Insert in batches to avoid very large single INSERTs, which can cause
+  // memory pressure and long-running transactions on larger CSV files.
   const BATCH_SIZE = 500;
   for (let i = 0; i < mappedRows.length; i += BATCH_SIZE) {
     const batch = mappedRows.slice(i, i + BATCH_SIZE);
-    // All columns in stagingrawsurvey are TEXT, so no transformation here
-    // We deliberately do not validate/clean anything at this stage.
+    // All columns in stagingrawsurvey are TEXT, so we do minimal type
+    // handling here. The main data cleaning/typing happens later in the
+    // normalize.js pipeline. This keeps the staging load very forgiving.
     console.log('[staging] Inserting batch into stagingrawsurvey', {
       batchIndex: i / BATCH_SIZE,
       batchSize: batch.length,

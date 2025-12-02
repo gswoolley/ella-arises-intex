@@ -1,11 +1,15 @@
 const { DateTime } = require('luxon');
 
+// Treat undefined, null, or all-whitespace strings as a canonical null
+// value so downstream logic can simply check for falsy/non-null.
 function toNullIfBlank(value) {
   if (value === undefined || value === null) return null;
   const trimmed = String(value).trim();
   return trimmed === '' ? null : trimmed;
 }
 
+// Parse a datetime that may be in the explicit 'yyyy-MM-dd HH:mm:ss' format or
+// a more general ISO string. Returns a JS Date or null if parsing fails.
 function parseDate(value) {
   const v = toNullIfBlank(value);
   if (!v) return null;
@@ -15,6 +19,8 @@ function parseDate(value) {
   return dt2.isValid ? dt2.toJSDate() : null;
 }
 
+// Parse a value that should conceptually be a date (optionally with a
+// time component). We try multiple formats and fall back to ISO parsing.
 function parseDateOnly(value) {
   const v = toNullIfBlank(value);
   if (!v) return null;
@@ -35,6 +41,8 @@ function parseDateOnly(value) {
 // wall-clock time from the CSV (e.g., "2024-10-06 10:00:00") without any
 // timezone shifts. This helper normalizes the string format but still returns
 // a string, so Postgres parses it directly as-is.
+// Normalize dates/times into a canonical 'yyyy-MM-dd HH:mm:ss' string without
+// applying time zone conversions. Postgres will parse this as-is.
 function toTimestampLiteral(value) {
   const v = toNullIfBlank(value);
   if (!v) return null;
@@ -51,6 +59,7 @@ function toTimestampLiteral(value) {
   return v;
 }
 
+// Safe integer parsing that returns null on invalid or blank input.
 function parseIntOrNull(value) {
   const v = toNullIfBlank(value);
   if (!v) return null;
@@ -58,6 +67,7 @@ function parseIntOrNull(value) {
   return Number.isNaN(n) ? null : n;
 }
 
+// Safe float parsing that returns null on invalid or blank input.
 function parseFloatOrNull(value) {
   const v = toNullIfBlank(value);
   if (!v) return null;
@@ -65,6 +75,7 @@ function parseFloatOrNull(value) {
   return Number.isNaN(n) ? null : n;
 }
 
+// Normalize a variety of truthy/falsey tokens into booleans or null.
 function parseBoolean(value) {
   const v = toNullIfBlank(value);
   if (!v) return null;
@@ -74,6 +85,8 @@ function parseBoolean(value) {
   return null;
 }
 
+// Normalize NPS bucket labels (promoter/passive/detractor) into a fixed
+// capitalized set used by the reporting schema.
 function normalizeNpsBucket(value) {
   const v = toNullIfBlank(value);
   if (!v) return null;
@@ -84,6 +97,7 @@ function normalizeNpsBucket(value) {
   return null;
 }
 
+// Strip all non-digits from phone numbers and treat empty results as null.
 function normalizePhone(value) {
   const v = toNullIfBlank(value);
   if (!v) return null;
@@ -91,6 +105,8 @@ function normalizePhone(value) {
   return digits === '' ? null : digits;
 }
 
+// Record rows that are dropped or partially processed into the
+// normalization_audit table for traceability.
 async function auditDrop(knex, row, reason) {
   if (!row || !row.rowid) return;
 
@@ -116,6 +132,8 @@ async function auditDrop(knex, row, reason) {
   }
 }
 
+// Ensure there is exactly one participantinfo record per participantemail.
+// Returns the participantid primary key.
 async function getOrCreateParticipant(knex, row) {
   const email = toNullIfBlank(row.participantemail);
   if (!email) return null;
@@ -152,6 +170,8 @@ async function getOrCreateParticipant(knex, row) {
   return participantId;
 }
 
+// Ensure the eventtypes table has a row for the given event name, inserting
+// if necessary. Uses eventname as a natural key.
 async function getOrCreateEventType(knex, row) {
   const eventName = toNullIfBlank(row.eventname);
   if (!eventName) return null;
@@ -176,6 +196,8 @@ async function getOrCreateEventType(knex, row) {
   return eventName;
 }
 
+// Ensure there is a single event instance for a given (eventname, start).
+// Returns instanceid from eventinstances.
 async function getOrCreateEventInstance(knex, row) {
   const eventName = toNullIfBlank(row.eventname);
   const start = parseDate(row.eventdatetimestart);
@@ -206,6 +228,8 @@ async function getOrCreateEventInstance(knex, row) {
   return instanceId;
 }
 
+// Ensure there is a single attendance record tying a participant to an
+// event instance. Returns attendanceinstanceid.
 async function getOrCreateAttendance(knex, participantId, instanceId, row) {
   if (!participantId || !instanceId) return null;
 
@@ -235,6 +259,8 @@ async function getOrCreateAttendance(knex, participantId, instanceId, row) {
   return attendanceId;
 }
 
+// Conditionally create a surveyinstances record associated with a given
+// attendanceinstance if any survey fields are present.
 async function createSurveyIfNeeded(knex, attendanceId, row) {
   if (!attendanceId) return;
 
@@ -278,6 +304,9 @@ async function createSurveyIfNeeded(knex, attendanceId, row) {
   console.log('[survey] Inserted survey for attendance', { attendanceId });
 }
 
+// Parse semi-colon separated milestone titles/dates and insert them into
+// participantmilestones for a participant, avoiding duplicates. Also
+// recomputes the milestoneno sequence.
 async function createMilestonesIfNeeded(knex, participantId, row) {
   if (!participantId) return;
 
@@ -338,6 +367,8 @@ async function createMilestonesIfNeeded(knex, participantId, row) {
   console.log('[milestones] Recomputed milestoneno for participant', { participantId, count: milestones.length });
 }
 
+// Parse a semi-colon separated donation history string into individual
+// donation records for participantdonations, and recompute donationno.
 async function createDonationsIfNeeded(knex, participantId, row) {
   if (!participantId) return;
 
@@ -403,6 +434,10 @@ async function createDonationsIfNeeded(knex, participantId, row) {
   console.log('[donations] Recomputed donationno for participant', { participantId, count: donations.length });
 }
 
+// Top-level normalization entrypoint. This function is invoked after a CSV
+// load to stagingrawsurvey and is responsible for populating all normalized
+// tables, writing audit records, archiving the staging rows, and then
+// truncating staging so the next run starts fresh.
 async function runNormalization(knex) {
   console.log('--- Normalization run started ---');
 
@@ -414,17 +449,21 @@ async function runNormalization(knex) {
     console.error('[normalize] Failed to truncate normalization_audit', err);
   }
 
+  // Load all rows from the raw staging table. Each row represents a single
+  // logical survey/attendance/milestone/donation record from the CSV.
   const rows = await knex('stagingrawsurvey').select('*');
   console.log('[normalize] Loaded rows from stagingrawsurvey', { rowCount: rows.length });
 
   let processedCount = 0;
   let skippedNoEmail = 0;
 
+  // Process each staging row independently. Many of the helper functions
+  // below will de-duplicate entities (participants, events, etc.).
   for (const row of rows) {
     const hasParticipantEmail = toNullIfBlank(row.participantemail);
     if (!hasParticipantEmail) {
-      // Skip full normalization for this row
-      // Before skipping, write an audit record so we know why it was dropped
+      // Skip full normalization for this row. Before skipping, write an
+      // audit record so we know why it was dropped.
       // eslint-disable-next-line no-await-in-loop
       await auditDrop(knex, row, 'missing participantemail');
 
@@ -434,11 +473,12 @@ async function runNormalization(knex) {
       continue;
     }
 
-    // Participant
+    // Participant normalization: upsert into participantinfo based on email.
     // eslint-disable-next-line no-await-in-loop
     const participantId = await getOrCreateParticipant(knex, row);
 
-    // Event-related normalization only if eventname and eventdatetimestart present
+    // Event-related normalization only if eventname and eventdatetimestart
+    // are present. Otherwise, we skip event/attendance/survey and log why.
     const eventName = toNullIfBlank(row.eventname);
     const eventStart = parseDate(row.eventdatetimestart);
 
@@ -467,7 +507,7 @@ async function runNormalization(knex) {
       });
     }
 
-    // Milestones and donations do not depend on events
+    // Milestones and donations do not depend on events, only participant.
     // eslint-disable-next-line no-await-in-loop
     await createMilestonesIfNeeded(knex, participantId, row);
     // eslint-disable-next-line no-await-in-loop
@@ -479,7 +519,8 @@ async function runNormalization(knex) {
 
   console.log('[normalize] Finished per-row normalization', { processedCount, skippedNoEmail });
 
-  // Archive and clear staging table
+  // Archive all rows into stagingarchive so there is a historical record of
+  // exactly what was processed, even after stagingrawsurvey is truncated.
   console.log('[normalize] Archiving rows into stagingarchive');
   await knex.raw(`
     insert into stagingarchive (

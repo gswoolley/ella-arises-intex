@@ -1,10 +1,17 @@
 /**
+ * Master migration that creates the Ella Rises normalized reporting schema
+ * plus staging and audit tables used by the ETL pipeline.
+ *
+ * Tables are created in dependency order (parents first) so that foreign key
+ * references are valid. The down() migration drops tables in reverse order.
+ *
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
 exports.up = function (knex) {
     return knex.schema
         // --- 1. Independent Tables ---
+        // Core entities that do not rely on foreign keys.
         .createTable('participantinfo', function (table) {
             table.increments('participantid').primary();
             table.string('participantemail', 150);
@@ -29,6 +36,7 @@ exports.up = function (knex) {
         })
 
         // --- 2. Tables with Foreign Keys ---
+        // Tables that directly depend on participantinfo or eventtypes.
         .createTable('participantdonations', function (table) {
             table.increments('donationid').primary();
             table.integer('participantid').references('participantid').inTable('participantinfo');
@@ -54,6 +62,8 @@ exports.up = function (knex) {
         })
 
         // --- 3. Deeply Nested Dependencies ---
+        // Tables that form the deepest parts of the relationship chain
+        // (attendance records and survey instances).
         .createTable('participantattendanceinstances', function (table) {
             table.increments('attendanceinstanceid').primary();
             table.integer('participantid').references('participantid').inTable('participantinfo');
@@ -80,6 +90,9 @@ exports.up = function (knex) {
         })
 
         // --- 4. Staging & Audit Tables ---
+        // Raw CSV land here first (stagingrawsurvey), then are archived into
+        // stagingarchive, and any dropped/partial rows are recorded in
+        // normalization_audit for traceability.
         .createTable('stagingrawsurvey', function (table) {
             table.increments('rowid').primary();
             table.text('participantemail');
@@ -183,7 +196,8 @@ exports.up = function (knex) {
 };
 
 exports.down = function (knex) {
-    // Drop tables in REVERSE order to avoid foreign key constraints errors
+    // Drop tables in REVERSE order to avoid foreign key constraint errors,
+    // starting with the most dependent tables and working back to roots.
     return knex.schema
         .dropTableIfExists('normalization_audit')
         .dropTableIfExists('stagingarchive')
