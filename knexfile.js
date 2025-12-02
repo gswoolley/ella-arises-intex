@@ -11,6 +11,9 @@ module.exports = {
             database: process.env.DB_NAME,
             port: process.env.DB_PORT || 5432
         },
+        migrations: {
+            directory: './migrations'
+        }
     },
 
     production: {
@@ -23,5 +26,8 @@ module.exports = {
             port: process.env.RDS_PORT || 5432,
             ssl: { rejectUnauthorized: false }
         },
+        migrations: {
+            directory: './migrations'
+        }
     }
 };
