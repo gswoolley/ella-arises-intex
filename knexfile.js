@@ -2,6 +2,7 @@
 // Centralized Knex configuration for different environments. This file is
 // consumed by both the CLI (npx knex ...) and the app's util/db module.
 require('dotenv').config();
+const path = require('path');
 
 module.exports = {
     // Local development database configuration. Uses environment variables
