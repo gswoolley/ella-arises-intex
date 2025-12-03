@@ -15,9 +15,6 @@ module.exports = {
             password: process.env.DB_PASSWORD,
             database: process.env.DB_NAME,
             port: process.env.DB_PORT || 5432
-        },
-        migrations: {
-            directory: path.join(__dirname, 'migrations')
         }
     },
 
@@ -34,9 +31,6 @@ module.exports = {
             database: process.env.RDS_DB_NAME,
             port: process.env.RDS_PORT || 5432,
             ssl: { rejectUnauthorized: false }
-        },
-        migrations: {
-            directory: path.join(__dirname, 'migrations')
         }
     }
 };
