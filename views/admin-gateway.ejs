@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ella Rises Admin Gateway</title>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 14px;
+        background-color: #ffece4;
+        color: #1f1b1a;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .gateway-shell {
+        max-width: 600px;
+        width: 100%;
+        text-align: center;
+        padding: 56px 16px;
+      }
+
+      .gateway-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 32px;
+      }
+
+      .gateway-logo img {
+        width: 64px;
+        height: 64px;
+        border-radius: 999px;
+        object-fit: cover;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      }
+
+      .gateway-eyebrow {
+        font-size: 15px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #8c6a61;
+        margin-bottom: 16px;
+      }
+
+      .gateway-title {
+        font-size: 50px;
+        line-height: 1.35;
+        color: #231815;
+        margin-bottom: 24px;
+      }
+
+      .gateway-subtitle {
+        font-size: 17px;
+        line-height: 1.9;
+        color: #5a4b47;
+        max-width: 460px;
+        margin: 0 auto 32px;
+      }
+
+      .gateway-actions {
+        display: inline-flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+        margin-bottom: 24px;
+      }
+
+      .gateway-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 11px 26px;
+        border-radius: 999px;
+        font-size: 14px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.12s ease,
+          color 0.12s ease;
+        white-space: nowrap;
+      }
+
+      .gateway-btn-primary {
+        background: #2f2623;
+        color: #ffffff;
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
+      }
+
+      .gateway-btn-primary:hover {
+        background: #1f1714;
+        transform: translateY(-1px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.26);
+      }
+
+      .gateway-btn-secondary {
+        background: #ffece4;
+        color: #2f2623;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0);
+      }
+
+      .gateway-btn-secondary:hover {
+        background: #ffe2d7;
+        border-color: rgba(0, 0, 0, 0.1);
+      }
+
+      .gateway-footnote {
+        font-size: 11px;
+        color: #7f6f6a;
+        max-width: 460px;
+        margin: 16px auto 0;
+        line-height: 1.6;
+      }
+
+      .gateway-back-link {
+        display: inline-block;
+        margin-top: 16px;
+        font-size: 11px;
+        color: #6b5a56;
+        text-decoration: none;
+      }
+
+      .gateway-back-link:hover {
+        text-decoration: underline;
+      }
+
+      .bg-bubble {
+        position: absolute;
+        border-radius: 999px;
+        background-color: rgba(255, 255, 255, 0.26);
+        pointer-events: none;
+        mix-blend-mode: normal;
+        animation-name: bubble-drift;
+        animation-timing-function: ease-in-out;
+        animation-iteration-count: infinite;
+        animation-direction: alternate;
+      }
+
+      .bg-bubble--peach {
+        background-color: rgba(255, 194, 166, 0.32);
+      }
+
+      .bg-bubble--lilac {
+        background-color: rgba(216, 205, 246, 0.36);
+      }
+
+      .bg-bubble--sage {
+        background-color: rgba(204, 221, 205, 0.36);
+      }
+
+      .bg-bubble--tl {
+        width: 120px;
+        height: 120px;
+        top: -40px;
+        left: -40px;
+        animation-duration: 22s;
+        animation-delay: -6s;
+      }
+
+      .bg-bubble--tr {
+        width: 110px;
+        height: 110px;
+        top: 40px;
+        right: -30px;
+        animation-duration: 24s;
+        animation-delay: -10s;
+      }
+
+      .bg-bubble--bl {
+        width: 100px;
+        height: 100px;
+        bottom: -40px;
+        left: 18%;
+        animation-duration: 26s;
+        animation-delay: -14s;
+      }
+
+      .bg-bubble--br {
+        width: 140px;
+        height: 140px;
+        bottom: -60px;
+        right: 8%;
+        animation-duration: 24s;
+        animation-delay: -4s;
+      }
+
+      /* mid-field bubbles for subtle motion nearer the content */
+      .bg-bubble--mid-1 {
+        width: 70px;
+        height: 70px;
+        top: 52%;
+        left: 8%;
+        animation-duration: 20s;
+        animation-delay: -3s;
+      }
+
+      .bg-bubble--mid-2 {
+        width: 80px;
+        height: 80px;
+        top: 46%;
+        right: 10%;
+        animation-duration: 21s;
+        animation-delay: -9s;
+      }
+
+      .bg-bubble--mid-3 {
+        width: 60px;
+        height: 60px;
+        top: 30%;
+        left: 55%;
+        animation-duration: 19s;
+        animation-delay: -6s;
+      }
+
+      @keyframes bubble-drift {
+        0% {
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+        50% {
+          transform: translate3d(12px, -8px, 0) scale(1.03);
+        }
+        100% {
+          transform: translate3d(-8px, 6px, 0) scale(0.98);
+        }
+      }
+
+      @media (max-width: 480px) {
+        .gateway-shell {
+          padding: 32px 16px;
+        }
+
+        .gateway-title {
+          font-size: 26px;
+        }
+
+        .gateway-actions {
+          flex-direction: column;
+        }
+
+        .gateway-btn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="bg-bubble bg-bubble--peach bg-bubble--tl"></div>
+    <div class="bg-bubble bg-bubble--sage bg-bubble--tr"></div>
+    <div class="bg-bubble bg-bubble--lilac bg-bubble--bl"></div>
+    <div class="bg-bubble bg-bubble--peach bg-bubble--br"></div>
+    <div class="bg-bubble bg-bubble--lilac bg-bubble--mid-1"></div>
+    <div class="bg-bubble bg-bubble--sage bg-bubble--mid-2"></div>
+    <div class="bg-bubble bg-bubble--peach bg-bubble--mid-3"></div>
+
+    <div class="gateway-shell">
+      <div class="gateway-logo">
+        <img src="/images/Untitled design (48).png" alt="Ella Rises" />
+      </div>
+
+      <div class="gateway-eyebrow">Admin Corner</div>
+      <h1 class="gateway-title">Embrace the work that helps girls rise.</h1>
+      <p class="gateway-subtitle">
+        Sign in to the Ella Rises admin space to steward stories, surveys, and program
+        data with care so every decision moves girls closer to confidence,
+        connection, and belonging.
+      </p>
+
+      <div class="gateway-actions">
+        <a href="/admin/login" class="gateway-btn gateway-btn-primary">Sign in</a>
+        <a href="/admin/create" class="gateway-btn gateway-btn-secondary">Request access</a>
+      </div>
+
+      <p class="gateway-footnote">
+        For Ella Rises mentors, staff, and trusted partners.
+        If you need access, please reach out to the Ella Rises team.
+      </p>
+
+      <a href="/" class="gateway-back-link">Back to Ella Rises home</a>
+    </div>
+  </body>
+</html>

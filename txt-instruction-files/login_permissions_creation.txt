@@ -1,0 +1,127 @@
+This file documents how to set up and manage the login permissions system for the Ella Rises
+web application. This version uses Node.js bcrypt hashing instead of PostgreSQL pgcrypto.
+Passwords are never stored in plaintext.
+
+------------------------------------------------------------
+1. Purpose of this file
+------------------------------------------------------------
+This document explains:
+• How to create the loginpermissions table  
+• How password hashing works  
+• How to safely create the initial manager and user accounts  
+• How to create additional accounts in the future  
+
+------------------------------------------------------------
+2. Create the loginpermissions table
+------------------------------------------------------------
+Run the following SQL commands on the PostgreSQL database (RDS):
+
+CREATE TABLE loginpermissions (
+    id SERIAL PRIMARY KEY,
+    email TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    permission TEXT NOT NULL CHECK (permission IN ('manager', 'user')),
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+Explanation of fields:
+id               Auto-incrementing primary key.
+email            Unique login identifier for each user.
+password_hash    Stores a bcrypt hash generated in Node.js.
+first_name       User's first name.
+last_name        User's last name.
+permission       Either "manager" or "user".
+created_at       Timestamp when the account was created.
+updated_at       Timestamp when the account was last updated.
+
+------------------------------------------------------------
+3. How passwords are hashed
+------------------------------------------------------------
+Passwords are never inserted directly into the database.
+
+Instead, we use Node.js bcrypt to generate a secure hash. Example command (run this in a Node REPL):
+
+1. Open a terminal and type:
+   node
+
+2. Inside the Node prompt, run:
+   const bcrypt = require('bcrypt');
+   bcrypt.hash('manager', 12).then(console.log);
+
+3. Copy the printed hash (example):
+   $2b$12$K19Pj0C3LZr...etc.
+
+4. Insert the hash into the database instead of the raw password.
+
+Repeat this anytime you need to create a new user.
+
+------------------------------------------------------------
+4. Creating the initial manager account
+------------------------------------------------------------
+Step 1: Generate a bcrypt hash for the password "manager" using the instructions above.
+
+Step 2: Insert the user into RDS using the generated hash:
+
+INSERT INTO loginpermissions (email, password_hash, first_name, last_name, permission)
+VALUES (
+    'manager@ellarises.org',
+    '[PASTE_MANAGER_HASH_HERE]',
+    'ManagerFirst',
+    'ManagerLast',
+    'manager'
+);
+
+------------------------------------------------------------
+5. Creating the initial standard user
+------------------------------------------------------------
+Step 1: Generate a bcrypt hash for the password "user":
+
+In the Node REPL:
+const bcrypt = require('bcrypt');
+bcrypt.hash('user', 12).then(console.log);
+
+Step 2: Insert the user using the generated hash:
+
+INSERT INTO loginpermissions (email, password_hash, first_name, last_name, permission)
+VALUES (
+    'user@ellarises.org',
+    '[PASTE_USER_HASH_HERE]',
+    'UserFirst',
+    'UserLast',
+    'user'
+);
+
+------------------------------------------------------------
+6. How to create new accounts later
+------------------------------------------------------------
+Option A: Developer manually creates accounts using SQL
+• Generate a bcrypt hash in Node
+• Insert the user with an SQL INSERT statement
+• This method is useful for early development and small internal teams.
+
+Option B: Create a “Create User” route in the admin section of the web app
+• A manager enters an email, name, password, and permission level
+• Node.js hashes the password automatically
+• Knex inserts the new user
+• This method is ideal for production systems and non-technical staff
+
+------------------------------------------------------------
+7. Login verification logic (for reference)
+------------------------------------------------------------
+To check a user's password during login:
+
+1. Query the database for the user by email
+2. Compare the submitted password with the stored hash using bcrypt.compare()
+
+Example (Node.js):
+const user = await knex('loginpermissions').where({ email }).first();
+const valid = await bcrypt.compare(password, user.password_hash);
+
+If valid is true, authentication succeeds.
+
+------------------------------------------------------------
+End of file.
+------------------------------------------------------------

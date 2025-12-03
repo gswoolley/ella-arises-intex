@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1"
+      id="wixDesktopViewport"
+    />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="generator" content="Wix.com Website Builder" />
+
+    <link
+      rel="icon"
+      sizes="192x192"
+      href="/images/pfavico.ico"
+      type="image/x-icon"
+    />
+    <link rel="shortcut icon" href="/images/pfavico.ico" type="image/x-icon" />
+    <link
+      rel="apple-touch-icon"
+      href="/images/pfavico.ico"
+      type="image/x-icon"
+    />
+
+    <title>Dashboard - Ella Rises</title>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 14px;
+        background-color: #ffffff;
+        color: #333;
+      }
+
+      main {
+        padding: 40px;
+        min-height: calc(100vh - 200px);
+      }
+
+      .dashboard-content {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        font-size: 28px;
+        margin-bottom: 20px;
+        color: #333;
+      }
+
+      .dashboard-hero {
+        margin-bottom: 32px;
+        padding: 28px 32px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #ffd8d1 0%, #ffeceb 35%, #ffffff 100%);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      }
+
+      .dashboard-hero-eyebrow {
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #a65c50;
+        margin-bottom: 8px;
+      }
+
+      .dashboard-hero-title {
+        font-size: 30px;
+        line-height: 1.2;
+        margin-bottom: 12px;
+        color: #3a2925;
+      }
+
+      .dashboard-hero-subtitle {
+        font-size: 15px;
+        line-height: 1.6;
+        color: #4f3b36;
+        max-width: 720px;
+      }
+
+      .dashboard-story {
+        margin-bottom: 32px;
+        display: grid;
+        grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.4fr);
+        gap: 28px;
+      }
+
+      .dashboard-story-main p {
+        font-size: 14px;
+        line-height: 1.7;
+        color: #4a4a4a;
+        margin-bottom: 12px;
+      }
+
+      .dashboard-story-main p strong {
+        color: #2f1f1a;
+      }
+
+      .dashboard-story-aside {
+        background: #fff7f4;
+        border-radius: 16px;
+        padding: 18px 20px;
+        border: 1px solid #ffe0d8;
+      }
+
+      .dashboard-story-aside-title {
+        font-size: 13px;
+        font-weight: bold;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #b06556;
+        margin-bottom: 10px;
+      }
+
+      .dashboard-metrics {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 8px;
+      }
+
+      .dashboard-metric-card {
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 14px 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        border: 1px solid #ffe5dd;
+      }
+
+      .dashboard-metric-label {
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #9a6b60;
+        margin-bottom: 4px;
+      }
+
+      .dashboard-metric-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: #2d1f1b;
+        margin-bottom: 2px;
+      }
+
+      .dashboard-metric-caption {
+        font-size: 11px;
+        color: #7a6a66;
+      }
+
+      .dashboard-viz-header {
+        margin-bottom: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .dashboard-viz-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #3a2925;
+      }
+
+      .dashboard-viz-caption {
+        font-size: 12px;
+        color: #7a6a66;
+        max-width: 420px;
+      }
+
+      .dashboard-placeholder {
+        background-color: #f9f9f9;
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 40px;
+        text-align: center;
+        color: #999;
+      }
+
+      footer {
+        background-color: #f6f6f6;
+        padding: 20px 40px;
+        text-align: center;
+        border-top: 1px solid #f0f0f0;
+        font-size: 12px;
+        color: #666;
+      }
+
+      @media (max-width: 900px) {
+        .dashboard-story {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .dashboard-metrics {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 768px) {
+        header {
+          flex-direction: column;
+          gap: 20px;
+          padding: 15px 20px;
+        }
+
+        .header-left {
+          flex-direction: column;
+          gap: 15px;
+          width: 100%;
+        }
+
+        nav {
+          width: 100%;
+        }
+
+        nav a {
+          display: block;
+          border-right: none;
+          border-bottom: 1px solid #f6e7e1;
+          padding: 10px 0;
+        }
+
+        nav a:last-child {
+          border-bottom: none;
+        }
+
+        .header-right {
+          width: 100%;
+        }
+
+        main {
+          padding: 20px;
+        }
+
+        h1 {
+          font-size: 20px;
+        }
+      }
+    </style>
+    <style>
+      .nav-pill a {
+        transition: background 0.12s ease;
+      }
+    
+      .nav-pill a:hover {
+        background: linear-gradient(to bottom,
+            #d6d6d6 0%,
+            #d6d6d6 50%,
+            #c4c4c4 50%,
+            #c4c4c4 100%);
+      }
+    </style>
+
+  </head>
+
+  <body>
+    <header style="font-family: 'Montserrat', sans-serif; font-weight: 700">
+      <div
+        style="
+          width: 100%;
+          box-sizing: border-box;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 18px 0;
+          background-color: #ffd8d1;
+          position: relative;
+          z-index: 1000;
+          gap: 52px;
+        "
+      >
+        <!-- Logo on the left -->
+        <a
+          href="/"
+          style="
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+          "
+        >
+          <div
+            style="
+              width: 90px;
+              height: 90px;
+              border-radius: 50%;
+              overflow: hidden;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            <img
+              src="/images/Untitled design (48).png"
+              alt="Ella Rises"
+              style="
+                width: 115%;
+                height: 115%;
+                object-fit: cover;
+                object-position: center;
+                display: block;
+              "
+            />
+          </div>
+        </a>
+
+        <!-- Center pill nav -->
+        <nav
+          style="display: flex; justify-content: center"
+          aria-label="Main navigation"
+        >
+          <div
+            class="nav-pill"
+            style="
+              display: inline-flex;
+              align-items: center;
+              background: linear-gradient(
+                to bottom,
+                #ffffff 0%,
+                #ffffff 50%,
+                #ededed 50%,
+                #f2f2f2 100%
+              );
+              border-radius: 999px;
+              overflow: hidden;
+              box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.25);
+            "
+          >
+            <a
+              href="/"
+              style="
+                padding: 4px 20px;
+                text-decoration: none;
+                color: #000;
+                border-right: 1px solid #f6e7e1;
+                white-space: nowrap;
+              "
+            >
+              Home
+            </a>
+            <a
+              href="https://www.ellarises.org/about"
+              style="
+                padding: 4px 20px;
+                text-decoration: none;
+                color: #000;
+                border-right: 1px solid #f6e7e1;
+                white-space: nowrap;
+              "
+            >
+              About
+            </a>
+            <a
+              href="https://www.ellarises.org/programs"
+              style="
+                padding: 4px 20px;
+                text-decoration: none;
+                color: #000;
+                border-right: 1px solid #f6e7e1;
+                white-space: nowrap;
+              "
+            >
+              Programs
+            </a>
+            <a
+              href="https://www.ellarises.org"
+              style="
+                padding: 4px 20px;
+                text-decoration: none;
+                color: #000;
+                border-right: 1px solid #f6e7e1;
+                white-space: nowrap;
+              "
+            >
+              Events
+            </a>
+            <a
+              href="https://www.ellarises.org/team-3"
+              style="
+                padding: 4px 20px;
+                text-decoration: none;
+                color: #000;
+                border-right: 1px solid #f6e7e1;
+                white-space: nowrap;
+              "
+            >
+              Get involved
+            </a>
+            <a
+              href="https://www.ellarises.org/press"
+              style="
+                padding: 4px 20px;
+                text-decoration: none;
+                color: #000;
+                border-right: 1px solid #f6e7e1;
+                white-space: nowrap;
+              "
+            >
+              Press
+            </a>
+            <a
+              href="https://www.ellarises.org/contact-us"
+              style="
+                padding: 4px 20px;
+                text-decoration: none;
+                color: #000;
+                border-right: 1px solid #f6e7e1;
+                white-space: nowrap;
+              "
+            >
+              Contact Us
+            </a>
+            <a
+              href="/dashboard"
+              style="
+                padding: 4px 20px;
+                text-decoration: none;
+                color: #000;
+                white-space: nowrap;
+              "
+            >
+              See the impact
+            </a>
+            <a
+              href="/admin"
+              style="
+                padding: 4px 20px;
+                text-decoration: none;
+                color: #000;
+                white-space: nowrap;
+              "
+            >
+              Login
+            </a>
+          </div>
+        </nav>
+
+        <!-- Donate button on the right -->
+        <a
+          href="https://givebutter.com/EllaRises"
+          target="_blank"
+          rel="noreferrer noopener"
+          style="
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 20px;
+            border-radius: 999px;
+            background: #7db0d6;
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 13px;
+            letter-spacing: 0.08em;
+            box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.35);
+            white-space: nowrap;
+          "
+        >
+          Donate
+        </a>
+      </div>
+    </header>
+
+    <main>
+      <div class="dashboard-content">
+        <section class="dashboard-hero">
+          <div class="dashboard-hero-eyebrow">Ella Rises Impact Dashboard</div>
+          <h1 class="dashboard-hero-title">See how girls rise when a community stands behind them.</h1>
+          <p class="dashboard-hero-subtitle">
+            This live dashboard brings together stories, survey responses, and program data
+            from Ella Rises. It is a window into how mentorship, leadership development,
+            and creative expression are helping girls build confidence, find their voice,
+            and feel a deeper sense of belonging.
+          </p>
+        </section>
+
+        <section class="dashboard-story">
+          <div class="dashboard-story-main">
+            <p>
+              Ella Rises partners with schools, families, and community leaders to
+              create spaces where girls can be <strong>seen, heard, and celebrated</strong>.
+              Through circles, workshops, and hands-on experiences, participants explore
+              identity, emotional resilience, and their unique power to influence the
+              world around them.
+            </p>
+            <p>
+              The insights you see below come directly from the young people and
+              communities we serve. They help Ella Rises understand what is working,
+              where we can grow, and how to steward support from donors and partners
+              with transparency.
+            </p>
+            <p>
+              Behind every data point is a girl learning to trust her own story.
+              This dashboard is one way we honor those stories and invite you into the
+              work of helping them rise.
+            </p>
+          </div>
+
+          <aside class="dashboard-story-aside">
+            <div class="dashboard-story-aside-title">At a glance</div>
+            <div class="dashboard-metrics">
+              <div class="dashboard-metric-card">
+                <div class="dashboard-metric-label">Girls reached</div>
+                <div class="dashboard-metric-value">1,000+</div>
+                <div class="dashboard-metric-caption">across schools and community sites</div>
+              </div>
+              <div class="dashboard-metric-card">
+                <div class="dashboard-metric-label">Programs</div>
+                <div class="dashboard-metric-value">Mentor-led</div>
+                <div class="dashboard-metric-caption">small groups, workshops, and events</div>
+              </div>
+              <div class="dashboard-metric-card">
+                <div class="dashboard-metric-label">Focus</div>
+                <div class="dashboard-metric-value">Belonging</div>
+                <div class="dashboard-metric-caption">confidence, connection, and leadership</div>
+              </div>
+            </div>
+          </aside>
+        </section>
+
+        <div
+          class="tableauPlaceholder"
+          id="viz1764782870369"
+          style="position: relative"
+        >
+          <noscript
+            ><a href="#"
+              ><img
+                alt="Our Impact "
+                src="https://public.tableau.com/static/images/El/EllarisesPublicTopDown/PublicDashboard2/1_rss.png"
+                style="border: none" /></a
+          ></noscript>
+          <object class="tableauViz" style="display: none">
+            <param
+              name="host_url"
+              value="https%3A%2F%2Fpublic.tableau.com%2F"
+            />
+            <param name="embed_code_version" value="3" />
+            <param name="site_root" value="" />
+            <param
+              name="name"
+              value="EllarisesPublicTopDown/PublicDashboard2"
+            />
+            <param name="tabs" value="no" />
+            <param name="toolbar" value="yes" />
+            <param
+              name="static_image"
+              value="https://public.tableau.com/static/images/El/EllarisesPublicTopDown/PublicDashboard2/1.png"
+            />
+            <param name="animate_transition" value="yes" />
+            <param name="display_static_image" value="yes" />
+            <param name="display_spinner" value="yes" />
+            <param name="display_overlay" value="yes" />
+            <param name="display_count" value="yes" />
+            <param name="language" value="en-US" />
+          </object>
+        </div>
+        <script type="text/javascript">
+          var divElement = document.getElementById("viz1764782870369");
+          var vizElement = divElement.getElementsByTagName("object")[0];
+          if (divElement.offsetWidth > 800) {
+            vizElement.style.width = "100%";
+            vizElement.style.height = "1207px";
+          } else if (divElement.offsetWidth > 500) {
+            vizElement.style.width = "1200px";
+            vizElement.style.height = "927px";
+          } else {
+            vizElement.style.width = "100%";
+            vizElement.style.height = "1227px";
+          }
+          var scriptElement = document.createElement("script");
+          scriptElement.src =
+            "https://public.tableau.com/javascripts/api/viz_v1.js";
+          vizElement.parentNode.insertBefore(scriptElement, vizElement);
+        </script>
+      </div>
+    </main>
+
+    <footer>
+      <p>&copy; 2025 Ella Rises. All rights reserved.</p>
+    </footer>
+  </body>
+</html>

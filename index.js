@@ -4,11 +4,14 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const csv = require('csv-parser');
+const session = require('express-session');
 
 // Knex instance (configured per environment) and ETL helpers
 const knex = require('./util/db');
 const runNormalization = require('./etl/normalize');
 const mapCsvRowsToStaging = require('./etl/mapCsvToStaging');
+const dashboardRoutes = require('./routes/dashboardRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 // Create the Express application and determine the port (Elastic Beanstalk
 // injects PORT in production; 3000 is used locally by default.)
@@ -28,12 +31,29 @@ app.set('trust proxy', 1);
 // Parse URL-encoded form bodies (used by the CSV upload form)
 app.use(express.urlencoded({ extended: true }));
 
+// Session middleware for login/auth
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || 'ella-rises-dev-secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    },
+  })
+);
+
 // Configure Multer to store uploaded CSV files temporarily on disk
 const upload = multer({ dest: path.join(__dirname, 'uploads') });
 
 // Serve the static Ella Rises landing page (HTML/CSS/JS) from the public
 // directory so the root route can simply send index.html.
 app.use(express.static(path.join(__dirname, 'public', 'ella-rises-landingpage')));
+
+// Routes
+app.use('/dashboard', dashboardRoutes);
+app.use('/admin', adminRoutes);
 
 // Render the dedicated CSV upload page (server-rendered EJS template)
 app.get('/upload', (req, res) => {
