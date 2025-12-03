@@ -26,18 +26,6 @@ app.set('trust proxy', 1);
 // Parse URL-encoded form bodies (used by the CSV upload form)
 app.use(express.urlencoded({ extended: true }));
 
-// In production, enforce HTTPS when requests arrive through a proxy that sets
-// the x-forwarded-proto header. Locally (NODE_ENV !== 'production'), this is
-// skipped so you can use plain http://localhost.
-app.use((req, res, next) => {
-  if (process.env.NODE_ENV === 'production') {
-    if (req.headers['x-forwarded-proto'] !== 'https') {
-      return res.redirect('https://' + req.headers.host + req.url);
-    }
-  }
-  next();
-});
-
 // Configure Multer to store uploaded CSV files temporarily on disk
 const upload = multer({ dest: path.join(__dirname, 'uploads') });
 
