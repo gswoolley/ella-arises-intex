@@ -13,7 +13,7 @@ const mapCsvRowsToStaging = require('./etl/mapCsvToStaging');
 // Create the Express application and determine the port (Elastic Beanstalk
 // injects PORT in production; 3000 is used locally by default.)
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8081;
 
 // Configure EJS as the view engine and point it at the views directory
 app.set('view engine', 'ejs');
