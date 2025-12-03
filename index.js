@@ -1,4 +1,3 @@
-// Core dependencies used by the Express app and ETL pipeline
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
@@ -6,19 +5,38 @@ const multer = require('multer');
 const csv = require('csv-parser');
 const session = require('express-session');
 
-// Knex instance (configured per environment) and ETL helpers
 const knex = require('./util/db');
 const runNormalization = require('./etl/normalize');
 const mapCsvRowsToStaging = require('./etl/mapCsvToStaging');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
-// Create the Express application and determine the port (Elastic Beanstalk
-// injects PORT in production; 3000 is used locally by default.)
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// Configure EJS as the view engine and point it at the views directory
+// ---------------------------------------------------------------------
+// FORCE HTTPS ON ELASTIC BEANSTALK (Classic Load Balancer Compatible)
+// ---------------------------------------------------------------------
+app.use((req, res, next) => {
+  // Allow ELB health checks to pass (they use HTTP + expect 200)
+  const isHealthCheck =
+    req.headers['user-agent'] &&
+    req.headers['user-agent'].includes('ELB-HealthChecker');
+
+  if (isHealthCheck) {
+    return next();
+  }
+
+  // If traffic is not HTTPS, redirect to HTTPS
+  if (req.headers['x-forwarded-proto'] !== 'https') {
+    return res.redirect(301, 'https://' + req.headers.host + req.url);
+  }
+
+  next();
+});
+// ---------------------------------------------------------------------
+
+// Configure EJS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
