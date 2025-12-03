@@ -19,9 +19,22 @@ const PORT = process.env.PORT || 3000;
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+
+
 // Tell Express it is running behind a reverse proxy (Elastic Beanstalk
 // load balancer / Nginx). This enables correct handling of X-Forwarded-* headers.
 app.set('trust proxy', 1);
+
+// Force HTTPS in production behind load balancer
+app.use((req, res, next) => {
+  if (
+    process.env.NODE_ENV === 'production' &&
+    req.headers['x-forwarded-proto'] !== 'https'
+  ) {
+    return res.redirect('https://' + req.headers.host + req.url);
+  }
+  next();
+});
 
 // Parse URL-encoded form bodies (used by the CSV upload form)
 app.use(express.urlencoded({ extended: true }));
