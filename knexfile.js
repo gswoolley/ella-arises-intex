@@ -15,6 +15,9 @@ module.exports = {
             database: process.env.DB_NAME,
             port: process.env.DB_PORT || 5432
         },
+        migrations: {
+            directory: path.join(__dirname, 'migrations')
+        }
     },
 
     // Production configuration for AWS RDS. Elastic Beanstalk populates the
@@ -31,5 +34,8 @@ module.exports = {
             port: process.env.RDS_PORT || 5432,
             ssl: { rejectUnauthorized: false }
         },
+        migrations: {
+            directory: path.join(__dirname, 'migrations')
+        }
     }
 };
