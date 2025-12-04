@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CSV Upload – Ella Rises</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 15px;
+        background-color: #ffece4;
+        color: #231815;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+
+      .admin-main-shell {
+        flex: 1;
+        padding: 40px 72px 56px;
+        display: flex;
+        justify-content: center;
+        position: relative;
+        z-index: 1;
+      }
+
+      .admin-main {
+        width: 100%;
+        max-width: 1160px;
+      }
+
+      .admin-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 32px;
+      }
+
+      .admin-header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .admin-logo {
+        width: 40px;
+        height: 40px;
+        border-radius: 999px;
+        overflow: hidden;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+      }
+
+      .admin-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .admin-brand {
+        font-size: 16px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #8c6a61;
+      }
+
+      .admin-header-right {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        font-size: 13px;
+        color: #6b5a56;
+      }
+
+      .admin-nav {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .admin-nav-link-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-size: 13px;
+        color: #2f2623;
+        text-decoration: none;
+        position: relative;
+      }
+
+      .admin-nav-link-back::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: transparent;
+        transition: background 0.12s ease, box-shadow 0.12s ease;
+        z-index: -1;
+      }
+
+      .admin-nav-link-back:hover::before {
+        background: #f8cdb9;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+      }
+
+      .admin-nav-link-back-icon {
+        font-size: 14px;
+      }
+
+      .bg-bubble {
+        position: absolute;
+        border-radius: 999px;
+        background-color: rgba(255, 255, 255, 0.26);
+        pointer-events: none;
+        mix-blend-mode: normal;
+        animation-name: bubble-drift;
+        animation-timing-function: ease-in-out;
+        animation-iteration-count: infinite;
+        animation-direction: alternate;
+        z-index: 0;
+      }
+
+      .bg-bubble--peach {
+        background-color: rgba(255, 194, 166, 0.32);
+      }
+
+      .bg-bubble--lilac {
+        background-color: rgba(216, 205, 246, 0.36);
+      }
+
+      .bg-bubble--sage {
+        background-color: rgba(204, 221, 205, 0.36);
+      }
+
+      .bg-bubble--tl-soft {
+        width: 130px;
+        height: 130px;
+        top: 28px;
+        left: -50px;
+        animation-duration: 26s;
+        animation-delay: -8s;
+      }
+
+      .bg-bubble--tr-soft {
+        width: 90px;
+        height: 90px;
+        top: 110px;
+        right: -30px;
+        animation-duration: 24s;
+        animation-delay: -6s;
+      }
+
+      .bg-bubble--bl-soft {
+        width: 110px;
+        height: 110px;
+        bottom: -40px;
+        left: 6%;
+        animation-duration: 28s;
+        animation-delay: -10s;
+      }
+
+      .bg-bubble--br-soft {
+        width: 150px;
+        height: 150px;
+        bottom: -70px;
+        right: 20%;
+        animation-duration: 30s;
+        animation-delay: -4s;
+      }
+
+      .bg-bubble--mid-soft {
+        width: 90px;
+        height: 90px;
+        top: 60%;
+        left: 58%;
+        animation-duration: 22s;
+        animation-delay: -12s;
+      }
+
+      @keyframes bubble-drift {
+        0% {
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+        50% {
+          transform: translate3d(10px, -6px, 0) scale(1.03);
+        }
+        100% {
+          transform: translate3d(-8px, 6px, 0) scale(0.98);
+        }
+      }
+
+      .upload-hero {
+        margin-bottom: 32px;
+      }
+
+      .upload-hero-eyebrow {
+        font-size: 14px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #8c6a61;
+        margin-bottom: 8px;
+      }
+
+      .upload-hero-title {
+        font-size: 40px;
+        line-height: 1.4;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .upload-hero-subtitle {
+        font-size: 17px;
+        line-height: 1.8;
+        color: #6b5a56;
+        max-width: 640px;
+      }
+
+      .upload-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 28px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        margin-bottom: 24px;
+      }
+
+      .message {
+        padding: 14px 18px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 14px;
+      }
+
+      .message.success {
+        background: #d1f4e0;
+        color: #0f5132;
+        border: 1px solid #a3cfbb;
+      }
+
+      .message.error {
+        background: #f8d7da;
+        color: #842029;
+        border: 1px solid #f1aeb5;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        font-weight: 600;
+        color: #231815;
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+
+      input[type="file"] {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        border: 2px dashed #d4bfb8;
+        border-radius: 8px;
+        background: #fef9f7;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 14px;
+      }
+
+      input[type="file"]:hover {
+        border-color: #c19a8e;
+        background: #fef5f1;
+      }
+
+      small {
+        display: block;
+        margin-top: 6px;
+        color: #6b5a56;
+        font-size: 13px;
+      }
+
+      button {
+        background: #e07856;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(224, 120, 86, 0.3);
+      }
+
+      button:hover {
+        background: #d66a48;
+        box-shadow: 0 4px 12px rgba(224, 120, 86, 0.4);
+        transform: translateY(-1px);
+      }
+
+      .results-section {
+        margin-top: 32px;
+      }
+
+      .results-section-title {
+        font-size: 28px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: #231815;
+      }
+
+      .table-card {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        margin-bottom: 20px;
+      }
+
+      .table-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+      }
+
+      .table-card-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #231815;
+      }
+
+      .badge {
+        background: #e07856;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .table-wrapper {
+        overflow-x: auto;
+        border-radius: 8px;
+        border: 1px solid #f0e6e2;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+      }
+
+      thead {
+        background: #fef9f7;
+      }
+
+      th {
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        color: #231815;
+        border-bottom: 2px solid #f0e6e2;
+        white-space: nowrap;
+      }
+
+      td {
+        padding: 12px;
+        border-bottom: 1px solid #f8f4f2;
+        color: #6b5a56;
+      }
+
+      tbody tr:hover {
+        background: #fef9f7;
+      }
+
+      tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      .no-data {
+        text-align: center;
+        padding: 40px;
+        color: #a89691;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-bubble bg-bubble--tl-soft bg-bubble--peach"></div>
+    <div class="bg-bubble bg-bubble--tr-soft bg-bubble--lilac"></div>
+    <div class="bg-bubble bg-bubble--bl-soft bg-bubble--sage"></div>
+    <div class="bg-bubble bg-bubble--br-soft bg-bubble--peach"></div>
+    <div class="bg-bubble bg-bubble--mid-soft bg-bubble--lilac"></div>
+
+    <div class="admin-main-shell">
+      <div class="admin-main">
+        <header class="admin-header">
+          <div class="admin-header-left">
+            <a href="/" class="admin-logo">
+              <img src="/images/ella-rises-logo.png" alt="Ella Rises Logo" />
+            </a>
+            <div class="admin-brand">Ella Rises</div>
+          </div>
+          <div class="admin-header-right">
+            <nav class="admin-nav">
+              <a href="/admin/home" class="admin-nav-link-back">
+                <span class="admin-nav-link-back-icon">←</span>
+                <span>Back to home</span>
+              </a>
+            </nav>
+          </div>
+        </header>
+
+        <div class="upload-hero">
+          <div class="upload-hero-eyebrow">Data Import</div>
+          <h1 class="upload-hero-title">Upload Survey CSV</h1>
+          <p class="upload-hero-subtitle">
+            Select a CSV file exported from your source system. The rows will be loaded into staging 
+            and then normalized into the reporting tables (personinfo, eventinstances, attendance, surveys, milestones, donations).
+          </p>
+        </div>
+
+        <div class="upload-card">
+          <% if (message) { %>
+            <div class="message success"><%= message %></div>
+          <% } %>
+          
+          <% if (error) { %>
+            <div class="message error"><%= error %></div>
+          <% } %>
+          
+          <form action="/admin/csv-upload" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+              <label for="csvFile">CSV File</label>
+              <input id="csvFile" name="csvFile" type="file" accept=".csv" required />
+              <small>Expected columns: ParticipantEmail, EventName, EventDateTimeStart, Survey scores, milestones, donations, etc.</small>
+            </div>
+            <button type="submit">Upload &amp; Normalize</button>
+          </form>
+        </div>
+        
+        <% if (results) { %>
+          <div class="results-section">
+            <h2 class="results-section-title">📊 Upload Results - Recent Records</h2>
+            
+            <!-- Persons Table -->
+            <div class="table-card">
+              <div class="table-card-header">
+                <h3 class="table-card-title">👤 Person Info</h3>
+                <span class="badge"><%= results.persons.length %> records</span>
+              </div>
+              <% if (results.persons.length > 0) { %>
+                <div class="table-wrapper">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Role</th>
+                        <th>City</th>
+                        <th>State</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% results.persons.forEach(person => { %>
+                        <tr>
+                          <td><%= person.personid %></td>
+                          <td><%= person.personemail %></td>
+                          <td><%= person.personfirstname || '-' %></td>
+                          <td><%= person.personlastname || '-' %></td>
+                          <td><%= person.personrole || '-' %></td>
+                          <td><%= person.personcity || '-' %></td>
+                          <td><%= person.personstate || '-' %></td>
+                        </tr>
+                      <% }); %>
+                    </tbody>
+                  </table>
+                </div>
+              <% } else { %>
+                <div class="no-data">No person records found</div>
+              <% } %>
+            </div>
+            
+            <!-- Events Table -->
+            <div class="table-card">
+              <div class="table-card-header">
+                <h3 class="table-card-title">📅 Event Instances</h3>
+                <span class="badge"><%= results.events.length %> records</span>
+              </div>
+              <% if (results.events.length > 0) { %>
+                <div class="table-wrapper">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Event Name</th>
+                        <th>Type</th>
+                        <th>Start Date/Time</th>
+                        <th>Location</th>
+                        <th>Capacity</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% results.events.forEach(event => { %>
+                        <tr>
+                          <td><%= event.instanceid %></td>
+                          <td><%= event.eventname %></td>
+                          <td><%= event.eventtype || '-' %></td>
+                          <td><%= event.eventdatetimestart ? new Date(event.eventdatetimestart).toLocaleString() : '-' %></td>
+                          <td><%= event.eventlocation || '-' %></td>
+                          <td><%= event.eventcapacity || '-' %></td>
+                        </tr>
+                      <% }); %>
+                    </tbody>
+                  </table>
+                </div>
+              <% } else { %>
+                <div class="no-data">No event records found</div>
+              <% } %>
+            </div>
+            
+            <!-- Attendance Table -->
+            <div class="table-card">
+              <div class="table-card-header">
+                <h3 class="table-card-title">✅ Attendance Records</h3>
+                <span class="badge"><%= results.attendance.length %> records</span>
+              </div>
+              <% if (results.attendance.length > 0) { %>
+                <div class="table-wrapper">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Participant</th>
+                        <th>Event</th>
+                        <th>Status</th>
+                        <th>Attended</th>
+                        <th>Check-in Time</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% results.attendance.forEach(att => { %>
+                        <tr>
+                          <td><%= att.attendanceinstanceid %></td>
+                          <td><%= att.personfirstname %> <%= att.personlastname %></td>
+                          <td><%= att.eventname || '-' %></td>
+                          <td><%= att.registrationstatus || '-' %></td>
+                          <td><%= att.registrationattendedflag ? '✓' : '✗' %></td>
+                          <td><%= att.registrationcheckintime ? new Date(att.registrationcheckintime).toLocaleString() : '-' %></td>
+                        </tr>
+                      <% }); %>
+                    </tbody>
+                  </table>
+                </div>
+              <% } else { %>
+                <div class="no-data">No attendance records found</div>
+              <% } %>
+            </div>
+            
+            <!-- Surveys Table -->
+            <div class="table-card">
+              <div class="table-card-header">
+                <h3 class="table-card-title">📝 Survey Responses</h3>
+                <span class="badge"><%= results.surveys.length %> records</span>
+              </div>
+              <% if (results.surveys.length > 0) { %>
+                <div class="table-wrapper">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Participant</th>
+                        <th>Overall Score</th>
+                        <th>NPS Bucket</th>
+                        <th>Submission Date</th>
+                        <th>Comments</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% results.surveys.forEach(survey => { %>
+                        <tr>
+                          <td><%= survey.attendanceinstanceid %></td>
+                          <td><%= survey.personfirstname %> <%= survey.personlastname %></td>
+                          <td><%= survey.surveyoverallscore || '-' %></td>
+                          <td><%= survey.surveynpsbucket || '-' %></td>
+                          <td><%= survey.surveysubmissiondate ? new Date(survey.surveysubmissiondate).toLocaleDateString() : '-' %></td>
+                          <td><%= survey.surveycomments ? survey.surveycomments.substring(0, 50) + '...' : '-' %></td>
+                        </tr>
+                      <% }); %>
+                    </tbody>
+                  </table>
+                </div>
+              <% } else { %>
+                <div class="no-data">No survey records found</div>
+              <% } %>
+            </div>
+            
+            <!-- Milestones Table -->
+            <div class="table-card">
+              <div class="table-card-header">
+                <h3 class="table-card-title">🎯 Milestones</h3>
+                <span class="badge"><%= results.milestones.length %> records</span>
+              </div>
+              <% if (results.milestones.length > 0) { %>
+                <div class="table-wrapper">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Participant</th>
+                        <th>Title</th>
+                        <th>Date</th>
+                        <th>Milestone #</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% results.milestones.forEach(milestone => { %>
+                        <tr>
+                          <td><%= milestone.participantmilestoneid %></td>
+                          <td><%= milestone.personfirstname %> <%= milestone.personlastname %></td>
+                          <td><%= milestone.milestonetitle || '-' %></td>
+                          <td><%= milestone.milestonedate ? new Date(milestone.milestonedate).toLocaleDateString() : '-' %></td>
+                          <td><%= milestone.milestoneno || '-' %></td>
+                        </tr>
+                      <% }); %>
+                    </tbody>
+                  </table>
+                </div>
+              <% } else { %>
+                <div class="no-data">No milestone records found</div>
+              <% } %>
+            </div>
+            
+            <!-- Donations Table -->
+            <div class="table-card">
+              <div class="table-card-header">
+                <h3 class="table-card-title">💰 Donations</h3>
+                <span class="badge"><%= results.donations.length %> records</span>
+              </div>
+              <% if (results.donations.length > 0) { %>
+                <div class="table-wrapper">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Participant</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Donation #</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% results.donations.forEach(donation => { %>
+                        <tr>
+                          <td><%= donation.donationid %></td>
+                          <td><%= donation.personfirstname %> <%= donation.personlastname %></td>
+                          <td>$<%= donation.donationamount ? parseFloat(donation.donationamount).toFixed(2) : '0.00' %></td>
+                          <td><%= donation.donationdate ? new Date(donation.donationdate).toLocaleDateString() : '-' %></td>
+                          <td><%= donation.donationno || '-' %></td>
+                        </tr>
+                      <% }); %>
+                    </tbody>
+                  </table>
+                </div>
+              <% } else { %>
+                <div class="no-data">No donation records found</div>
+              <% } %>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    </div>
+    
+    <script>
+      // Prevent form resubmission on page refresh
+      if (window.history.replaceState) {
+        window.history.replaceState(null, null, window.location.href);
+      }
+    </script>
+  </body>
+</html>
