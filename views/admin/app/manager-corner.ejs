@@ -527,6 +527,174 @@
         color: #ffffff;
       }
 
+      /* Modal styles (matching events view) */
+      .requests-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+      }
+
+      .requests-modal {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 18px 20px;
+        max-width: 440px;
+        width: 100%;
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
+        max-height: 80vh;
+        overflow-y: auto;
+      }
+
+      .requests-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .requests-modal-title {
+        font-size: 18px;
+        font-weight: 600;
+      }
+
+      .requests-modal-close {
+        border: none;
+        background: none;
+        font-size: 18px;
+        cursor: pointer;
+      }
+
+      .requests-modal-body {
+        font-size: 14px;
+        color: #4b4542;
+        line-height: 1.6;
+        margin-bottom: 16px;
+      }
+
+      .requests-modal-warning {
+        background: rgba(254, 202, 202, 0.3);
+        border: 1px solid rgba(185, 28, 28, 0.2);
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 13px;
+        color: #7f1d1d;
+        margin-bottom: 12px;
+      }
+
+      .requests-modal-email {
+        font-weight: 600;
+        color: #2f2623;
+      }
+
+      .requests-modal-actions {
+        margin-top: 12px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+
+      .requests-modal-btn {
+        padding: 6px 14px;
+        border-radius: 999px;
+        border: none;
+        font-size: 13px;
+        cursor: pointer;
+      }
+
+      .requests-modal-btn--cancel {
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid #e5d4ce;
+        color: #2f2623;
+      }
+
+      .requests-modal-btn--cancel:hover {
+        background: #ffe8de;
+      }
+
+      .requests-modal-btn--delete {
+        background: #b91c1c;
+        color: #ffffff;
+      }
+
+      .requests-modal-btn--delete:hover {
+        background: #991b1b;
+      }
+
+      .requests-modal-btn--save {
+        background: #2f2623;
+        color: #ffffff;
+      }
+
+      .requests-modal-btn--save:hover {
+        background: #1f1714;
+      }
+
+      .requests-modal-field {
+        margin-bottom: 10px;
+      }
+
+      .requests-modal-label {
+        font-size: 13px;
+        color: #6b5a56;
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .requests-modal-input {
+        width: 100%;
+        padding: 6px 8px;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        font-size: 13px;
+      }
+
+      .requests-modal-input:disabled {
+        background: #f3f4f6;
+        color: #6b7280;
+        cursor: not-allowed;
+      }
+
+      .requests-modal-textarea {
+        width: 100%;
+        padding: 6px 8px;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        font-size: 13px;
+        resize: vertical;
+        min-height: 60px;
+      }
+
+      .requests-modal-info {
+        background: rgba(219, 234, 254, 0.5);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 13px;
+        color: #1e40af;
+        margin-bottom: 12px;
+      }
+
+      .edit-pill {
+        border: 1px solid #e5d4ce;
+        background: #fff7f3;
+        color: #2f2623;
+        cursor: pointer;
+        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        transition: background 0.12s ease, border-color 0.12s ease;
+      }
+
+      .edit-pill:hover {
+        background: #ffe8de;
+        border-color: #e0bfb0;
+      }
+
       @media (max-width: 768px) {
         .admin-main-shell {
           padding: 32px 20px 40px;
@@ -767,7 +935,7 @@
                     <form
                       method="POST"
                       action="/admin/manager/<%= r.id %>/reject"
-                      style="display:inline-block;"
+                      style="display:inline-block; margin-right:4px;"
                     >
                       <button
                         type="submit"
@@ -777,9 +945,32 @@
                         ✕
                       </button>
                     </form>
-                    <% } else { %>
-                    —
                     <% } %>
+                    <button
+                      type="button"
+                      class="edit-pill"
+                      data-edit-request-id="<%= r.id %>"
+                      data-edit-request-email="<%= r.email %>"
+                      data-edit-request-firstname="<%= r.first_name %>"
+                      data-edit-request-lastname="<%= r.last_name %>"
+                      data-edit-request-organization="<%= r.organization || '' %>"
+                      data-edit-request-message="<%= r.message || '' %>"
+                      data-edit-request-hasuser="<%= userEmailSet.has(r.email) ? 'yes' : 'no' %>"
+                      title="Edit request"
+                      style="margin-right:4px;"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      class="delete-pill"
+                      data-delete-request-id="<%= r.id %>"
+                      data-delete-request-email="<%= r.email %>"
+                      data-delete-request-name="<%= r.first_name %> <%= r.last_name %>"
+                      title="Delete request"
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
                 <% }); %>
@@ -874,7 +1065,7 @@
                   <th>Name</th>
                   <th>Email</th>
                   <th>Role</th>
-                  <th>Delete</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -918,6 +1109,21 @@
                     <% if (u.id === user.id) { %>
                     —
                     <% } else { %>
+                    <button
+                      type="button"
+                      class="edit-pill"
+                      data-edit-user-id="<%= u.id %>"
+                      data-edit-user-email="<%= u.email %>"
+                      data-edit-user-firstname="<%= u.first_name %>"
+                      data-edit-user-lastname="<%= u.last_name %>"
+                      data-edit-user-search="<%= search || '' %>"
+                      data-edit-user-role="<%= roleFilter || 'all' %>"
+                      data-edit-user-hasrequest="<%= requestEmailSet.has(u.email) ? 'yes' : 'no' %>"
+                      title="Edit user"
+                      style="margin-right:4px;"
+                    >
+                      Edit
+                    </button>
                     <form
                       method="POST"
                       action="/admin/manager/users/<%= u.id %>/delete"
@@ -945,6 +1151,103 @@
         </section>
       </div>
     </main>
+
+    <!-- Delete Request Confirmation Modal -->
+    <div class="requests-modal-backdrop" id="delete-request-modal">
+      <div class="requests-modal">
+        <div class="requests-modal-header">
+          <div class="requests-modal-title">Confirm deletion</div>
+          <button type="button" class="requests-modal-close" data-close-delete-modal>&times;</button>
+        </div>
+        <div class="requests-modal-body">
+          <p>You are about to permanently delete the account request for:</p>
+          <p class="requests-modal-email" id="delete-modal-email"></p>
+          <p style="margin-top:8px;">(<span id="delete-modal-name"></span>)</p>
+        </div>
+        <div class="requests-modal-warning">
+          <strong>Warning:</strong> This will permanently delete the access request and any account login associated with this email address. This action cannot be undone.
+        </div>
+        <form method="POST" id="delete-request-form" action="">
+          <div class="requests-modal-actions">
+            <button type="button" class="requests-modal-btn requests-modal-btn--cancel" data-close-delete-modal>Cancel</button>
+            <button type="submit" class="requests-modal-btn requests-modal-btn--delete">Delete</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit Request Modal -->
+    <div class="requests-modal-backdrop" id="edit-request-modal">
+      <div class="requests-modal">
+        <div class="requests-modal-header">
+          <div class="requests-modal-title">Edit request</div>
+          <button type="button" class="requests-modal-close" data-close-edit-request-modal>&times;</button>
+        </div>
+        <div class="requests-modal-info" id="edit-request-warning" style="display:none;">
+          <strong>Note:</strong> This email has an associated account login. Changes to the name will also update the account login information.
+        </div>
+        <form method="POST" id="edit-request-form" action="">
+          <div class="requests-modal-field">
+            <label class="requests-modal-label" for="edit-request-email">Email</label>
+            <input type="text" id="edit-request-email" class="requests-modal-input" disabled />
+          </div>
+          <div class="requests-modal-field">
+            <label class="requests-modal-label" for="edit-request-firstname">First name</label>
+            <input type="text" id="edit-request-firstname" name="firstName" class="requests-modal-input" required />
+          </div>
+          <div class="requests-modal-field">
+            <label class="requests-modal-label" for="edit-request-lastname">Last name</label>
+            <input type="text" id="edit-request-lastname" name="lastName" class="requests-modal-input" required />
+          </div>
+          <div class="requests-modal-field">
+            <label class="requests-modal-label" for="edit-request-organization">Organization</label>
+            <input type="text" id="edit-request-organization" name="organization" class="requests-modal-input" />
+          </div>
+          <div class="requests-modal-field">
+            <label class="requests-modal-label" for="edit-request-message">Message</label>
+            <textarea id="edit-request-message" name="message" class="requests-modal-textarea"></textarea>
+          </div>
+          <div class="requests-modal-actions">
+            <button type="button" class="requests-modal-btn requests-modal-btn--cancel" data-close-edit-request-modal>Cancel</button>
+            <button type="submit" class="requests-modal-btn requests-modal-btn--save">Save changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div class="requests-modal-backdrop" id="edit-user-modal">
+      <div class="requests-modal">
+        <div class="requests-modal-header">
+          <div class="requests-modal-title">Edit user</div>
+          <button type="button" class="requests-modal-close" data-close-edit-user-modal>&times;</button>
+        </div>
+        <div class="requests-modal-info" id="edit-user-warning" style="display:none;">
+          <strong>Note:</strong> This email has an associated access request. Changes to the name will also update the request record.
+        </div>
+        <form method="POST" id="edit-user-form" action="">
+          <input type="hidden" id="edit-user-search" name="q" value="" />
+          <input type="hidden" id="edit-user-role" name="role" value="" />
+          <div class="requests-modal-field">
+            <label class="requests-modal-label" for="edit-user-email">Email</label>
+            <input type="text" id="edit-user-email" class="requests-modal-input" disabled />
+          </div>
+          <div class="requests-modal-field">
+            <label class="requests-modal-label" for="edit-user-firstname">First name</label>
+            <input type="text" id="edit-user-firstname" name="firstName" class="requests-modal-input" required />
+          </div>
+          <div class="requests-modal-field">
+            <label class="requests-modal-label" for="edit-user-lastname">Last name</label>
+            <input type="text" id="edit-user-lastname" name="lastName" class="requests-modal-input" required />
+          </div>
+          <div class="requests-modal-actions">
+            <button type="button" class="requests-modal-btn requests-modal-btn--cancel" data-close-edit-user-modal>Cancel</button>
+            <button type="submit" class="requests-modal-btn requests-modal-btn--save">Save changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <script>
       (function () {
         var requestsLink = document.querySelector('.manager-subnav-link[href="#manager-section-requests"]');
@@ -998,6 +1301,174 @@
         usersLink.addEventListener('click', function (e) {
           e.preventDefault();
           activate('users');
+        });
+      })();
+
+      // Delete request modal functionality
+      (function () {
+        var modal = document.getElementById('delete-request-modal');
+        var form = document.getElementById('delete-request-form');
+        var emailEl = document.getElementById('delete-modal-email');
+        var nameEl = document.getElementById('delete-modal-name');
+        var closeButtons = document.querySelectorAll('[data-close-delete-modal]');
+        var deleteButtons = document.querySelectorAll('[data-delete-request-id]');
+
+        if (!modal || !form || !emailEl || !nameEl) return;
+
+        function openModal(id, email, name) {
+          form.action = '/admin/manager/requests/' + id + '/delete';
+          emailEl.textContent = email;
+          nameEl.textContent = name;
+          modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+          modal.style.display = 'none';
+          form.action = '';
+          emailEl.textContent = '';
+          nameEl.textContent = '';
+        }
+
+        deleteButtons.forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-delete-request-id');
+            var email = btn.getAttribute('data-delete-request-email');
+            var name = btn.getAttribute('data-delete-request-name');
+            openModal(id, email, name);
+          });
+        });
+
+        closeButtons.forEach(function (btn) {
+          btn.addEventListener('click', closeModal);
+        });
+
+        // Close modal when clicking on backdrop
+        modal.addEventListener('click', function (e) {
+          if (e.target === modal) {
+            closeModal();
+          }
+        });
+      })();
+
+      // Edit request modal functionality
+      (function () {
+        var modal = document.getElementById('edit-request-modal');
+        var form = document.getElementById('edit-request-form');
+        var warning = document.getElementById('edit-request-warning');
+        var emailInput = document.getElementById('edit-request-email');
+        var firstNameInput = document.getElementById('edit-request-firstname');
+        var lastNameInput = document.getElementById('edit-request-lastname');
+        var organizationInput = document.getElementById('edit-request-organization');
+        var messageInput = document.getElementById('edit-request-message');
+        var closeButtons = document.querySelectorAll('[data-close-edit-request-modal]');
+        var editButtons = document.querySelectorAll('[data-edit-request-id]');
+
+        if (!modal || !form) return;
+
+        function openModal(id, email, firstName, lastName, organization, message, hasUser) {
+          form.action = '/admin/manager/requests/' + id + '/edit';
+          emailInput.value = email;
+          firstNameInput.value = firstName;
+          lastNameInput.value = lastName;
+          organizationInput.value = organization;
+          messageInput.value = message;
+          warning.style.display = hasUser === 'yes' ? 'block' : 'none';
+          modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+          modal.style.display = 'none';
+          form.action = '';
+          emailInput.value = '';
+          firstNameInput.value = '';
+          lastNameInput.value = '';
+          organizationInput.value = '';
+          messageInput.value = '';
+          warning.style.display = 'none';
+        }
+
+        editButtons.forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-edit-request-id');
+            var email = btn.getAttribute('data-edit-request-email');
+            var firstName = btn.getAttribute('data-edit-request-firstname');
+            var lastName = btn.getAttribute('data-edit-request-lastname');
+            var organization = btn.getAttribute('data-edit-request-organization');
+            var message = btn.getAttribute('data-edit-request-message');
+            var hasUser = btn.getAttribute('data-edit-request-hasuser');
+            openModal(id, email, firstName, lastName, organization, message, hasUser);
+          });
+        });
+
+        closeButtons.forEach(function (btn) {
+          btn.addEventListener('click', closeModal);
+        });
+
+        modal.addEventListener('click', function (e) {
+          if (e.target === modal) {
+            closeModal();
+          }
+        });
+      })();
+
+      // Edit user modal functionality
+      (function () {
+        var modal = document.getElementById('edit-user-modal');
+        var form = document.getElementById('edit-user-form');
+        var warning = document.getElementById('edit-user-warning');
+        var emailInput = document.getElementById('edit-user-email');
+        var firstNameInput = document.getElementById('edit-user-firstname');
+        var lastNameInput = document.getElementById('edit-user-lastname');
+        var searchInput = document.getElementById('edit-user-search');
+        var roleInput = document.getElementById('edit-user-role');
+        var closeButtons = document.querySelectorAll('[data-close-edit-user-modal]');
+        var editButtons = document.querySelectorAll('[data-edit-user-id]');
+
+        if (!modal || !form) return;
+
+        function openModal(id, email, firstName, lastName, search, role, hasRequest) {
+          form.action = '/admin/manager/users/' + id + '/edit';
+          emailInput.value = email;
+          firstNameInput.value = firstName;
+          lastNameInput.value = lastName;
+          searchInput.value = search;
+          roleInput.value = role;
+          warning.style.display = hasRequest === 'yes' ? 'block' : 'none';
+          modal.style.display = 'flex';
+        }
+
+        function closeModal() {
+          modal.style.display = 'none';
+          form.action = '';
+          emailInput.value = '';
+          firstNameInput.value = '';
+          lastNameInput.value = '';
+          searchInput.value = '';
+          roleInput.value = '';
+          warning.style.display = 'none';
+        }
+
+        editButtons.forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var id = btn.getAttribute('data-edit-user-id');
+            var email = btn.getAttribute('data-edit-user-email');
+            var firstName = btn.getAttribute('data-edit-user-firstname');
+            var lastName = btn.getAttribute('data-edit-user-lastname');
+            var search = btn.getAttribute('data-edit-user-search');
+            var role = btn.getAttribute('data-edit-user-role');
+            var hasRequest = btn.getAttribute('data-edit-user-hasrequest');
+            openModal(id, email, firstName, lastName, search, role, hasRequest);
+          });
+        });
+
+        closeButtons.forEach(function (btn) {
+          btn.addEventListener('click', closeModal);
+        });
+
+        modal.addEventListener('click', function (e) {
+          if (e.target === modal) {
+            closeModal();
+          }
         });
       })();
     </script>

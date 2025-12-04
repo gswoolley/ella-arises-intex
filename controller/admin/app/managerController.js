@@ -44,6 +44,8 @@ const getManagerCorner = async (req, res) => {
       requests,
       usersPage,
       usersCountRow,
+      allUserEmails,
+      allRequestEmails,
     ] = await Promise.all([
       accountRequestRepository.countPendingRequests(),
       accountRequestRepository.countApprovedThisMonth(),
@@ -66,7 +68,13 @@ const getManagerCorner = async (req, res) => {
         })
         .count('* as count')
         .first(),
+      knex('loginpermissions').select('email'),
+      knex('account_requests').select('email'),
     ]);
+
+    // Create Sets for quick lookup
+    const userEmailSet = new Set(allUserEmails.map(u => u.email));
+    const requestEmailSet = new Set(allRequestEmails.map(r => r.email));
 
     const metrics = {
       pending: Number(pendingCount || 0),
@@ -84,6 +92,8 @@ const getManagerCorner = async (req, res) => {
       requests,
       metrics,
       users: usersPage,
+      userEmailSet,
+      requestEmailSet,
       search,
       statusFilter,
       roleFilter,
@@ -104,6 +114,8 @@ const getManagerCorner = async (req, res) => {
         totalManagers: 0,
       },
       users: [],
+      userEmailSet: new Set(),
+      requestEmailSet: new Set(),
       search,
       statusFilter,
       roleFilter,
@@ -275,6 +287,133 @@ const deleteUser = async (req, res) => {
   return res.redirect(redirectUrl);
 };
 
+const editAccountRequest = async (req, res) => {
+  if (!req.session || !req.session.user || req.session.user.permission !== 'manager') {
+    return res.redirect('/admin/home');
+  }
+
+  const { id } = req.params;
+  const { firstName, lastName, organization, message } = req.body;
+
+  try {
+    await knex.transaction(async (trx) => {
+      // Find the account request first to get the email
+      const request = await accountRequestRepository.findById(id, trx);
+      if (!request) {
+        return;
+      }
+
+      // Update account_requests
+      await accountRequestRepository.updateById(id, {
+        firstName,
+        lastName,
+        organization,
+        message,
+      }, trx);
+
+      // Check if there's a matching user in loginpermissions and update if exists
+      const existingUser = await trx('loginpermissions')
+        .where({ email: request.email })
+        .first();
+
+      if (existingUser) {
+        await authRepository.updateUserByEmail(request.email, {
+          firstName,
+          lastName,
+        }, trx);
+      }
+    });
+  } catch (error) {
+    console.error('Error editing account request:', error);
+  }
+
+  return res.redirect('/admin/manager#manager-section-requests');
+};
+
+const editUser = async (req, res) => {
+  if (!req.session || !req.session.user || req.session.user.permission !== 'manager') {
+    return res.redirect('/admin/home');
+  }
+
+  const { id } = req.params;
+  const { firstName, lastName } = req.body;
+  const returnQuery = (req.body && req.body.q) || '';
+  const bodyRole = (req.body && req.body.role) || '';
+
+  try {
+    await knex.transaction(async (trx) => {
+      // Find the user first to get the email
+      const user = await authRepository.findUserById(id, trx);
+      if (!user) {
+        return;
+      }
+
+      // Update loginpermissions
+      await authRepository.updateUserById(id, {
+        firstName,
+        lastName,
+      }, trx);
+
+      // Check if there's a matching account request and update if exists
+      const matchingRequest = await accountRequestRepository.findByEmail(user.email, trx);
+      if (matchingRequest) {
+        await trx('account_requests')
+          .where({ email: user.email })
+          .update({
+            first_name: firstName,
+            last_name: lastName,
+          });
+      }
+    });
+  } catch (error) {
+    console.error('Error editing user:', error);
+  }
+
+  const queryParts = [];
+  if (returnQuery) {
+    queryParts.push(`q=${encodeURIComponent(returnQuery)}`);
+  }
+  if (bodyRole) {
+    queryParts.push(`role=${encodeURIComponent(bodyRole)}`);
+  }
+  const queryString = queryParts.length ? `?${queryParts.join('&')}` : '';
+  return res.redirect(`/admin/manager${queryString}#manager-section-users`);
+};
+
+const deleteAccountRequest = async (req, res) => {
+  if (!req.session || !req.session.user || req.session.user.permission !== 'manager') {
+    return res.redirect('/admin/home');
+  }
+
+  const { id } = req.params;
+
+  try {
+    await knex.transaction(async (trx) => {
+      // Find the account request first to get the email
+      const request = await accountRequestRepository.findById(id, trx);
+      if (!request) {
+        return;
+      }
+
+      // Delete from account_requests
+      await accountRequestRepository.deleteById(id, trx);
+
+      // Check if there's a matching user in loginpermissions and delete if exists
+      const existingUser = await trx('loginpermissions')
+        .where({ email: request.email })
+        .first();
+
+      if (existingUser) {
+        await trx('loginpermissions').where({ email: request.email }).del();
+      }
+    });
+  } catch (error) {
+    console.error('Error deleting account request:', error);
+  }
+
+  return res.redirect('/admin/manager#manager-section-requests');
+};
+
 module.exports = {
   getManagerCorner,
   approveRequest,
@@ -282,4 +421,7 @@ module.exports = {
   elevateUser,
   demoteUser,
   deleteUser,
+  editAccountRequest,
+  editUser,
+  deleteAccountRequest,
 };

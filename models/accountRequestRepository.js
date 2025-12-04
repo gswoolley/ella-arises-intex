@@ -71,6 +71,23 @@ async function markRejectedByEmail(email, reviewedBy, trx = null) {
     });
 }
 
+async function deleteById(id, trx = null) {
+  const runner = trx || knex;
+  return runner('account_requests').where({ id }).del();
+}
+
+async function updateById(id, { firstName, lastName, organization, message }, trx = null) {
+  const runner = trx || knex;
+  return runner('account_requests')
+    .where({ id })
+    .update({
+      first_name: firstName,
+      last_name: lastName,
+      organization: organization || null,
+      message: message || null,
+    });
+}
+
 module.exports = {
   listRequests,
   countPendingRequests,
@@ -79,4 +96,6 @@ module.exports = {
   findByEmail,
   updateStatus,
   markRejectedByEmail,
+  deleteById,
+  updateById,
 };

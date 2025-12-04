@@ -17,6 +17,9 @@ const {
   elevateUser,
   demoteUser,
   deleteUser,
+  editAccountRequest,
+  editUser,
+  deleteAccountRequest,
 } = require('../controller/admin/app/managerController');
 const {
   getDonations,
@@ -85,6 +88,9 @@ router.get('/manager', ensureAuthenticated, ensureManager, getManagerCorner);
 // Manager corner actions
 router.post('/manager/:id/approve', ensureAuthenticated, ensureManager, approveRequest);
 router.post('/manager/:id/reject', ensureAuthenticated, ensureManager, rejectRequest);
+router.post('/manager/requests/:id/edit', ensureAuthenticated, ensureManager, editAccountRequest);
+router.post('/manager/requests/:id/delete', ensureAuthenticated, ensureManager, deleteAccountRequest);
+router.post('/manager/users/:id/edit', ensureAuthenticated, ensureManager, editUser);
 router.post('/manager/users/:id/elevate', ensureAuthenticated, ensureManager, elevateUser);
 router.post('/manager/users/:id/demote', ensureAuthenticated, ensureManager, demoteUser);
 router.post('/manager/users/:id/delete', ensureAuthenticated, ensureManager, deleteUser);
