@@ -396,12 +396,14 @@
     <main class="admin-main-shell">
       <div class="admin-main">
         <header class="admin-header">
-          <div class="admin-header-left">
-            <div class="admin-logo">
-              <img src="/images/Untitled design (48).png" alt="Ella Rises" />
+            <div class="admin-header-left">
+              <a href="/admin/home" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit;">
+                <div class="admin-logo">
+                  <img src="/images/Untitled design (48).png" alt="Ella Rises" />
+                </div>
+                <div class="admin-brand">Ella Rises</div>
+              </a>
             </div>
-            <div class="admin-brand">Ella Rises</div>
-          </div>
           <div class="admin-header-right">
             <span class="admin-header-user">Signed in as <strong><%= user.firstName %></strong></span>
             <form method="POST" action="/admin/logout" style="margin: 0">
