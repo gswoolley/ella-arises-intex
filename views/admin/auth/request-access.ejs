@@ -19,7 +19,7 @@
         color: #1f1b1a;
         min-height: 100vh;
         display: flex;
-        align-items: center;
+        align-items: flex-start;
         justify-content: center;
         position: relative;
         overflow: hidden;
@@ -28,7 +28,9 @@
       .request-shell {
         max-width: 600px;
         width: 100%;
-        padding: 56px 16px;
+        padding: 28px 16px 52px;
+        position: relative;
+        z-index: 1;
       }
 
       .request-header {
@@ -177,6 +179,18 @@
         color: #166534;
       }
 
+      .request-required-note {
+        font-size: 12px;
+        color: #6b5a56;
+        margin-bottom: 10px;
+      }
+
+      .request-label-required::after {
+        content: ' *';
+        color: #b91c1c;
+        font-weight: 600;
+      }
+
       .bg-bubble {
         position: absolute;
         border-radius: 999px;
@@ -187,6 +201,7 @@
         animation-timing-function: ease-in-out;
         animation-iteration-count: infinite;
         animation-direction: alternate;
+        z-index: 0;
       }
 
       .bg-bubble--peach {
@@ -276,13 +291,65 @@
         }
       }
 
+      /* Make layout breathe on smaller screens without cutting off the card */
       @media (max-width: 600px) {
         .request-title {
-          font-size: 28px;
+          font-size: 32px;
+        }
+
+        .request-subtitle {
+          font-size: 15px;
+          margin-bottom: 24px;
+        }
+
+        .request-shell {
+          padding: 40px 16px;
         }
 
         .request-card {
           padding: 18px 16px 18px;
+        }
+      }
+
+      /* On short viewports, reduce vertical padding/scale so the card stays inside
+         the viewport without feeling smashed to the edges. */
+      @media (max-height: 720px) {
+        body {
+          align-items: flex-start;
+        }
+
+        .request-shell {
+          padding-top: 32px;
+          padding-bottom: 32px;
+        }
+
+        .request-title {
+          font-size: 36px;
+          margin-bottom: 20px;
+        }
+
+        .request-subtitle {
+          font-size: 15px;
+          margin-bottom: 24px;
+        }
+
+        .request-card {
+          padding: 18px 18px 18px;
+        }
+      }
+
+      @media (max-height: 620px) {
+        .request-title {
+          font-size: 30px;
+        }
+
+        .request-subtitle {
+          font-size: 14px;
+        }
+
+        .request-shell {
+          padding-top: 24px;
+          padding-bottom: 24px;
         }
       }
     </style>
@@ -319,9 +386,11 @@
         <div class="request-message request-message--success"><%= success %></div>
         <% } %>
 
+        <div class="request-required-note">Fields marked with <span style="color:#b91c1c;">*</span> are required.</div>
+
         <form method="POST" action="/admin/create">
           <div class="request-field">
-            <label class="request-label" for="email">Work email</label>
+            <label class="request-label request-label-required" for="email">Work email</label>
             <input
               type="email"
               id="email"
@@ -333,7 +402,7 @@
           </div>
 
           <div class="request-field">
-            <label class="request-label" for="first_name">First name</label>
+            <label class="request-label request-label-required" for="first_name">First name</label>
             <input
               type="text"
               id="first_name"
@@ -345,7 +414,7 @@
           </div>
 
           <div class="request-field">
-            <label class="request-label" for="last_name">Last name</label>
+            <label class="request-label request-label-required" for="last_name">Last name</label>
             <input
               type="text"
               id="last_name"
@@ -379,7 +448,7 @@
           </div>
 
           <div class="request-field">
-            <label class="request-label" for="password">Create a password</label>
+            <label class="request-label request-label-required" for="password">Create a password</label>
             <input
               type="password"
               id="password"

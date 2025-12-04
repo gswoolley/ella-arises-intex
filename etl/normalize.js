@@ -200,22 +200,24 @@ async function getOrCreateEventType(knex, row) {
 // Returns instanceid from eventinstances.
 async function getOrCreateEventInstance(knex, row) {
   const eventName = toNullIfBlank(row.eventname);
-  const start = parseDate(row.eventdatetimestart);
-  if (!eventName || !start) return null;
+  // Use a canonical timestamp literal for both lookup and insert so that
+  // repeated runs with the same CSV values always hit the same instance.
+  const startLiteral = toTimestampLiteral(row.eventdatetimestart);
+  if (!eventName || !startLiteral) return null;
 
   const existing = await knex('eventinstances')
-    .where({ eventname: eventName, eventdatetimestart: start })
+    .where({ eventname: eventName, eventdatetimestart: startLiteral })
     .first();
 
   if (existing) {
-    console.log('[eventinstance] Reusing existing event instance', { eventName, eventStart: start, instanceId: existing.instanceid });
+    console.log('[eventinstance] Reusing existing event instance', { eventName, eventStart: startLiteral, instanceId: existing.instanceid });
     return existing.instanceid;
   }
 
   const [inserted] = await knex('eventinstances')
     .insert({
       eventname: eventName,
-      eventdatetimestart: toTimestampLiteral(row.eventdatetimestart),
+      eventdatetimestart: startLiteral,
       eventdatetimeend: toTimestampLiteral(row.eventdatetimeend),
       eventlocation: toNullIfBlank(row.eventlocation),
       eventcapacity: parseIntOrNull(row.eventcapacity),
@@ -224,7 +226,7 @@ async function getOrCreateEventInstance(knex, row) {
     .returning('instanceid');
 
   const instanceId = inserted.instanceid ?? inserted;
-  console.log('[eventinstance] Inserted new event instance', { eventName, eventStart: start, instanceId });
+  console.log('[eventinstance] Inserted new event instance', { eventName, eventStart: startLiteral, instanceId });
   return instanceId;
 }
 

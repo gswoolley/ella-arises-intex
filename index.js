@@ -47,7 +47,8 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('trust proxy', 1);
 
 // Parse URL-encoded form bodies (used by the CSV upload form)
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '100mb' }));
+app.use(express.json({ limit: '100mb' }));
 
 // Session middleware for login/auth
 app.use(

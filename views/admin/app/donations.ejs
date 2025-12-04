@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Participant donations – Ella Rises</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 15px;
+        background-color: #ffece4;
+        color: #231815;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+
+      .admin-main-shell {
+        flex: 1;
+        padding: 40px 72px 56px;
+        display: flex;
+        justify-content: center;
+        position: relative;
+        z-index: 1;
+      }
+
+      .admin-main {
+        width: 100%;
+        max-width: 1160px;
+      }
+
+      .admin-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 32px;
+      }
+
+      .admin-header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .admin-logo {
+        width: 40px;
+        height: 40px;
+        border-radius: 999px;
+        overflow: hidden;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+      }
+
+      .admin-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .admin-brand {
+        font-size: 16px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #8c6a61;
+      }
+
+      .admin-header-right {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        font-size: 13px;
+        color: #6b5a56;
+      }
+
+      .admin-nav {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .admin-nav-link-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-size: 13px;
+        color: #2f2623;
+        text-decoration: none;
+        position: relative;
+      }
+
+      .admin-nav-link-back::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: transparent;
+        transition: background 0.12s ease, box-shadow 0.12s ease;
+        z-index: -1;
+      }
+
+      .admin-nav-link-back:hover::before {
+        background: #f8cdb9;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+      }
+
+      .admin-nav-link-back-icon {
+        font-size: 14px;
+      }
+
+      .admin-header-user {
+        font-size: 13px;
+        color: #6b5a56;
+      }
+
+      .admin-header-signout {
+        border: none;
+        background: none;
+        font-size: 13px;
+        color: #6b5a56;
+        cursor: pointer;
+        text-decoration: underline;
+      }
+
+      .bg-bubble {
+        position: absolute;
+        border-radius: 999px;
+        background-color: rgba(255, 255, 255, 0.26);
+        pointer-events: none;
+        mix-blend-mode: normal;
+        animation-name: bubble-drift;
+        animation-timing-function: ease-in-out;
+        animation-iteration-count: infinite;
+        animation-direction: alternate;
+        z-index: 0;
+      }
+
+      .bg-bubble--peach {
+        background-color: rgba(255, 194, 166, 0.32);
+      }
+
+      .bg-bubble--lilac {
+        background-color: rgba(216, 205, 246, 0.36);
+      }
+
+      .bg-bubble--sage {
+        background-color: rgba(204, 221, 205, 0.36);
+      }
+
+      .bg-bubble--tl-soft {
+        width: 130px;
+        height: 130px;
+        top: 28px;
+        left: -50px;
+        animation-duration: 26s;
+        animation-delay: -8s;
+      }
+
+      .bg-bubble--tr-soft {
+        width: 90px;
+        height: 90px;
+        top: 110px;
+        right: -30px;
+        animation-duration: 24s;
+        animation-delay: -6s;
+      }
+
+      .bg-bubble--bl-soft {
+        width: 110px;
+        height: 110px;
+        bottom: -40px;
+        left: 6%;
+        animation-duration: 28s;
+        animation-delay: -10s;
+      }
+
+      .bg-bubble--br-soft {
+        width: 150px;
+        height: 150px;
+        bottom: -70px;
+        right: 20%;
+        animation-duration: 30s;
+        animation-delay: -4s;
+      }
+
+      .bg-bubble--mid-soft {
+        width: 90px;
+        height: 90px;
+        top: 60%;
+        left: 58%;
+        animation-duration: 22s;
+        animation-delay: -12s;
+      }
+
+      @keyframes bubble-drift {
+        0% {
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+        50% {
+          transform: translate3d(10px, -6px, 0) scale(1.03);
+        }
+        100% {
+          transform: translate3d(-8px, 6px, 0) scale(0.98);
+        }
+      }
+
+      .donations-hero {
+        margin-bottom: 24px;
+      }
+
+      .donations-hero-eyebrow {
+        font-size: 14px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #8c6a61;
+        margin-bottom: 8px;
+      }
+
+      .donations-hero-title {
+        font-size: 40px;
+        line-height: 1.4;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .donations-hero-subtitle {
+        font-size: 17px;
+        line-height: 1.8;
+        color: #6b5a56;
+        max-width: 640px;
+      }
+
+      .admin-stats-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 24px;
+      }
+
+      .admin-stat-card {
+        background: #fff7f3;
+        border-radius: 14px;
+        padding: 14px 16px;
+        border: 1px solid #ffe0d4;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .admin-stat-label {
+        font-size: 13px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #a67666;
+        margin-bottom: 4px;
+      }
+
+      .admin-stat-value {
+        font-size: 34px;
+        font-weight: 700;
+        color: #2f2623;
+      }
+
+      .donations-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+
+      .donations-filters-left {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .donations-filters-right {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .donations-search-input {
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid #d1d5db;
+        font-size: 13px;
+        min-width: 220px;
+      }
+
+      .donations-select {
+        padding: 6px 8px;
+        border-radius: 999px;
+        border: 1px solid #d1d5db;
+        font-size: 13px;
+        background: white;
+      }
+
+      .donations-card {
+        background: #ffffff;
+        border-radius: 18px;
+        padding: 16px 18px;
+        border: 1px solid #f0ddd6;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        margin-bottom: 20px;
+      }
+
+      table.donations-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+
+      table.donations-table thead {
+        background: #ffe8de;
+      }
+
+      table.donations-table th,
+      table.donations-table td {
+        padding: 8px 10px;
+        text-align: left;
+      }
+
+      table.donations-table th {
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #8c6a61;
+        border-bottom: 1px solid #f0ddd6;
+      }
+
+      table.donations-table tbody tr:nth-child(even) {
+        background: #fffaf7;
+      }
+
+      .donations-pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+        font-size: 12px;
+        color: #6b5a56;
+      }
+
+      .donations-pagination a {
+        text-decoration: none;
+        color: #2f2623;
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid #e5d4ce;
+        background: rgba(255, 255, 255, 0.9);
+      }
+
+      .donations-pagination a:hover {
+        background: #ffe8de;
+      }
+
+      .donations-empty {
+        font-size: 14px;
+        color: #8b7a75;
+        padding: 12px 0;
+      }
+
+      .donations-actions-form {
+        display: inline-block;
+        margin: 0;
+      }
+
+      .donations-actions-button {
+        border: 1px solid #e5d4ce;
+        border-radius: 999px;
+        background: #fff7f3;
+        color: #5b4038;
+        font-size: 11px;
+        cursor: pointer;
+        padding: 4px 10px;
+        text-decoration: none;
+        line-height: 1;
+        transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+      }
+
+      .donations-actions-button:hover {
+        background: #ffe8de;
+        border-color: #e0bfb0;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+      }
+
+      /* Match Manager Corner delete pill styling */
+      .delete-pill {
+        border: none;
+        cursor: pointer;
+        font-size: 12px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: rgba(254, 226, 226, 0.9);
+        color: #7f1d1d;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+      }
+
+      .delete-pill:hover {
+        background: rgba(248, 113, 113, 0.9);
+        color: #7f1d1d;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+      }
+
+      .donations-inline-input {
+        padding: 4px 6px;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        font-size: 13px;
+      }
+
+      .donations-primary-btn {
+        padding: 6px 12px;
+        border-radius: 999px;
+        border: none;
+        background: #2f2623;
+        color: #ffffff;
+        font-size: 13px;
+        cursor: pointer;
+      }
+
+      .donations-primary-btn:hover {
+        background: #43302a;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- background bubbles -->
+    <div class="bg-bubble bg-bubble--peach bg-bubble--tl-soft"></div>
+    <div class="bg-bubble bg-bubble--lilac bg-bubble--tr-soft"></div>
+    <div class="bg-bubble bg-bubble--sage bg-bubble--bl-soft"></div>
+    <div class="bg-bubble bg-bubble--peach bg-bubble--br-soft"></div>
+    <div class="bg-bubble bg-bubble--lilac bg-bubble--mid-soft"></div>
+
+    <main class="admin-main-shell">
+      <div class="admin-main">
+        <header class="admin-header">
+          <div class="admin-header-left">
+            <div class="admin-logo">
+              <img src="/images/Untitled design (48).png" alt="Ella Rises" />
+            </div>
+            <div class="admin-brand">Ella Rises</div>
+          </div>
+          <div class="admin-header-right">
+            <nav class="admin-nav">
+              <a href="/admin/home" class="admin-nav-link-back">
+                <span class="admin-nav-link-back-icon">&#8592;</span>
+                <span>Back to home</span>
+              </a>
+            </nav>
+            <span class="admin-header-user">Signed in as <strong><%= user.firstName %></strong></span>
+            <form method="POST" action="/admin/logout" style="margin: 0">
+              <button type="submit" class="admin-header-signout">Sign out</button>
+            </form>
+          </div>
+        </header>
+
+        <section class="donations-hero">
+          <div class="donations-hero-eyebrow">Giving</div>
+          <h1 class="donations-hero-title">Participant donations</h1>
+          <p class="donations-hero-subtitle">
+            Review and maintain contribution history from program participants. Standard admins can view,
+            while managers can add, edit, or remove participant donations.
+          </p>
+          <% if (typeof donationNotice !== 'undefined' && donationNotice) { %>
+          <div
+            class="admin-hero-notice"
+            style="margin-top:12px; max-width:640px; background:#fee2e2; border:1px solid #fecaca; color:#7f1d1d;"
+          >
+            <%= donationNotice %>
+          </div>
+          <% } %>
+        </section>
+
+        <section class="admin-stats-row">
+          <article class="admin-stat-card">
+            <div class="admin-stat-label">This month's participant donations</div>
+            <div class="admin-stat-value">
+              $<%= Number(metrics.monthlyTotal || 0).toLocaleString('en-US', { maximumFractionDigits: 0 }) %>
+            </div>
+          </article>
+          <article class="admin-stat-card">
+            <div class="admin-stat-label">All-time participant donations</div>
+            <div class="admin-stat-value">
+              $<%= Number(metrics.overallTotal || 0).toLocaleString('en-US', { maximumFractionDigits: 0 }) %>
+            </div>
+          </article>
+          <article class="admin-stat-card">
+            <div class="admin-stat-label">Recorded gifts</div>
+            <div class="admin-stat-value">
+              <%= Number(metrics.donationCount || 0).toLocaleString('en-US') %>
+            </div>
+          </article>
+        </section>
+
+        <% if (user.permission === 'manager') { %>
+        <section class="donations-card" style="margin-bottom: 18px;">
+          <h2 style="font-size:18px;font-weight:600;margin-bottom:10px;">Add participant donation</h2>
+          <form method="POST" action="/admin/donations/prepare" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;">
+            <label style="font-size:13px;color:#6b5a56;display:flex;flex-direction:column;gap:4px;">
+              Participant email
+              <input type="email" name="participantEmail" class="donations-inline-input" required />
+            </label>
+            <label style="font-size:13px;color:#6b5a56;display:flex;flex-direction:column;gap:4px;">
+              Date
+              <input
+                type="date"
+                name="donationDate"
+                class="donations-inline-input"
+                value="<%= new Date().toISOString().slice(0, 10) %>"
+                required
+              />
+            </label>
+            <label style="font-size:13px;color:#6b5a56;display:flex;flex-direction:column;gap:4px;">
+              Amount
+              <input type="number" step="0.01" name="donationAmount" class="donations-inline-input" required />
+            </label>
+            <button type="submit" class="donations-primary-btn">Save donation</button>
+          </form>
+        </section>
+
+        <% if (editDonation) { %>
+        <section class="donations-card" style="margin-bottom: 18px;">
+          <h2 style="font-size:18px;font-weight:600;margin-bottom:10px;">Edit participant donation</h2>
+          <form
+            method="POST"
+            action="/admin/donations/<%= editDonation.donationid %>/update"
+            style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;"
+          >
+            <div style="font-size:13px;color:#6b5a56;">
+              <strong><%= editDonation.firstname %> <%= editDonation.lastname %></strong>
+              <% if (editDonation.email) { %>
+              (<%= editDonation.email %>)
+              <% } %>
+            </div>
+            <label style="font-size:13px;color:#6b5a56;display:flex;flex-direction:column;gap:4px;">
+              Date
+              <input
+                type="date"
+                name="donationDate"
+                class="donations-inline-input"
+                value="<%= editDonation.donationdate ? editDonation.donationdate.toISOString().slice(0, 10) : '' %>"
+                required
+              />
+            </label>
+            <label style="font-size:13px;color:#6b5a56;display:flex;flex-direction:column;gap:4px;">
+              Amount
+              <input
+                type="number"
+                step="0.01"
+                name="donationAmount"
+                class="donations-inline-input"
+                value="<%= editDonation.donationamount %>"
+                required
+              />
+            </label>
+            <button type="submit" class="donations-primary-btn">Update donation</button>
+          </form>
+        </section>
+        <% } %>
+        <% } %>
+
+        <section class="donations-card" id="donations-table-card">
+          <form method="GET" action="/admin/donations" class="donations-filters">
+            <div class="donations-filters-left">
+              <label style="font-size:13px;color:#6b5a56;">
+                Search donors
+                <input
+                  type="text"
+                  name="q"
+                  value="<%= search || '' %>"
+                  placeholder="Name or email"
+                  class="donations-search-input"
+                />
+              </label>
+            </div>
+            <div class="donations-filters-right">
+              <label style="font-size:13px;color:#6b5a56;display:flex;align-items:center;gap:6px;">
+                Order by
+                <select name="orderBy" id="donations-orderBy" class="donations-select">
+                  <option value="date_desc" <%= orderBy === 'date_desc' ? 'selected' : '' %>>Newest date</option>
+                  <option value="date_asc" <%= orderBy === 'date_asc' ? 'selected' : '' %>>Oldest date</option>
+                  <option value="amount_desc" <%= orderBy === 'amount_desc' ? 'selected' : '' %>>Largest amount</option>
+                  <option value="amount_asc" <%= orderBy === 'amount_asc' ? 'selected' : '' %>>Smallest amount</option>
+                </select>
+              </label>
+              <button type="submit" class="donations-primary-btn">Apply</button>
+            </div>
+          </form>
+
+          <% if (typeof error !== 'undefined' && error) { %>
+          <div class="donations-empty"><%= error %></div>
+          <% } %>
+
+          <% if (!donations || donations.length === 0) { %>
+          <div class="donations-empty">No donations found for the selected filters.</div>
+          <% } else { %>
+          <div style="overflow-x:auto;">
+            <table class="donations-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Participant</th>
+                  <th>Email</th>
+                  <th style="text-align:right;">Amount</th>
+                  <% if (user.permission === 'manager') { %>
+                  <th style="text-align:right;">Actions</th>
+                  <% } %>
+                </tr>
+              </thead>
+              <tbody>
+                <% donations.forEach(function (d) { %>
+                <tr>
+                  <td>
+                    <% if (d.donationdate) { %>
+                    <%= new Date(d.donationdate).toLocaleDateString() %>
+                    <% } else { %>
+                    
+                    <% } %>
+                  </td>
+                  <td>
+                    <% if (d.firstname || d.lastname) { %>
+                    <%= d.firstname || '' %> <%= d.lastname || '' %>
+                    <% } else { %>
+                    
+                    <% } %>
+                  </td>
+                  <td><%= d.email || '' %></td>
+                  <td style="text-align:right;">$<%= Number(d.donationamount || 0).toFixed(2) %></td>
+                  <% if (user.permission === 'manager') { %>
+                  <td style="text-align:right; white-space:nowrap;">
+                    <a
+                      href="/admin/donations?editId=<%= d.donationid %><%= search ? '&q=' + encodeURIComponent(search) : '' %>"
+                      class="donations-actions-button"
+                      style="margin-right:8px; text-decoration:none;"
+                    >
+                      Edit
+                    </a>
+                    <form
+                      method="POST"
+                      action="/admin/donations/<%= d.donationid %>/delete"
+                      class="donations-actions-form"
+                      onsubmit="return confirm('Delete this donation?');"
+                    >
+                      <button type="submit" class="delete-pill" title="Delete participant donation">Delete</button>
+                    </form>
+                  </td>
+                  <% } %>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+
+          <% if (totalPages > 1) { %>
+          <div class="donations-pagination">
+            <div>
+              Page <%= page %> of <%= totalPages %>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <% if (page > 1) { %>
+              <a
+                href="/admin/donations?page=<%= page - 1 %><%= search ? '&q=' + encodeURIComponent(search) : '' %>&orderBy=<%= encodeURIComponent(orderBy) %>#donations-table-card"
+              >
+                Previous
+              </a>
+              <% } %>
+              <% if (page < totalPages) { %>
+              <a
+                href="/admin/donations?page=<%= page + 1 %><%= search ? '&q=' + encodeURIComponent(search) : '' %>&orderBy=<%= encodeURIComponent(orderBy) %>#donations-table-card"
+              >
+                Next
+              </a>
+              <% } %>
+            </div>
+          </div>
+          <% } %>
+          <% } %>
+        </section>
+      </div>
+    </main>
+    <script>
+      (function () {
+        // Keep pagination in sync with the current orderBy selection
+        var orderSelect = document.getElementById('donations-orderBy');
+        var pagerLinks = document.querySelectorAll('.donations-pagination a');
+        if (orderSelect && pagerLinks && pagerLinks.length) {
+          pagerLinks.forEach(function (link) {
+            link.addEventListener('click', function (evt) {
+              var val = orderSelect.value;
+              if (!val) return;
+              try {
+                var url = new URL(link.href, window.location.origin);
+                url.searchParams.set('orderBy', val);
+                link.href = url.pathname + url.search + url.hash;
+              } catch (e) {
+                // If URL constructor fails, fall back to original href
+              }
+            });
+          });
+        }
+      })();
+    </script>
+
+    <% if (pendingDonation) { %>
+    <script>
+      (function () {
+        var d = <%- JSON.stringify(pendingDonation) %>;
+        if (!d) return;
+        var prettyAmount = Number(d.donationAmount || 0).toLocaleString('en-US', { maximumFractionDigits: 0 });
+        var msg = 'Add donation of $' + prettyAmount + ' for ' + (d.firstName || '') + ' ' + (d.lastName || '') + ' (' + (d.email || '') + ')?';
+        if (window.confirm(msg)) {
+          var form = document.createElement('form');
+          form.method = 'POST';
+          form.action = '/admin/donations';
+          document.body.appendChild(form);
+          form.submit();
+        }
+      })();
+    </script>
+    <% } %>
+  </body>
+</html>
