@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ella Rises Admin Home</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        background-color: #ffece4;
+        color: #231815;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* In-page header with logo and navigation */
+      .admin-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 32px;
+      }
+
+      .admin-header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .admin-logo {
+        width: 40px;
+        height: 40px;
+        border-radius: 999px;
+        overflow: hidden;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+      }
+
+      .admin-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .admin-brand {
+        font-size: 14px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #8c6a61;
+      }
+
+      .admin-header-right {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        font-size: 12px;
+        color: #6b5a56;
+      }
+
+      .admin-nav {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .admin-nav-link {
+        font-size: 12px;
+        color: #6b5a56;
+        text-decoration: none;
+      }
+
+      .admin-nav-link:hover {
+        text-decoration: underline;
+      }
+
+      .admin-nav-link--primary {
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.65);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      }
+
+      .admin-nav-link--primary:hover {
+        text-decoration: none;
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 5px 14px rgba(0, 0, 0, 0.12);
+      }
+
+      .admin-header-user {
+        font-size: 12px;
+        color: #6b5a56;
+      }
+
+      .admin-header-signout {
+        border: none;
+        background: none;
+        font-size: 12px;
+        color: #6b5a56;
+        cursor: pointer;
+        text-decoration: underline;
+      }
+
+      /* Background bubbles (different placement from auth screens) */
+      .bg-bubble {
+        position: absolute;
+        border-radius: 999px;
+        background-color: rgba(255, 255, 255, 0.26);
+        pointer-events: none;
+        mix-blend-mode: normal;
+        animation-name: bubble-drift;
+        animation-timing-function: ease-in-out;
+        animation-iteration-count: infinite;
+        animation-direction: alternate;
+      }
+
+      .bg-bubble--peach {
+        background-color: rgba(255, 194, 166, 0.32);
+      }
+
+      .bg-bubble--lilac {
+        background-color: rgba(216, 205, 246, 0.36);
+      }
+
+      .bg-bubble--sage {
+        background-color: rgba(204, 221, 205, 0.36);
+      }
+
+      .bg-bubble--tl-soft {
+        width: 140px;
+        height: 140px;
+        top: 80px;
+        left: -60px;
+        animation-duration: 26s;
+        animation-delay: -8s;
+      }
+
+      .bg-bubble--tr-soft {
+        width: 110px;
+        height: 110px;
+        top: 140px;
+        right: -40px;
+        animation-duration: 24s;
+        animation-delay: -6s;
+      }
+
+      .bg-bubble--bl-soft {
+        width: 120px;
+        height: 120px;
+        bottom: -50px;
+        left: 10%;
+        animation-duration: 28s;
+        animation-delay: -10s;
+      }
+
+      .bg-bubble--br-soft {
+        width: 150px;
+        height: 150px;
+        bottom: -70px;
+        right: 18%;
+        animation-duration: 30s;
+        animation-delay: -4s;
+      }
+
+      .bg-bubble--mid-soft {
+        width: 80px;
+        height: 80px;
+        top: 65%;
+        left: 55%;
+        animation-duration: 22s;
+        animation-delay: -12s;
+      }
+
+      @keyframes bubble-drift {
+        0% {
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+        50% {
+          transform: translate3d(10px, -6px, 0) scale(1.03);
+        }
+        100% {
+          transform: translate3d(-8px, 6px, 0) scale(0.98);
+        }
+      }
+
+      /* Main layout */
+      .admin-main-shell {
+        flex: 1;
+        padding: 40px 64px 56px;
+        display: flex;
+        justify-content: center;
+      }
+
+      .admin-main {
+        width: 100%;
+        max-width: 1040px;
+      }
+
+      .admin-hero-eyebrow {
+        font-size: 13px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #8c6a61;
+        margin-bottom: 8px;
+      }
+
+      .admin-hero-title {
+        font-size: 34px;
+        line-height: 1.4;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      .admin-hero-subtitle {
+        font-size: 15px;
+        line-height: 1.8;
+        color: #6b5a56;
+        max-width: 520px;
+        margin-bottom: 32px;
+      }
+
+      /* Stat cards */
+      .admin-stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        margin-bottom: 32px;
+      }
+
+      .admin-stat-card {
+        background: #fff7f3;
+        border-radius: 14px;
+        padding: 14px 16px;
+        border: 1px solid #ffe0d4;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
+      }
+
+      .admin-stat-label {
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #a67666;
+        margin-bottom: 4px;
+      }
+
+      .admin-stat-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: #2f2623;
+      }
+
+      /* Feature grid */
+      .admin-feature-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .admin-feature-card {
+        background: #ffffff;
+        border-radius: 18px;
+        padding: 16px 18px;
+        border: 1px solid #f0ddd6;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 120px;
+        cursor: default;
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
+      }
+
+      .admin-stat-card:hover,
+      .admin-feature-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+      }
+
+      .admin-feature-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+      }
+
+      .admin-feature-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 10px;
+        background: #ffe2d7;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+      }
+
+      .admin-feature-title {
+        font-size: 15px;
+        font-weight: 600;
+      }
+
+      .admin-feature-body {
+        font-size: 13px;
+        color: #6b5a56;
+        line-height: 1.6;
+      }
+
+      .admin-feature-footer {
+        margin-top: 10px;
+        font-size: 12px;
+        color: #9b8a85;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      .admin-feature-footer span {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      @media (max-width: 960px) {
+        .admin-main-shell {
+          padding: 32px 20px 40px;
+        }
+
+        .admin-stats-row {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .admin-feature-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 640px) {
+        .admin-main-shell {
+          padding: 24px 16px 32px;
+        }
+
+        .admin-feature-grid {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- background bubbles -->
+    <div class="bg-bubble bg-bubble--peach bg-bubble--tl-soft"></div>
+    <div class="bg-bubble bg-bubble--lilac bg-bubble--tr-soft"></div>
+    <div class="bg-bubble bg-bubble--sage bg-bubble--bl-soft"></div>
+    <div class="bg-bubble bg-bubble--peach bg-bubble--br-soft"></div>
+    <div class="bg-bubble bg-bubble--lilac bg-bubble--mid-soft"></div>
+
+    <!-- main content -->
+    <main class="admin-main-shell">
+      <div class="admin-main">
+        <header class="admin-header">
+          <div class="admin-header-left">
+            <div class="admin-logo">
+              <img src="/images/Untitled design (48).png" alt="Ella Rises" />
+            </div>
+            <div class="admin-brand">Ella Rises</div>
+          </div>
+          <div class="admin-header-right">
+            <nav class="admin-nav">
+              <a href="/admin/home" class="admin-nav-link admin-nav-link--primary">Home</a>
+            </nav>
+            <span class="admin-header-user">Signed in as <strong><%= user.firstName %></strong></span>
+            <form method="POST" action="/admin/logout" style="margin: 0">
+              <button type="submit" class="admin-header-signout">Sign out</button>
+            </form>
+          </div>
+        </header>
+
+        <section class="admin-hero">
+          <div class="admin-hero-eyebrow">Admin dashboard</div>
+          <h1 class="admin-hero-title"><%= greeting %>, <%= user.firstName %></h1>
+          <p class="admin-hero-subtitle">
+            Welcome to your dashboard. Here’s where you can manage events, track
+            participants, and see the impact of our programs.
+          </p>
+        </section>
+
+        <!-- stat cards (placeholder values for now) -->
+        <section class="admin-stats-row">
+          <article class="admin-stat-card">
+            <div class="admin-stat-label">Active Participants</div>
+            <div class="admin-stat-value">247</div>
+          </article>
+          <article class="admin-stat-card">
+            <div class="admin-stat-label">Upcoming Events</div>
+            <div class="admin-stat-value">12</div>
+          </article>
+          <article class="admin-stat-card">
+            <div class="admin-stat-label">This Month’s Donations</div>
+            <div class="admin-stat-value">$8,420</div>
+          </article>
+          <article class="admin-stat-card">
+            <div class="admin-stat-label">Program Completion</div>
+            <div class="admin-stat-value">89%</div>
+          </article>
+        </section>
+
+        <!-- feature grid -->
+        <section class="admin-feature-grid">
+          <article class="admin-feature-card">
+            <div>
+              <div class="admin-feature-header">
+                <div class="admin-feature-icon">E</div>
+                <div class="admin-feature-title">Events</div>
+              </div>
+              <p class="admin-feature-body">
+                Manage and view upcoming programs and gatherings.
+              </p>
+            </div>
+            <div class="admin-feature-footer">
+              <span>View events →</span>
+            </div>
+          </article>
+
+          <article class="admin-feature-card">
+            <div>
+              <div class="admin-feature-header">
+                <div class="admin-feature-icon">P</div>
+                <div class="admin-feature-title">Participants</div>
+              </div>
+              <p class="admin-feature-body">
+                View and manage program participants and their stories.
+              </p>
+            </div>
+            <div class="admin-feature-footer">
+              <span>Open roster →</span>
+            </div>
+          </article>
+
+          <article class="admin-feature-card">
+            <div>
+              <div class="admin-feature-header">
+                <div class="admin-feature-icon">D</div>
+                <div class="admin-feature-title">Donations</div>
+              </div>
+              <p class="admin-feature-body">
+                Track contributions and donor information over time.
+              </p>
+            </div>
+            <div class="admin-feature-footer">
+              <span>Review gifts →</span>
+            </div>
+          </article>
+
+          <article class="admin-feature-card">
+            <div>
+              <div class="admin-feature-header">
+                <div class="admin-feature-icon">A</div>
+                <div class="admin-feature-title">Data Analysis</div>
+              </div>
+              <p class="admin-feature-body">
+                Insights and reports on program impact and survey data.
+              </p>
+            </div>
+            <div class="admin-feature-footer">
+              <span>Explore insights →</span>
+            </div>
+          </article>
+
+          <article class="admin-feature-card">
+            <div>
+              <div class="admin-feature-header">
+                <div class="admin-feature-icon">M</div>
+                <div class="admin-feature-title">Manager Corner</div>
+              </div>
+              <p class="admin-feature-body">
+                Administrative tools and access settings for your team.
+              </p>
+            </div>
+            <div class="admin-feature-footer">
+              <span>Go to admin tools →</span>
+            </div>
+          </article>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
