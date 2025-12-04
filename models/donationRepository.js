@@ -74,7 +74,8 @@ async function getMonthlyTotal() {
   const result = await knex.raw(
     `SELECT COALESCE(SUM(donationamount), 0) AS monthly_donations
      FROM participantdonations
-     WHERE DATE_TRUNC('month', donationdate) = DATE_TRUNC('month', NOW())`
+     WHERE donationdate >= date_trunc('month', CURRENT_DATE)
+       AND donationdate <  date_trunc('month', CURRENT_DATE) + INTERVAL '1 month'`
   );
   return Number(result.rows[0] && result.rows[0].monthly_donations) || 0;
 }
