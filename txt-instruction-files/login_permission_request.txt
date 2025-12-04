@@ -1,0 +1,158 @@
+Temporary Account Requests
+--------------------------
+
+This document explains the structure and purpose of the
+`account_requests` table used to store inbound user account requests
+before they are formally approved and turned into permanent
+`loginpermissions` users.
+
+The table stores identifying information, a message from the requester,
+and the hashed password (never store raw passwords).
+Administrators can approve or reject each request.
+Approved requests may then be converted into actual user accounts.
+
+--------------------------------------------------------------------
+1. Overview
+--------------------------------------------------------------------
+
+Users requesting access to the Ella Rises admin dashboard submit the
+following information:
+
+- Email
+- First name
+- Last name
+- Organization
+- Message explaining the request
+- A password (hashed before storage)
+
+All account requests are stored with a `status` that starts as `pending`
+and may later be changed to:
+
+- pending
+- approved
+- rejected
+
+The table also tracks timestamps for auditing:
+
+- created_at
+- reviewed_at
+- reviewed_by (email of the manager who approved/rejected)
+
+--------------------------------------------------------------------
+2. Table Creation SQL
+--------------------------------------------------------------------
+
+Run the following SQL on the database (RDS or local Postgres):
+
+CREATE TABLE account_requests (
+    id SERIAL PRIMARY KEY,
+
+    email TEXT NOT NULL UNIQUE,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    organization TEXT,
+    message TEXT,
+
+    -- Only store the hashed password. Plaintext passwords should never be stored.
+    password_hash TEXT NOT NULL,
+
+    status TEXT NOT NULL DEFAULT 'pending'
+        CHECK (status IN ('pending', 'approved', 'rejected')),
+
+    created_at TIMESTAMP DEFAULT NOW(),
+    reviewed_at TIMESTAMP,
+    reviewed_by TEXT
+);
+
+--------------------------------------------------------------------
+3. Password Hashing Procedure
+--------------------------------------------------------------------
+
+Passwords must NOT be hashed in SQL.
+Instead, hash them in Node.js before inserting into this table.
+
+Use the bcryptjs library:
+
+const bcrypt = require('bcryptjs');
+const hash = await bcrypt.hash(password, 12);
+
+Then store the hash:
+
+await knex('account_requests').insert({
+  email,
+  first_name,
+  last_name,
+  organization,
+  message,
+  password_hash: hash,
+  status: 'pending'
+});
+
+This matches the security approach used in the `loginpermissions` table.
+
+--------------------------------------------------------------------
+4. Reviewing Account Requests
+--------------------------------------------------------------------
+
+Managers can approve or reject requests.
+When updating, include audit fields.
+
+Example approval:
+
+await knex('account_requests')
+  .where({ id })
+  .update({
+    status: 'approved',
+    reviewed_at: knex.fn.now(),
+    reviewed_by: managerEmail
+  });
+
+Example rejection:
+
+await knex('account_requests')
+  .where({ id })
+  .update({
+    status: 'rejected',
+    reviewed_at: knex.fn.now(),
+    reviewed_by: managerEmail
+  });
+
+--------------------------------------------------------------------
+5. Converting Approved Requests Into Real Users
+--------------------------------------------------------------------
+
+Once a request is approved, the backend should create a corresponding
+record in the `loginpermissions` table.
+
+Insert the already-hashed password from the `account_requests` table
+into `loginpermissions` exactly as-is.
+
+Example:
+
+const request = await knex('account_requests').where({ id }).first();
+
+await knex('loginpermissions').insert({
+  email: request.email,
+  password_hash: request.password_hash,
+  first_name: request.first_name,
+  last_name: request.last_name,
+  permission: 'user'   -- or elevated if needed
+});
+
+After creating the permanent user, the account request may be archived
+or left in place as a historical audit record.
+
+--------------------------------------------------------------------
+6. Summary
+--------------------------------------------------------------------
+
+The `account_requests` table provides:
+
+- Secure handling of new account creation
+- Proper password hashing
+- Admin approval workflow
+- Full auditing of approval/rejection
+- Smooth conversion into permanent `loginpermissions` users
+
+This ensures a professional, production-grade authentication onboarding
+system that is safe, consistent, and easy for future developers to work with.

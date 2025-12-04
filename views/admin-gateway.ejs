@@ -127,6 +127,17 @@
         line-height: 1.6;
       }
 
+      .gateway-flash {
+        max-width: 460px;
+        margin: 0 auto 20px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(204, 221, 205, 0.7);
+        color: #1f3b24;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
       .gateway-back-link {
         display: inline-block;
         margin-top: 16px;
@@ -272,6 +283,10 @@
       <div class="gateway-logo">
         <img src="/images/Untitled design (48).png" alt="Ella Rises" />
       </div>
+
+      <% if (typeof requestSuccess !== 'undefined' && requestSuccess) { %>
+      <div class="gateway-flash"><%= requestSuccess %></div>
+      <% } %>
 
       <div class="gateway-eyebrow">Admin Corner</div>
       <h1 class="gateway-title">Embrace the work that helps girls rise.</h1>

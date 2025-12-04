@@ -5,6 +5,10 @@ const {
   handleLogin,
   handleLogout,
 } = require('../controller/loginController');
+const {
+  renderRequestAccess,
+  handleRequestAccess,
+} = require('../controller/accountRequestController');
 
 const router = express.Router();
 
@@ -21,6 +25,10 @@ router.get('/', getAdminGateway);
 // Login routes
 router.get('/login', renderLogin);
 router.post('/login', handleLogin);
+
+// Account request ("Request access") routes
+router.get('/create', renderRequestAccess);
+router.post('/create', handleRequestAccess);
 
 // Authenticated admin home
 router.get('/home', ensureAuthenticated, (req, res) => {

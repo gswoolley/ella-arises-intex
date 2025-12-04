@@ -14,26 +14,26 @@ const adminRoutes = require('./routes/adminRoutes');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+const ENV = process.env.NODE_ENV || 'development';
+
 // ---------------------------------------------------------------------
 // FORCE HTTPS ON ELASTIC BEANSTALK (Classic Load Balancer Compatible)
 // ---------------------------------------------------------------------
-app.use((req, res, next) => {
-  // Allow ELB health checks to pass (they use HTTP + expect 200)
-  const isHealthCheck =
-    req.headers['user-agent'] &&
-    req.headers['user-agent'].includes('ELB-HealthChecker');
+if (ENV === 'production') {
+  app.use((req, res, next) => {
+    const isHealthCheck =
+      req.headers['user-agent'] &&
+      req.headers['user-agent'].includes('ELB-HealthChecker');
 
-  if (isHealthCheck) {
-    return next();
-  }
+    if (isHealthCheck) return next();
 
-  // If traffic is not HTTPS, redirect to HTTPS
-  if (req.headers['x-forwarded-proto'] !== 'https') {
-    return res.redirect(301, 'https://' + req.headers.host + req.url);
-  }
+    if (req.headers['x-forwarded-proto'] !== 'https') {
+      return res.redirect(301, 'https://' + req.headers.host + req.url);
+    }
 
-  next();
-});
+    next();
+  });
+}
 // ---------------------------------------------------------------------
 
 // Configure EJS
