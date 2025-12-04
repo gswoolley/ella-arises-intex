@@ -39,19 +39,19 @@
       }
 
       .admin-logo {
-        width: 40px;
-        height: 40px;
+        width: 56px;
+        height: 56px;
         border-radius: 999px;
         overflow: hidden;
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        background-color: #ffece4; /* same as page bg so edge blends */
+        box-shadow: none;          /* remove pink-ish glow */
       }
 
       .admin-logo img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
-        transform: scale(1.6);
-        transform-origin: center;
+        object-fit: contain;       /* show full logo */
+        transform: none;           /* no zoom */
       }
 
       .admin-brand {
@@ -399,7 +399,7 @@
             <div class="admin-header-left">
               <a href="/admin/home" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit;">
                 <div class="admin-logo">
-                  <img src="/images/Untitled design (48).png" alt="Ella Rises" />
+                  <img src="/images/ella-rises-logo.png" alt="Ella Rises" />
                 </div>
                 <div class="admin-brand">Ella Rises</div>
               </a>
