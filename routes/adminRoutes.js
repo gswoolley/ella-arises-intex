@@ -29,6 +29,7 @@ const {
   updateEvent,
   deleteEvent,
 } = require('../controller/admin/app/eventsController');
+const { getDataAnalysis } = require('../controller/admin/app/dataAnalysisController');
 
 const router = express.Router();
 
@@ -67,10 +68,25 @@ router.get('/home', ensureAuthenticated, getAdminHome);
 router.get('/donations', ensureAuthenticated, getDonations);
 
 // Donations actions (manager only)
-router.post('/donations/prepare', ensureAuthenticated, ensureManager, createDonation.prepare);
+router.post(
+  '/donations/prepare',
+  ensureAuthenticated,
+  ensureManager,
+  createDonation.prepare
+);
 router.post('/donations', ensureAuthenticated, ensureManager, createDonation.create);
-router.post('/donations/:id/update', ensureAuthenticated, ensureManager, updateDonation);
-router.post('/donations/:id/delete', ensureAuthenticated, ensureManager, deleteDonation);
+router.post(
+  '/donations/:id/update',
+  ensureAuthenticated,
+  ensureManager,
+  updateDonation
+);
+router.post(
+  '/donations/:id/delete',
+  ensureAuthenticated,
+  ensureManager,
+  deleteDonation
+);
 
 // Events admin view
 router.get('/events', ensureAuthenticated, getEvents);
@@ -79,15 +95,33 @@ router.get('/events', ensureAuthenticated, getEvents);
 router.post('/events/:id/update', ensureAuthenticated, ensureManager, updateEvent);
 router.post('/events/:id/delete', ensureAuthenticated, ensureManager, deleteEvent);
 
+// Data analysis admin view
+router.get('/data-analysis', ensureAuthenticated, getDataAnalysis);
+
 // Manager corner (only for manager accounts)
 router.get('/manager', ensureAuthenticated, ensureManager, getManagerCorner);
 
 // Manager corner actions
 router.post('/manager/:id/approve', ensureAuthenticated, ensureManager, approveRequest);
 router.post('/manager/:id/reject', ensureAuthenticated, ensureManager, rejectRequest);
-router.post('/manager/users/:id/elevate', ensureAuthenticated, ensureManager, elevateUser);
-router.post('/manager/users/:id/demote', ensureAuthenticated, ensureManager, demoteUser);
-router.post('/manager/users/:id/delete', ensureAuthenticated, ensureManager, deleteUser);
+router.post(
+  '/manager/users/:id/elevate',
+  ensureAuthenticated,
+  ensureManager,
+  elevateUser
+);
+router.post(
+  '/manager/users/:id/demote',
+  ensureAuthenticated,
+  ensureManager,
+  demoteUser
+);
+router.post(
+  '/manager/users/:id/delete',
+  ensureAuthenticated,
+  ensureManager,
+  deleteUser
+);
 
 // Logout
 router.post('/logout', handleLogout);
