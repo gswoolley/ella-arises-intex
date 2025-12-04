@@ -1,14 +1,15 @@
 const express = require('express');
-const { getAdminGateway } = require('../controller/adminGatewayController');
+const { getAdminGateway } = require('../controller/admin/auth/adminGatewayController');
 const {
   renderLogin,
   handleLogin,
   handleLogout,
-} = require('../controller/loginController');
+} = require('../controller/admin/auth/loginController');
 const {
   renderRequestAccess,
   handleRequestAccess,
-} = require('../controller/accountRequestController');
+} = require('../controller/admin/auth/accountRequestController');
+const { getAdminHome } = require('../controller/admin/app/homeController');
 
 const router = express.Router();
 
@@ -31,9 +32,7 @@ router.get('/create', renderRequestAccess);
 router.post('/create', handleRequestAccess);
 
 // Authenticated admin home
-router.get('/home', ensureAuthenticated, (req, res) => {
-  res.render('admin-home', { user: req.session.user });
-});
+router.get('/home', ensureAuthenticated, getAdminHome);
 
 // Logout
 router.post('/logout', handleLogout);

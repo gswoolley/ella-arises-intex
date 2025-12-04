@@ -1,19 +1,19 @@
 const bcrypt = require('bcrypt');
-const knex = require('../util/db');
+const knex = require('../../../util/db');
 
 const renderLogin = (req, res) => {
   if (req.session && req.session.user) {
     return res.redirect('/admin/home');
   }
 
-  res.render('login', { error: null, email: '' });
+  res.render('admin/auth/login', { error: null, email: '' });
 };
 
 const handleLogin = async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(400).render('login', {
+    return res.status(400).render('admin/auth/login', {
       error: 'Please enter both email and password.',
       email: email || '',
     });
@@ -23,7 +23,7 @@ const handleLogin = async (req, res) => {
     const user = await knex('loginpermissions').where({ email }).first();
 
     if (!user) {
-      return res.status(401).render('login', {
+      return res.status(401).render('admin/auth/login', {
         error: 'Invalid email or password.',
         email,
       });
@@ -32,7 +32,7 @@ const handleLogin = async (req, res) => {
     const valid = await bcrypt.compare(password, user.password_hash);
 
     if (!valid) {
-      return res.status(401).render('login', {
+      return res.status(401).render('admin/auth/login', {
         error: 'Invalid email or password.',
         email,
       });
@@ -49,7 +49,7 @@ const handleLogin = async (req, res) => {
     return res.redirect('/admin/home');
   } catch (err) {
     console.error('Error during login:', err);
-    return res.status(500).render('login', {
+    return res.status(500).render('admin/auth/login', {
       error: 'An unexpected error occurred. Please try again.',
       email,
     });

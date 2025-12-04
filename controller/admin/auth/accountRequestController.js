@@ -1,8 +1,8 @@
 const bcrypt = require('bcrypt');
-const knex = require('../util/db');
+const knex = require('../../../util/db');
 
 const renderRequestAccess = (req, res) => {
-  res.render('request-access', {
+  res.render('admin/auth/request-access', {
     error: null,
     success: null,
     form: {
@@ -21,7 +21,7 @@ const handleRequestAccess = async (req, res) => {
   const baseForm = { email, first_name, last_name, organization, message };
 
   if (!email || !first_name || !last_name || !password) {
-    return res.status(400).render('request-access', {
+    return res.status(400).render('admin/auth/request-access', {
       error: 'Please fill in email, first name, last name, and password.',
       success: null,
       form: baseForm,
@@ -29,7 +29,7 @@ const handleRequestAccess = async (req, res) => {
   }
 
   if (password.length < 8) {
-    return res.status(400).render('request-access', {
+    return res.status(400).render('admin/auth/request-access', {
       error: 'Password must be at least 8 characters long.',
       success: null,
       form: baseForm,
@@ -64,7 +64,7 @@ const handleRequestAccess = async (req, res) => {
       errorMessage = 'An account request with this email already exists.';
     }
 
-    return res.status(500).render('request-access', {
+    return res.status(500).render('admin/auth/request-access', {
       error: errorMessage,
       success: null,
       form: baseForm,

@@ -13,13 +13,13 @@
     <link
       rel="icon"
       sizes="192x192"
-      href="images/pfavico.ico"
+      href="/images/pfavico.ico"
       type="image/x-icon"
     />
-    <link rel="shortcut icon" href="images/pfavico.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="/images/pfavico.ico" type="image/x-icon" />
     <link
       rel="apple-touch-icon"
-      href="images/pfavico.ico"
+      href="/images/pfavico.ico"
       type="image/x-icon"
     />
 
@@ -55,6 +55,126 @@
         color: #333;
       }
 
+      .dashboard-hero {
+        margin-bottom: 32px;
+        padding: 28px 32px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #ffd8d1 0%, #ffeceb 35%, #ffffff 100%);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      }
+
+      .dashboard-hero-eyebrow {
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #a65c50;
+        margin-bottom: 8px;
+      }
+
+      .dashboard-hero-title {
+        font-size: 30px;
+        line-height: 1.2;
+        margin-bottom: 12px;
+        color: #3a2925;
+      }
+
+      .dashboard-hero-subtitle {
+        font-size: 15px;
+        line-height: 1.6;
+        color: #4f3b36;
+        max-width: 720px;
+      }
+
+      .dashboard-story {
+        margin-bottom: 32px;
+        display: grid;
+        grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.4fr);
+        gap: 28px;
+      }
+
+      .dashboard-story-main p {
+        font-size: 14px;
+        line-height: 1.7;
+        color: #4a4a4a;
+        margin-bottom: 12px;
+      }
+
+      .dashboard-story-main p strong {
+        color: #2f1f1a;
+      }
+
+      .dashboard-story-aside {
+        background: #fff7f4;
+        border-radius: 16px;
+        padding: 18px 20px;
+        border: 1px solid #ffe0d8;
+      }
+
+      .dashboard-story-aside-title {
+        font-size: 13px;
+        font-weight: bold;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #b06556;
+        margin-bottom: 10px;
+      }
+
+      .dashboard-metrics {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 8px;
+      }
+
+      .dashboard-metric-card {
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 14px 16px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        border: 1px solid #ffe5dd;
+      }
+
+      .dashboard-metric-label {
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #9a6b60;
+        margin-bottom: 4px;
+      }
+
+      .dashboard-metric-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: #2d1f1b;
+        margin-bottom: 2px;
+      }
+
+      .dashboard-metric-caption {
+        font-size: 11px;
+        color: #7a6a66;
+      }
+
+      .dashboard-viz-header {
+        margin-bottom: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .dashboard-viz-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #3a2925;
+      }
+
+      .dashboard-viz-caption {
+        font-size: 12px;
+        color: #7a6a66;
+        max-width: 420px;
+      }
+
       .dashboard-placeholder {
         background-color: #f9f9f9;
         border: 2px dashed #ccc;
@@ -71,6 +191,16 @@
         border-top: 1px solid #f0f0f0;
         font-size: 12px;
         color: #666;
+      }
+
+      @media (max-width: 900px) {
+        .dashboard-story {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .dashboard-metrics {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
       }
 
       @media (max-width: 768px) {
@@ -114,6 +244,21 @@
         }
       }
     </style>
+    <style>
+      .nav-pill a {
+        transition: background 0.12s ease;
+      }
+
+      .nav-pill a:hover {
+        background: linear-gradient(
+          to bottom,
+          #d6d6d6 0%,
+          #d6d6d6 50%,
+          #c4c4c4 50%,
+          #c4c4c4 100%
+        );
+      }
+    </style>
   </head>
 
   <body>
@@ -134,7 +279,7 @@
       >
         <!-- Logo on the left -->
         <a
-          href="index.html"
+          href="/"
           style="
             display: inline-flex;
             align-items: center;
@@ -154,7 +299,7 @@
             "
           >
             <img
-              src="images/Untitled design (48).png"
+              src="/images/Untitled design (48).png"
               alt="Ella Rises"
               style="
                 width: 115%;
@@ -190,7 +335,7 @@
             "
           >
             <a
-              href="index.html"
+              href="/"
               style="
                 padding: 4px 20px;
                 text-decoration: none;
@@ -267,13 +412,14 @@
                 padding: 4px 20px;
                 text-decoration: none;
                 color: #000;
+                border-right: 1px solid #f6e7e1;
                 white-space: nowrap;
               "
             >
               Contact Us
             </a>
             <a
-              href="/dashboard.html"
+              href="/dashboard"
               style="
                 padding: 4px 20px;
                 text-decoration: none;
@@ -284,7 +430,7 @@
               See the impact
             </a>
             <a
-              href="https://www.ellarises.org/contact-us"
+              href="/admin"
               style="
                 padding: 4px 20px;
                 text-decoration: none;
@@ -324,6 +470,73 @@
 
     <main>
       <div class="dashboard-content">
+        <section class="dashboard-hero">
+          <div class="dashboard-hero-eyebrow">Ella Rises Impact Dashboard</div>
+          <h1 class="dashboard-hero-title">
+            See how girls rise when a community stands behind them.
+          </h1>
+          <p class="dashboard-hero-subtitle">
+            This live dashboard brings together stories, survey responses, and program
+            data
+            from Ella Rises. It is a window into how mentorship, leadership development,
+            and creative expression are helping girls build confidence, find their
+            voice,
+            and feel a deeper sense of belonging.
+          </p>
+        </section>
+
+        <section class="dashboard-story">
+          <div class="dashboard-story-main">
+            <p>
+              Ella Rises partners with schools, families, and community leaders to
+              create spaces where girls can be
+              <strong>seen, heard, and celebrated</strong>.
+              Through circles, workshops, and hands-on experiences, participants
+              explore
+              identity, emotional resilience, and their unique power to influence the
+              world around them.
+            </p>
+            <p>
+              The insights you see below come directly from the young people and
+              communities we serve. They help Ella Rises understand what is working,
+              where we can grow, and how to steward support from donors and partners
+              with transparency.
+            </p>
+            <p>
+              Behind every data point is a girl learning to trust her own story.
+              This dashboard is one way we honor those stories and invite you into the
+              work of helping them rise.
+            </p>
+          </div>
+
+          <aside class="dashboard-story-aside">
+            <div class="dashboard-story-aside-title">At a glance</div>
+            <div class="dashboard-metrics">
+              <div class="dashboard-metric-card">
+                <div class="dashboard-metric-label">Girls reached</div>
+                <div class="dashboard-metric-value">1,000+</div>
+                <div class="dashboard-metric-caption">
+                  across schools and community sites
+                </div>
+              </div>
+              <div class="dashboard-metric-card">
+                <div class="dashboard-metric-label">Programs</div>
+                <div class="dashboard-metric-value">Mentor-led</div>
+                <div class="dashboard-metric-caption">
+                  small groups, workshops, and events
+                </div>
+              </div>
+              <div class="dashboard-metric-card">
+                <div class="dashboard-metric-label">Focus</div>
+                <div class="dashboard-metric-value">Belonging</div>
+                <div class="dashboard-metric-caption">
+                  confidence, connection, and leadership
+                </div>
+              </div>
+            </div>
+          </aside>
+        </section>
+
         <div
           class="tableauPlaceholder"
           id="viz1764782870369"
@@ -333,9 +546,10 @@
             ><a href="#"
               ><img
                 alt="Our Impact "
-                src="https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;El&#47;EllarisesPublicTopDown&#47;PublicDashboard2&#47;1_rss.png"
-                style="border: none" /></a></noscript
-          ><object class="tableauViz" style="display: none">
+                src="https://public.tableau.com/static/images/El/EllarisesPublicTopDown/PublicDashboard2/1_rss.png"
+                style="border: none" /></a
+          ></noscript>
+          <object class="tableauViz" style="display: none">
             <param
               name="host_url"
               value="https%3A%2F%2Fpublic.tableau.com%2F"
@@ -344,13 +558,13 @@
             <param name="site_root" value="" />
             <param
               name="name"
-              value="EllarisesPublicTopDown&#47;PublicDashboard2"
+              value="EllarisesPublicTopDown/PublicDashboard2"
             />
             <param name="tabs" value="no" />
             <param name="toolbar" value="yes" />
             <param
               name="static_image"
-              value="https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;El&#47;EllarisesPublicTopDown&#47;PublicDashboard2&#47;1.png"
+              value="https://public.tableau.com/static/images/El/EllarisesPublicTopDown/PublicDashboard2/1.png"
             />
             <param name="animate_transition" value="yes" />
             <param name="display_static_image" value="yes" />

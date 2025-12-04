@@ -1,5 +1,5 @@
 const getDashboard = (req, res) => {
-  res.render('dashboard');
+  res.render('public/dashboard');
 };
 
 module.exports = {

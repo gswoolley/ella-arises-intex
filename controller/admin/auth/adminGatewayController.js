@@ -10,7 +10,7 @@ const getAdminGateway = (req, res) => {
     delete req.session.requestSuccessMessage;
   }
 
-  return res.render('admin-gateway', { requestSuccess });
+  return res.render('admin/auth/gateway', { requestSuccess });
 };
 
 module.exports = {

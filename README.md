@@ -529,24 +529,7 @@ npm run seed
 - **Manager** (`role: 'manager'`): Full CRUD access to all resources
 - Middleware enforces this with `ensureManager()` guard
 
-### Demo vs. Production
 
-- **Demo** (current): Users stored in-memory in `routes/auth.js` (resets on server restart)
-- **Production** (TODO): Once DB is ready, replace with queries to PostgreSQL `users` table
-
----
-
-## Next Steps
-
-1. **Wire Database**: Once RDS is provisioned, update `.env` and run migrations
-2. **Replace In-Memory Auth**: Move users from `routes/auth.js` to database
-3. **Implement Controllers**: Replace placeholder methods in `src/controllers/` with DB queries
-4. **Add Validation**: Implement request schemas in `src/validation/`
-5. **Protect Routes**: Add `ensureAuthenticated` and `ensureManager` middleware to all CRUD routes
-6. **Build Forms**: Implement edit forms for all resources
-7. **Add Search/Filter**: Implement search on list views
-
----
 
 **Last Updated**: December 1, 2025  
 **Presentation**: Friday, December 5, 2025
