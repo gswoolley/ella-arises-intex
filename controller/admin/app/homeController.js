@@ -10,6 +10,11 @@ const getAdminHome = async (req, res) => {
     greeting = 'Good evening';
   }
 
+  const managerNotice = req.session && req.session.managerNotice;
+  if (req.session && req.session.managerNotice) {
+    delete req.session.managerNotice;
+  }
+
   try {
     const [
       upcomingEventsResult,
@@ -66,6 +71,7 @@ const getAdminHome = async (req, res) => {
       user: req.session.user,
       greeting,
       kpis,
+      managerNotice,
     });
   } catch (error) {
     console.error('Error loading admin home KPIs:', error);
@@ -79,6 +85,7 @@ const getAdminHome = async (req, res) => {
         monthlyDonations: 0,
         activeParticipants: 0,
       },
+      managerNotice,
     });
   }
 };

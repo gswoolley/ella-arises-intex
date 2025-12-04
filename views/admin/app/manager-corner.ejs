@@ -595,15 +595,21 @@
         >
           <article class="admin-stat-card" style="background:#fff7f3;border-radius:14px;padding:14px 16px;border:1px solid #ffe0d4;box-shadow:0 4px 10px rgba(0,0,0,0.06);display:flex;flex-direction:column;justify-content:space-between;">
             <div class="admin-stat-label" style="font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a67666;margin-bottom:4px;">Pending requests</div>
-            <div class="admin-stat-value" style="font-size:34px;font-weight:700;color:#2f2623;"><%= metrics.pending %></div>
+            <div class="admin-stat-value" style="font-size:34px;font-weight:700;color:#2f2623;">
+              <%= Number(metrics.pending || 0).toLocaleString('en-US') %>
+            </div>
           </article>
           <article class="admin-stat-card" style="background:#fff7f3;border-radius:14px;padding:14px 16px;border:1px solid #ffe0d4;box-shadow:0 4px 10px rgba(0,0,0,0.06);display:flex;flex-direction:column;justify-content:space-between;">
             <div class="admin-stat-label" style="font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a67666;margin-bottom:4px;">Approved this month</div>
-            <div class="admin-stat-value" style="font-size:34px;font-weight:700;color:#2f2623;"><%= metrics.approvedThisMonth %></div>
+            <div class="admin-stat-value" style="font-size:34px;font-weight:700;color:#2f2623;">
+              <%= Number(metrics.approvedThisMonth || 0).toLocaleString('en-US') %>
+            </div>
           </article>    
           <article class="admin-stat-card" style="background:#fff7f3;border-radius:14px;padding:14px 16px;border:1px solid #ffe0d4;box-shadow:0 4px 10px rgba(0,0,0,0.06);display:flex;flex-direction:column;justify-content:space-between;">
             <div class="admin-stat-label" style="font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a67666;margin-bottom:4px;">Total active accounts</div>
-            <div class="admin-stat-value" style="font-size:34px;font-weight:700;color:#2f2623;"><%= metrics.totalAccounts %></div>
+            <div class="admin-stat-value" style="font-size:34px;font-weight:700;color:#2f2623;">
+              <%= Number(metrics.totalAccounts || 0).toLocaleString('en-US') %>
+            </div>
           </article>
         </section>
 
@@ -615,15 +621,21 @@
         >
           <article class="admin-stat-card" style="background:#fff7f3;border-radius:14px;padding:14px 16px;border:1px solid #ffe0d4;box-shadow:0 4px 10px rgba(0,0,0,0.06);display:flex;flex-direction:column;justify-content:space-between;">
             <div class="admin-stat-label" style="font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a67666;margin-bottom:4px;">Total users</div>
-            <div class="admin-stat-value" style="font-size:34px;font-weight:700;color:#2f2623;"><%= metrics.totalUsers %></div>
+            <div class="admin-stat-value" style="font-size:34px;font-weight:700;color:#2f2623;">
+              <%= Number(metrics.totalUsers || 0).toLocaleString('en-US') %>
+            </div>
           </article>
           <article class="admin-stat-card" style="background:#fff7f3;border-radius:14px;padding:14px 16px;border:1px solid #ffe0d4;box-shadow:0 4px 10px rgba(0,0,0,0.06);display:flex;flex-direction:column;justify-content:space-between;">
             <div class="admin-stat-label" style="font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a67666;margin-bottom:4px;">Total managers</div>
-            <div class="admin-stat-value" style="font-size:34px;font-weight:700;color:#2f2623;"><%= metrics.totalManagers %></div>
+            <div class="admin-stat-value" style="font-size:34px;font-weight:700;color:#2f2623;">
+              <%= Number(metrics.totalManagers || 0).toLocaleString('en-US') %>
+            </div>
           </article>
           <article class="admin-stat-card" style="background:#fff7f3;border-radius:14px;padding:14px 16px;border:1px solid #ffe0d4;box-shadow:0 4px 10px rgba(0,0,0,0.06);display:flex;flex-direction:column;justify-content:space-between;">
             <div class="admin-stat-label" style="font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a67666;margin-bottom:4px;">Total active accounts</div>
-            <div class="admin-stat-value" style="font-size:34px;font-weight:700;color:#2f2623;"><%= metrics.totalAccounts %></div>
+            <div class="admin-stat-value" style="font-size:34px;font-weight:700;color:#2f2623;">
+              <%= Number(metrics.totalAccounts || 0).toLocaleString('en-US') %>
+            </div>
           </article>
         </section>
 

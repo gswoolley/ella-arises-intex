@@ -18,6 +18,12 @@ const {
   demoteUser,
   deleteUser,
 } = require('../controller/admin/app/managerController');
+const {
+  getDonations,
+  createDonation,
+  updateDonation,
+  deleteDonation,
+} = require('../controller/admin/app/donationsController');
 
 const router = express.Router();
 
@@ -31,6 +37,9 @@ function ensureAuthenticated(req, res, next) {
 function ensureManager(req, res, next) {
   if (req.session && req.session.user && req.session.user.permission === 'manager') {
     return next();
+  }
+  if (req.session) {
+    req.session.managerNotice = 'Manager Corner is only available to manager accounts.';
   }
   return res.redirect('/admin/home');
 }
@@ -48,6 +57,15 @@ router.post('/create', handleRequestAccess);
 
 // Authenticated admin home
 router.get('/home', ensureAuthenticated, getAdminHome);
+
+// Donations admin view
+router.get('/donations', ensureAuthenticated, getDonations);
+
+// Donations actions (manager only)
+router.post('/donations/prepare', ensureAuthenticated, ensureManager, createDonation.prepare);
+router.post('/donations', ensureAuthenticated, ensureManager, createDonation.create);
+router.post('/donations/:id/update', ensureAuthenticated, ensureManager, updateDonation);
+router.post('/donations/:id/delete', ensureAuthenticated, ensureManager, deleteDonation);
 
 // Manager corner (only for manager accounts)
 router.get('/manager', ensureAuthenticated, ensureManager, getManagerCorner);

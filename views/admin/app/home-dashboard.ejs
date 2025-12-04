@@ -230,6 +230,16 @@
         margin-bottom: 32px;
       }
 
+      .admin-hero-notice {
+        margin-bottom: 20px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: #fff7f3;
+        border: 1px solid #ffd3bf;
+        font-size: 13px;
+        color: #8b4d32;
+      }
+
       /* Stat cards */
       .admin-stats-row {
         display: grid;
@@ -283,6 +293,10 @@
         min-height: 120px;
         cursor: default;
         transition: transform 0.12s ease, box-shadow 0.12s ease;
+      }
+
+      .admin-feature-card--clickable {
+        cursor: pointer;
       }
 
       .admin-stat-card:hover,
@@ -386,9 +400,6 @@
             <div class="admin-brand">Ella Rises</div>
           </div>
           <div class="admin-header-right">
-            <nav class="admin-nav">
-              <a href="/admin/home" class="admin-nav-link admin-nav-link--primary">Home</a>
-            </nav>
             <span class="admin-header-user">Signed in as <strong><%= user.firstName %></strong></span>
             <form method="POST" action="/admin/logout" style="margin: 0">
               <button type="submit" class="admin-header-signout">Sign out</button>
@@ -403,25 +414,35 @@
             Welcome to your dashboard. Here’s where you can manage events, track
             participants, and see the impact of our programs.
           </p>
+          <% if (typeof managerNotice !== 'undefined' && managerNotice) { %>
+          <div class="admin-hero-notice"><%= managerNotice %></div>
+          <% } %>
         </section>
-
         <!-- stat cards (placeholder values for now) -->
         <section class="admin-stats-row">
           <article class="admin-stat-card">
             <div class="admin-stat-label">Active Participants</div>
-            <div class="admin-stat-value"><%= kpis.activeParticipants %></div>
+            <div class="admin-stat-value">
+              <%= kpis.activeParticipants %>
+            </div>
           </article>
           <article class="admin-stat-card">
             <div class="admin-stat-label">Upcoming Events</div>
-            <div class="admin-stat-value"><%= kpis.upcomingEvents %></div>
+            <div class="admin-stat-value">
+              <%= kpis.upcomingEvents %>
+            </div>
           </article>
           <article class="admin-stat-card">
-            <div class="admin-stat-label">This Month’s Donations</div>
-            <div class="admin-stat-value">$<%= kpis.monthlyDonations %></div>
+            <div class="admin-stat-label">This Month’s Participant Donations</div>
+            <div class="admin-stat-value">
+              $<%= Number(kpis.monthlyDonations || 0).toLocaleString('en-US', { maximumFractionDigits: 0 }) %>
+            </div>
           </article>
           <article class="admin-stat-card">
-            <div class="admin-stat-label">Satisfaction last 100 days</div>
-            <div class="admin-stat-value"><%= kpis.avgSatisfaction.toFixed(2) %></div>
+            <div class="admin-stat-label">Satisfaction<br />(last 100 days)</div>
+            <div class="admin-stat-value">
+              <%= kpis.avgSatisfaction.toFixed(2) %>
+            </div>
           </article>
         </section>
 
@@ -457,14 +478,14 @@
             </div>
           </article>
 
-          <article class="admin-feature-card">
+          <article class="admin-feature-card admin-feature-card--clickable" data-link="/admin/donations">
             <div>
               <div class="admin-feature-header">
                 <div class="admin-feature-icon">D</div>
-                <div class="admin-feature-title">Donations</div>
+                <div class="admin-feature-title">Participant donations</div>
               </div>
               <p class="admin-feature-body">
-                Track contributions and donor information over time.
+                Track participant contributions and donor information over time.
               </p>
             </div>
             <div class="admin-feature-footer">
@@ -487,7 +508,7 @@
             </div>
           </article>
 
-          <article class="admin-feature-card">
+          <article class="admin-feature-card admin-feature-card--clickable" data-link="/admin/manager">
             <div>
               <div class="admin-feature-header">
                 <div class="admin-feature-icon">M</div>
@@ -504,5 +525,22 @@
         </section>
       </div>
     </main>
+    <script>
+      (function () {
+        var cards = document.querySelectorAll('.admin-feature-card--clickable');
+        for (var i = 0; i < cards.length; i++) {
+          (function (card) {
+            var target = card.getAttribute('data-link');
+            if (!target) return;
+            card.addEventListener('click', function (event) {
+              if (event.target && event.target.closest('a')) {
+                return;
+              }
+              window.location.href = target;
+            });
+          })(cards[i]);
+        }
+      })();
+    </script>
   </body>
 </html>
