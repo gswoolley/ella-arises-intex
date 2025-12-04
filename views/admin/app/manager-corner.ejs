@@ -28,6 +28,8 @@
         padding: 40px 72px 56px;
         display: flex;
         justify-content: center;
+        position: relative;
+        z-index: 1;
       }
 
       .admin-main {
@@ -83,27 +85,35 @@
         gap: 16px;
       }
 
-      .admin-nav-link {
-        font-size: 13px;
-        color: #6b5a56;
-        text-decoration: none;
-      }
-
-      .admin-nav-link:hover {
-        text-decoration: underline;
-      }
-
-      .admin-nav-link--primary {
-        padding: 6px 14px;
+      .admin-nav-link-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
         border-radius: 999px;
-        background: rgba(255, 255, 255, 0.65);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        font-size: 13px;
+        color: #2f2623;
+        text-decoration: none;
+        position: relative;
       }
 
-      .admin-nav-link--primary:hover {
-        text-decoration: none;
-        background: rgba(255, 255, 255, 0.9);
-        box-shadow: 0 5px 14px rgba(0, 0, 0, 0.12);
+      .admin-nav-link-back::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: transparent;
+        transition: background 0.12s ease, box-shadow 0.12s ease;
+        z-index: -1;
+      }
+
+      .admin-nav-link-back:hover::before {
+        background: #f8cdb9;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+      }
+
+      .admin-nav-link-back-icon {
+        font-size: 14px;
       }
 
       .admin-header-user {
@@ -130,6 +140,7 @@
         animation-timing-function: ease-in-out;
         animation-iteration-count: infinite;
         animation-direction: alternate;
+        z-index: 0;
       }
 
       .bg-bubble--peach {
@@ -137,7 +148,7 @@
       }
 
       .bg-bubble--lilac {
-        background-color: rgba(216, 205, 246, 0.36);
+        background-color: rgba(216, 205, 246, 0.4);
       }
 
       .bg-bubble--sage {
@@ -145,21 +156,58 @@
       }
 
       .bg-bubble--tl-soft {
-        width: 120px;
-        height: 120px;
-        top: 40px;
-        left: -40px;
+        width: 80px;
+        height: 80px;
+        top: 80px;
+        left: auto;
+        right: 26%;
         animation-duration: 26s;
         animation-delay: -8s;
       }
 
+      .bg-bubble--tr-soft {
+        width: 95px;
+        height: 95px;
+        top: 120px;
+        right: -28px;
+        animation-duration: 24s;
+        animation-delay: -6s;
+      }
+
+      .bg-bubble--mid-soft {
+        width: 80px;
+        height: 80px;
+        top: 58%;
+        left: 18%;
+        animation-duration: 22s;
+        animation-delay: -10s;
+      }
+
       .bg-bubble--br-soft {
-        width: 150px;
-        height: 150px;
-        bottom: -70px;
-        right: 12%;
+        width: 140px;
+        height: 140px;
+        bottom: -64px;
+        right: 8%;
         animation-duration: 30s;
         animation-delay: -4s;
+      }
+
+      .bg-bubble--ml-soft {
+        width: 70px;
+        height: 70px;
+        top: 45%;
+        left: 6%;
+        animation-duration: 24s;
+        animation-delay: -5s;
+      }
+
+      .bg-bubble--bl-soft {
+        width: 100px;
+        height: 100px;
+        bottom: -50px;
+        left: -20px;
+        animation-duration: 26s;
+        animation-delay: -9s;
       }
 
       @keyframes bubble-drift {
@@ -183,18 +231,60 @@
       }
 
       .manager-hero-title {
-        font-size: 32px;
+        font-size: 40px;
         line-height: 1.4;
         font-weight: 600;
         margin-bottom: 8px;
       }
 
       .manager-hero-subtitle {
-        font-size: 15px;
+        font-size: 17px;
         line-height: 1.8;
         color: #6b5a56;
         max-width: 640px;
         margin-bottom: 24px;
+      }
+
+      .manager-subnav {
+        display: inline-flex;
+        gap: 8px;
+        padding: 4px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.7);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+        margin-bottom: 20px;
+      }
+
+      .manager-subnav-link {
+        padding: 6px 14px;
+        border-radius: 999px;
+        border: none;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        text-decoration: none;
+        cursor: pointer;
+        background: transparent;
+        color: #7c6a65;
+        white-space: nowrap;
+      }
+
+      .manager-subnav-link:hover {
+        background: rgba(255, 236, 228, 0.9);
+      }
+
+      .manager-subnav-link--active {
+        background: #2f2623;
+        color: #ffffff;
+        box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+      }
+
+      .manager-section--hidden {
+        display: none;
+      }
+
+      .manager-kpis--hidden {
+        display: none !important;
       }
 
       .requests-card {
@@ -221,6 +311,35 @@
       .requests-count {
         font-size: 13px;
         color: #8b7a75;
+      }
+
+      .filter-toggle {
+        display: inline-flex;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid #e5d4ce;
+        overflow: hidden;
+        font-size: 12px;
+      }
+
+      .filter-toggle-link {
+        padding: 4px 10px;
+        border: none;
+        background: transparent;
+        color: #6b5a56;
+        text-decoration: none;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+      }
+
+      .filter-toggle-link:hover {
+        background: rgba(255, 236, 228, 0.9);
+      }
+
+      .filter-toggle-link--active {
+        background: #2f2623;
+        color: #ffffff;
       }
 
       .requests-table-wrapper {
@@ -254,6 +373,28 @@
 
       table.requests-table tbody tr:nth-child(even) {
         background: #fffaf7;
+      }
+
+      .requests-pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+        font-size: 12px;
+        color: #6b5a56;
+      }
+
+      .requests-pagination a {
+        text-decoration: none;
+        color: #2f2623;
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid #e5d4ce;
+        background: rgba(255, 255, 255, 0.9);
+      }
+
+      .requests-pagination a:hover {
+        background: #ffe8de;
       }
 
       .status-pill {
@@ -404,7 +545,11 @@
   </head>
   <body>
     <div class="bg-bubble bg-bubble--peach bg-bubble--tl-soft"></div>
-    <div class="bg-bubble bg-bubble--sage bg-bubble--br-soft"></div>
+    <div class="bg-bubble bg-bubble--lilac bg-bubble--tr-soft"></div>
+    <div class="bg-bubble bg-bubble--sage bg-bubble--mid-soft"></div>
+    <div class="bg-bubble bg-bubble--peach bg-bubble--br-soft"></div>
+    <div class="bg-bubble bg-bubble--lilac bg-bubble--ml-soft"></div>
+    <div class="bg-bubble bg-bubble--sage bg-bubble--bl-soft"></div>
 
     <main class="admin-main-shell">
       <div class="admin-main">
@@ -417,8 +562,10 @@
           </div>
           <div class="admin-header-right">
             <nav class="admin-nav">
-              <a href="/admin/home" class="admin-nav-link">Home</a>
-              <a href="/admin/manager" class="admin-nav-link admin-nav-link--primary">Manager corner</a>
+              <a href="/admin/home" class="admin-nav-link-back">
+                <span class="admin-nav-link-back-icon">&#8592;</span>
+                <span>Back to home</span>
+              </a>
             </nav>
             <span class="admin-header-user">Signed in as <strong><%= user.firstName %></strong></span>
             <form method="POST" action="/admin/logout" style="margin: 0">
@@ -429,38 +576,106 @@
 
         <section class="manager-hero">
           <div class="manager-hero-eyebrow">Manager tools</div>
-          <h1 class="manager-hero-title">Account requests</h1>
+          <h1 class="manager-hero-title">Access &amp; roles control center</h1>
           <p class="manager-hero-subtitle">
-            Review and manage who has asked for access to the Ella Rises admin space so you can
-            approve the right people and keep data safe.
+            Review new access requests, keep track of who has been approved, and manage existing
+            user roles so the right people stay connected to Ella Rises data.
           </p>
+          <nav class="manager-subnav">
+            <a href="#manager-section-requests" class="manager-subnav-link manager-subnav-link--active">Requests</a>
+            <a href="#manager-section-users" class="manager-subnav-link">Users &amp; roles</a>
+          </nav>
         </section>
 
-        <!-- KPI row -->
-        <section class="admin-stats-row" style="margin-bottom: 28px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px;">
+        <!-- KPI row for Requests tab -->
+        <section
+          class="admin-stats-row"
+          id="manager-kpis-requests"
+          style="margin-bottom: 28px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px;"
+        >
           <article class="admin-stat-card" style="background:#fff7f3;border-radius:14px;padding:14px 16px;border:1px solid #ffe0d4;box-shadow:0 4px 10px rgba(0,0,0,0.06);display:flex;flex-direction:column;justify-content:space-between;">
-            <div class="admin-stat-label" style="font-size:12px;letter-spacing:0.16em;text-transform:uppercase;color:#a67666;margin-bottom:4px;">Pending requests</div>
-            <div class="admin-stat-value" style="font-size:28px;font-weight:700;color:#2f2623;"><%= metrics.pending %></div>
+            <div class="admin-stat-label" style="font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a67666;margin-bottom:4px;">Pending requests</div>
+            <div class="admin-stat-value" style="font-size:34px;font-weight:700;color:#2f2623;"><%= metrics.pending %></div>
           </article>
           <article class="admin-stat-card" style="background:#fff7f3;border-radius:14px;padding:14px 16px;border:1px solid #ffe0d4;box-shadow:0 4px 10px rgba(0,0,0,0.06);display:flex;flex-direction:column;justify-content:space-between;">
-            <div class="admin-stat-label" style="font-size:12px;letter-spacing:0.16em;text-transform:uppercase;color:#a67666;margin-bottom:4px;">Approved this month</div>
-            <div class="admin-stat-value" style="font-size:28px;font-weight:700;color:#2f2623;"><%= metrics.approvedThisMonth %></div>
-          </article>
+            <div class="admin-stat-label" style="font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a67666;margin-bottom:4px;">Approved this month</div>
+            <div class="admin-stat-value" style="font-size:34px;font-weight:700;color:#2f2623;"><%= metrics.approvedThisMonth %></div>
+          </article>    
           <article class="admin-stat-card" style="background:#fff7f3;border-radius:14px;padding:14px 16px;border:1px solid #ffe0d4;box-shadow:0 4px 10px rgba(0,0,0,0.06);display:flex;flex-direction:column;justify-content:space-between;">
-            <div class="admin-stat-label" style="font-size:12px;letter-spacing:0.16em;text-transform:uppercase;color:#a67666;margin-bottom:4px;">Total users</div>
-            <div class="admin-stat-value" style="font-size:28px;font-weight:700;color:#2f2623;"><%= metrics.totalUsers %></div>
+            <div class="admin-stat-label" style="font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a67666;margin-bottom:4px;">Total active accounts</div>
+            <div class="admin-stat-value" style="font-size:34px;font-weight:700;color:#2f2623;"><%= metrics.totalAccounts %></div>
           </article>
         </section>
 
-        <section class="requests-card">
+        <!-- KPI row for Users & roles tab -->
+        <section
+          class="admin-stats-row manager-kpis--hidden"
+          id="manager-kpis-users"
+          style="margin-bottom: 28px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px;"
+        >
+          <article class="admin-stat-card" style="background:#fff7f3;border-radius:14px;padding:14px 16px;border:1px solid #ffe0d4;box-shadow:0 4px 10px rgba(0,0,0,0.06);display:flex;flex-direction:column;justify-content:space-between;">
+            <div class="admin-stat-label" style="font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a67666;margin-bottom:4px;">Total users</div>
+            <div class="admin-stat-value" style="font-size:34px;font-weight:700;color:#2f2623;"><%= metrics.totalUsers %></div>
+          </article>
+          <article class="admin-stat-card" style="background:#fff7f3;border-radius:14px;padding:14px 16px;border:1px solid #ffe0d4;box-shadow:0 4px 10px rgba(0,0,0,0.06);display:flex;flex-direction:column;justify-content:space-between;">
+            <div class="admin-stat-label" style="font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a67666;margin-bottom:4px;">Total managers</div>
+            <div class="admin-stat-value" style="font-size:34px;font-weight:700;color:#2f2623;"><%= metrics.totalManagers %></div>
+          </article>
+          <article class="admin-stat-card" style="background:#fff7f3;border-radius:14px;padding:14px 16px;border:1px solid #ffe0d4;box-shadow:0 4px 10px rgba(0,0,0,0.06);display:flex;flex-direction:column;justify-content:space-between;">
+            <div class="admin-stat-label" style="font-size:13px;letter-spacing:0.16em;text-transform:uppercase;color:#a67666;margin-bottom:4px;">Total active accounts</div>
+            <div class="admin-stat-value" style="font-size:34px;font-weight:700;color:#2f2623;"><%= metrics.totalAccounts %></div>
+          </article>
+        </section>
+
+        <section class="requests-card" id="manager-section-requests">
           <div class="requests-header">
-            <div class="requests-title">Pending and past requests</div>
-            <div class="requests-count">
-              <% if (requests && requests.length > 0) { %>
-              <%= requests.length %> total
-              <% } else { %>
-              No requests yet
-              <% } %>
+            <div>
+              <div class="requests-title">Pending and past requests</div>
+              <form
+                method="GET"
+                action="/admin/manager"
+                style="margin-top:8px; display:flex; align-items:center; gap:6px; font-size:13px; color:#6b5a56;"
+              >
+                <input type="hidden" name="status" value="<%= statusFilter %>" />
+                <label>
+                  Search
+                  <input
+                    type="text"
+                    name="q"
+                    value="<%= search || '' %>"
+                    placeholder="Name or email"
+                    style="margin-left:6px; padding:4px 8px; border-radius:999px; border:1px solid #d1d5db; font-size:12px; min-width:180px;"
+                  />
+                </label>
+              </form>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+              <div class="filter-toggle">
+                <a
+                  href="/admin/manager?status=all#manager-section-requests"
+                  class="filter-toggle-link <%= statusFilter === 'all' ? 'filter-toggle-link--active' : '' %>"
+                >
+                  All
+                </a>
+                <a
+                  href="/admin/manager?status=pending#manager-section-requests"
+                  class="filter-toggle-link <%= statusFilter === 'pending' ? 'filter-toggle-link--active' : '' %>"
+                >
+                  Pending
+                </a>
+                <a
+                  href="/admin/manager?status=approved#manager-section-requests"
+                  class="filter-toggle-link <%= statusFilter === 'approved' ? 'filter-toggle-link--active' : '' %>"
+                >
+                  Approved
+                </a>
+                <a
+                  href="/admin/manager?status=rejected#manager-section-requests"
+                  class="filter-toggle-link <%= statusFilter === 'rejected' ? 'filter-toggle-link--active' : '' %>"
+                >
+                  Rejected
+                </a>
+              </div>
             </div>
           </div>
 
@@ -558,13 +773,60 @@
               </tbody>
             </table>
           </div>
+          <% if (typeof usersTotalPages !== 'undefined' && usersTotalPages > 1) { %>
+          <div class="requests-pagination">
+            <div>
+              Page <%= usersPage %> of <%= usersTotalPages %>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <% if (usersPage > 1) { %>
+              <a
+                href="/admin/manager?page=<%= usersPage - 1 %><%= search ? '&amp;q=' + encodeURIComponent(search) : '' %>#manager-section-users"
+              >
+                ← Previous
+              </a>
+              <% } %>
+              <% if (usersPage < usersTotalPages) { %>
+              <a
+                href="/admin/manager?page=<%= usersPage + 1 %><%= search ? '&amp;q=' + encodeURIComponent(search) : '' %>#manager-section-users"
+              >
+                Next →
+              </a>
+              <% } %>
+            </div>
+          </div>
+          <% } %>
           <% } %>
         </section>
 
         <!-- User management: search and elevate -->
-        <section class="requests-card" style="margin-top: 24px;">
-          <div class="requests-header" style="margin-bottom: 12px;">
-            <div class="requests-title">User management</div>
+        <section class="requests-card manager-section--hidden" id="manager-section-users" style="margin-top: 24px;">
+          <div class="requests-header" style="margin-bottom: 8px;">
+            <div>
+              <div class="requests-title">User &amp; role management</div>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+              <div class="filter-toggle">
+                <a
+                  href="/admin/manager?role=all#manager-section-users"
+                  class="filter-toggle-link <%= roleFilter === 'all' ? 'filter-toggle-link--active' : '' %>"
+                >
+                  All
+                </a>
+                <a
+                  href="/admin/manager?role=user#manager-section-users"
+                  class="filter-toggle-link <%= roleFilter === 'user' ? 'filter-toggle-link--active' : '' %>"
+                >
+                  Users
+                </a>
+                <a
+                  href="/admin/manager?role=manager#manager-section-users"
+                  class="filter-toggle-link <%= roleFilter === 'manager' ? 'filter-toggle-link--active' : '' %>"
+                >
+                  Managers
+                </a>
+              </div>
+            </div>
           </div>
 
           <form
@@ -668,5 +930,61 @@
         </section>
       </div>
     </main>
+    <script>
+      (function () {
+        var requestsLink = document.querySelector('.manager-subnav-link[href="#manager-section-requests"]');
+        var usersLink = document.querySelector('.manager-subnav-link[href="#manager-section-users"]');
+        var requestsSection = document.getElementById('manager-section-requests');
+        var usersSection = document.getElementById('manager-section-users');
+        var kpisRequests = document.getElementById('manager-kpis-requests');
+        var kpisUsers = document.getElementById('manager-kpis-users');
+
+        if (!requestsLink || !usersLink || !requestsSection || !usersSection || !kpisRequests || !kpisUsers)
+          return;
+
+        function activate(tab) {
+          if (tab === 'requests') {
+            requestsSection.classList.remove('manager-section--hidden');
+            usersSection.classList.add('manager-section--hidden');
+            kpisRequests.classList.remove('manager-kpis--hidden');
+            kpisUsers.classList.add('manager-kpis--hidden');
+            requestsLink.classList.add('manager-subnav-link--active');
+            usersLink.classList.remove('manager-subnav-link--active');
+          } else if (tab === 'users') {
+            usersSection.classList.remove('manager-section--hidden');
+            requestsSection.classList.add('manager-section--hidden');
+            kpisUsers.classList.remove('manager-kpis--hidden');
+            kpisRequests.classList.add('manager-kpis--hidden');
+            usersLink.classList.add('manager-subnav-link--active');
+            requestsLink.classList.remove('manager-subnav-link--active');
+          }
+        }
+
+        // On initial load, decide which tab to show:
+        // 1) If URL hash explicitly points to the users section, honor that.
+        // 2) Else, if there is a search query, default to Users & roles.
+        // 3) Otherwise, show Requests.
+        var hash = window.location.hash;
+        var hasSearch = "<%= (search && search.length > 0) ? 'yes' : 'no' %>";
+
+        if (hash === '#manager-section-users') {
+          activate('users');
+        } else if (hasSearch === 'yes') {
+          activate('users');
+        } else {
+          activate('requests');
+        }
+
+        requestsLink.addEventListener('click', function (e) {
+          e.preventDefault();
+          activate('requests');
+        });
+
+        usersLink.addEventListener('click', function (e) {
+          e.preventDefault();
+          activate('users');
+        });
+      })();
+    </script>
   </body>
 </html>

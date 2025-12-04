@@ -6,14 +6,58 @@ const getManagerCorner = async (req, res) => {
   }
 
   const search = (req.query && req.query.q) || '';
+  const statusFilter = (req.query && req.query.status) || 'all';
+  const roleFilter = (req.query && req.query.role) || 'all';
+  const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+  const PAGE_SIZE = 20;
 
   try {
+    const baseUsersQuery = knex('loginpermissions').select(
+      'id',
+      'email',
+      'first_name',
+      'last_name',
+      'permission'
+    );
+
+    if (roleFilter === 'user' || roleFilter === 'manager') {
+      baseUsersQuery.where({ permission: roleFilter });
+    }
+
+    if (search) {
+      baseUsersQuery
+        .whereILike('email', `%${search}%`)
+        .orWhereILike('first_name', `%${search}%`)
+        .orWhereILike('last_name', `%${search}%`);
+    }
+
+    const requestsQuery = knex('account_requests')
+      .select(
+        'id',
+        'email',
+        'first_name',
+        'last_name',
+        'organization',
+        'status',
+        'created_at',
+        'reviewed_at',
+        'reviewed_by',
+        'message'
+      );
+
+    if (statusFilter === 'pending' || statusFilter === 'approved' || statusFilter === 'rejected') {
+      requestsQuery.where({ status: statusFilter });
+    }
+
     const [
       pendingRow,
       approvedThisMonthRow,
+      totalAccountsRow,
       totalUsersRow,
+      totalManagersRow,
       requests,
-      users,
+      usersPage,
+      usersCountRow,
     ] = await Promise.all([
       knex('account_requests').where({ status: 'pending' }).count('* as count').first(),
       knex('account_requests')
@@ -22,42 +66,48 @@ const getManagerCorner = async (req, res) => {
         .count('* as count')
         .first(),
       knex('loginpermissions').count('* as count').first(),
-      knex('account_requests')
-        .select(
-          'id',
-          'email',
-          'first_name',
-          'last_name',
-          'organization',
-          'status',
-          'created_at',
-          'reviewed_at',
-          'reviewed_by',
-          'message'
-        )
-        .orderBy('created_at', 'desc'),
-      search
-        ? knex('loginpermissions')
-            .select('id', 'email', 'first_name', 'last_name', 'permission')
-            .whereILike('email', `%${search}%`)
-            .orWhereILike('first_name', `%${search}%`)
-            .orWhereILike('last_name', `%${search}%`)
-            .orderBy('first_name')
-        : Promise.resolve([]),
+      knex('loginpermissions').where({ permission: 'user' }).count('* as count').first(),
+      knex('loginpermissions').where({ permission: 'manager' }).count('* as count').first(),
+      requestsQuery.orderBy('created_at', 'desc'),
+      baseUsersQuery
+        .clone()
+        .orderBy('id', 'desc')
+        .limit(PAGE_SIZE)
+        .offset((page - 1) * PAGE_SIZE),
+      knex('loginpermissions')
+        .modify((qb) => {
+          if (search) {
+            qb.whereILike('email', `%${search}%`)
+              .orWhereILike('first_name', `%${search}%`)
+              .orWhereILike('last_name', `%${search}%`);
+          }
+        })
+        .count('* as count')
+        .first(),
     ]);
 
     const metrics = {
       pending: Number(pendingRow?.count || 0),
       approvedThisMonth: Number(approvedThisMonthRow?.count || 0),
+      totalAccounts: Number(totalAccountsRow?.count || 0),
       totalUsers: Number(totalUsersRow?.count || 0),
+      totalManagers: Number(totalManagersRow?.count || 0),
     };
+
+    const totalUserMatches = Number(usersCountRow?.count || 0);
+    const totalUserPages = Math.max(Math.ceil(totalUserMatches / PAGE_SIZE), 1);
 
     return res.render('admin/app/manager-corner', {
       user: req.session.user,
       requests,
       metrics,
-      users,
+      users: usersPage,
       search,
+      statusFilter,
+      roleFilter,
+      usersPage: page,
+      usersTotalPages: totalUserPages,
+      usersTotalCount: totalUserMatches,
     });
   } catch (error) {
     console.error('Error loading account requests for manager corner:', error);
@@ -67,8 +117,17 @@ const getManagerCorner = async (req, res) => {
       metrics: {
         pending: 0,
         approvedThisMonth: 0,
+        totalAccounts: 0,
         totalUsers: 0,
+        totalManagers: 0,
       },
+      users: [],
+      search,
+      statusFilter,
+      roleFilter,
+      usersPage: 1,
+      usersTotalPages: 1,
+      usersTotalCount: 0,
       error: 'Unable to load account requests right now.',
     });
   }
@@ -205,6 +264,7 @@ const deleteUser = async (req, res) => {
   const { id } = req.params;
   const currentUserId = req.session.user.id;
   const returnQuery = (req.body && req.body.q) || '';
+  const managerEmail = req.session.user.email;
 
   // Do not allow a manager to delete their own account from this screen
   if (Number(id) === Number(currentUserId)) {
@@ -215,7 +275,27 @@ const deleteUser = async (req, res) => {
   }
 
   try {
-    await knex('loginpermissions').where({ id }).del();
+    await knex.transaction(async (trx) => {
+      // Look up the user first so we have their email
+      const user = await trx('loginpermissions').where({ id }).first();
+      if (!user) {
+        return;
+      }
+
+      await trx('loginpermissions').where({ id }).del();
+
+      // If there was an account request for this email, mark it as rejected
+      const matchingRequest = await trx('account_requests').where({ email: user.email }).first();
+      if (matchingRequest) {
+        await trx('account_requests')
+          .where({ email: user.email })
+          .update({
+            status: 'rejected',
+            reviewed_at: trx.fn.now(),
+            reviewed_by: managerEmail,
+          });
+      }
+    });
   } catch (error) {
     console.error('Error deleting user:', error);
   }
