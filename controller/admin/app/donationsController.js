@@ -1,6 +1,5 @@
-const knex = require('../../../util/db');
-
-const PAGE_SIZE = 20;
+const donationRepository = require('../../../models/donationRepository');
+const participantRepository = require('../../../models/participantRepository');
 
 const getDonations = async (req, res) => {
   if (!req.session || !req.session.user) {
@@ -18,100 +17,22 @@ const getDonations = async (req, res) => {
       delete req.session.donationNotice;
     }
 
-    const baseQuery = knex('participantdonations as d')
-      .leftJoin('participantinfo as p', 'd.participantid', 'p.participantid')
-      .select(
-        'd.donationid',
-        'd.participantid',
-        'd.donationdate',
-        'd.donationamount',
-        'p.participantfirstname as firstname',
-        'p.participantlastname as lastname',
-        'p.participantemail as email'
-      );
-
-    if (search) {
-      baseQuery.where(function () {
-        this.whereILike('p.participantfirstname', `%${search}%`)
-          .orWhereILike('p.participantlastname', `%${search}%`)
-          .orWhereILike('p.participantemail', `%${search}%`);
-      });
-    }
-
-    const orderedQuery = baseQuery.clone();
-
-    switch (orderBy) {
-      case 'date_asc':
-        // Oldest dates first; donations without a date go last
-        orderedQuery
-          .orderByRaw('d.donationdate IS NULL, d.donationdate ASC')
-          .orderBy('d.donationid', 'asc');
-        break;
-      case 'amount_desc':
-        orderedQuery.orderBy('d.donationamount', 'desc').orderBy('d.donationdate', 'desc');
-        break;
-      case 'amount_asc':
-        orderedQuery.orderBy('d.donationamount', 'asc').orderBy('d.donationdate', 'desc');
-        break;
-      case 'date_desc':
-      default:
-        // Newest dates first; donations without a date go last
-        orderedQuery
-          .orderByRaw('d.donationdate IS NULL, d.donationdate DESC')
-          .orderBy('d.donationid', 'desc');
-        break;
-    }
-
-    const offset = (page - 1) * PAGE_SIZE;
-
-    const [rows, monthlyAgg, overallAgg, countAgg] = await Promise.all([
-      // Paged, filtered list (respects search/order)
-      orderedQuery.clone().limit(PAGE_SIZE).offset(offset),
-
-      // This month's donations (mirror home dashboard style)
-      knex.raw(
-        `SELECT COALESCE(SUM(donationamount), 0) AS monthly_donations
-         FROM participantdonations
-         WHERE DATE_TRUNC('month', donationdate) = DATE_TRUNC('month', NOW())`
-      ),
-
-      // All-time donations
-      knex.raw(
-        `SELECT COALESCE(SUM(donationamount), 0) AS overall_donations
-         FROM participantdonations`
-      ),
-
-      // Total number of donation records
-      knex.raw(
-        `SELECT COUNT(*)::int AS donation_count
-         FROM participantdonations`
-      ),
+    const [{ rows, totalCount }, monthlyTotal, overallTotal, donationCount] = await Promise.all([
+      donationRepository.listDonations({ search, orderBy, page, pageSize: donationRepository.DEFAULT_PAGE_SIZE }),
+      donationRepository.getMonthlyTotal(),
+      donationRepository.getOverallTotal(),
+      donationRepository.getDonationCount(),
     ]);
 
     let editDonation = null;
     if (editId) {
-      editDonation = await knex('participantdonations as d')
-        .leftJoin('participantinfo as p', 'd.participantid', 'p.participantid')
-        .select(
-          'd.donationid',
-          'd.participantid',
-          'd.donationdate',
-          'd.donationamount',
-          'p.participantfirstname as firstname',
-          'p.participantlastname as lastname',
-          'p.participantemail as email'
-        )
-        .where('d.donationid', editId)
-        .first();
+      editDonation = await donationRepository.findById(editId);
     }
 
-    const monthlyTotal =
-      (monthlyAgg.rows[0] && Number(monthlyAgg.rows[0].monthly_donations)) || 0;
-    const overallTotal =
-      (overallAgg.rows[0] && Number(overallAgg.rows[0].overall_donations)) || 0;
-    const totalCount =
-      (countAgg.rows[0] && Number(countAgg.rows[0].donation_count)) || 0;
-    const totalPages = Math.max(Math.ceil(totalCount / PAGE_SIZE), 1);
+    const totalPages = Math.max(
+      Math.ceil(totalCount / donationRepository.DEFAULT_PAGE_SIZE),
+      1
+    );
 
     const metrics = {
       monthlyTotal,
@@ -167,9 +88,7 @@ const prepareDonation = async (req, res) => {
   }
 
   try {
-    const participant = await knex('participantinfo')
-      .where({ participantemail: participantEmail })
-      .first();
+    const participant = await participantRepository.findByEmail(participantEmail);
 
     if (!participant) {
       if (req.session) {
@@ -206,10 +125,10 @@ const createDonation = async (req, res) => {
   }
 
   try {
-    await knex('participantdonations').insert({
-      participantid: pending.participantId,
-      donationdate: pending.donationDate,
-      donationamount: pending.donationAmount,
+    await donationRepository.createDonation({
+      participantId: pending.participantId,
+      donationDate: pending.donationDate,
+      donationAmount: pending.donationAmount,
     });
   } catch (error) {
     console.error('Error creating donation:', error);
@@ -235,12 +154,7 @@ const updateDonation = async (req, res) => {
   }
 
   try {
-    await knex('participantdonations')
-      .where({ donationid: id })
-      .update({
-        donationdate: donationDate,
-        donationamount: donationAmount,
-      });
+    await donationRepository.updateDonationById(id, { donationDate, donationAmount });
   } catch (error) {
     console.error('Error updating donation:', error);
   }
@@ -256,7 +170,7 @@ const deleteDonation = async (req, res) => {
   const { id } = req.params;
 
   try {
-    await knex('participantdonations').where({ donationid: id }).del();
+    await donationRepository.deleteDonationById(id);
   } catch (error) {
     console.error('Error deleting donation:', error);
   }

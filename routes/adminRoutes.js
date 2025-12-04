@@ -24,6 +24,11 @@ const {
   updateDonation,
   deleteDonation,
 } = require('../controller/admin/app/donationsController');
+const {
+  getEvents,
+  updateEvent,
+  deleteEvent,
+} = require('../controller/admin/app/eventsController');
 
 const router = express.Router();
 
@@ -66,6 +71,13 @@ router.post('/donations/prepare', ensureAuthenticated, ensureManager, createDona
 router.post('/donations', ensureAuthenticated, ensureManager, createDonation.create);
 router.post('/donations/:id/update', ensureAuthenticated, ensureManager, updateDonation);
 router.post('/donations/:id/delete', ensureAuthenticated, ensureManager, deleteDonation);
+
+// Events admin view
+router.get('/events', ensureAuthenticated, getEvents);
+
+// Events actions (manager only)
+router.post('/events/:id/update', ensureAuthenticated, ensureManager, updateEvent);
+router.post('/events/:id/delete', ensureAuthenticated, ensureManager, deleteEvent);
 
 // Manager corner (only for manager accounts)
 router.get('/manager', ensureAuthenticated, ensureManager, getManagerCorner);

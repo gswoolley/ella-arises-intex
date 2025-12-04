@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const knex = require('../../../util/db');
+const authRepository = require('../../../models/authRepository');
 
 const renderLogin = (req, res) => {
   if (req.session && req.session.user) {
@@ -20,7 +20,7 @@ const handleLogin = async (req, res) => {
   }
 
   try {
-    const user = await knex('loginpermissions').where({ email }).first();
+    const user = await authRepository.findUserByEmail(email);
 
     if (!user) {
       return res.status(401).render('admin/auth/login', {

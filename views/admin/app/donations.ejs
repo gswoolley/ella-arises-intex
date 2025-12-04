@@ -481,7 +481,10 @@
             while managers can add, edit, or remove participant donations.
           </p>
           <% if (typeof donationNotice !== 'undefined' && donationNotice) { %>
-          <div class="admin-hero-notice" style="margin-top:12px; max-width:640px;">
+          <div
+            class="admin-hero-notice"
+            style="margin-top:12px; max-width:640px; background:#fee2e2; border:1px solid #fecaca; color:#7f1d1d;"
+          >
             <%= donationNotice %>
           </div>
           <% } %>

@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Events – Ella Rises</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 15px;
+        background-color: #ffece4;
+        color: #231815;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+      .admin-main-shell {
+        flex: 1;
+        padding: 40px 72px 56px;
+        display: flex;
+        justify-content: center;
+        position: relative;
+        z-index: 1;
+      }
+      .admin-main { width: 100%; max-width: 1160px; }
+      .admin-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 32px;
+      }
+      .admin-header-left { display: flex; align-items: center; gap: 12px; }
+      .admin-logo { width: 40px; height: 40px; border-radius: 999px; overflow: hidden; box-shadow: 0 6px 18px rgba(0,0,0,0.16); }
+      .admin-logo img { width: 100%; height: 100%; object-fit: cover; }
+      .admin-brand { font-size: 16px; letter-spacing: 0.16em; text-transform: uppercase; color: #8c6a61; }
+      .admin-header-right { display: flex; align-items: center; gap: 18px; font-size: 13px; color: #6b5a56; }
+      .admin-nav { display: flex; align-items: center; gap: 16px; }
+      .admin-nav-link-back {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 8px 14px; border-radius: 999px;
+        font-size: 13px; color: #2f2623; text-decoration: none; position: relative;
+      }
+      .admin-nav-link-back::before {
+        content: ''; position: absolute; inset: 0; border-radius: inherit;
+        background: transparent; transition: background 0.12s ease, box-shadow 0.12s ease; z-index: -1;
+      }
+      .admin-nav-link-back:hover::before { background: #f8cdb9; box-shadow: 0 8px 18px rgba(0,0,0,0.12); }
+      .admin-nav-link-back-icon { font-size: 14px; }
+      .admin-header-user { font-size: 13px; color: #6b5a56; }
+      .admin-header-signout { border: none; background: none; font-size: 13px; color: #6b5a56; cursor: pointer; text-decoration: underline; }
+      .bg-bubble { position: absolute; border-radius: 999px; background-color: rgba(255,255,255,0.26); pointer-events: none; mix-blend-mode: normal; animation-name: bubble-drift; animation-timing-function: ease-in-out; animation-iteration-count: infinite; animation-direction: alternate; z-index: 0; }
+      .bg-bubble--peach { background-color: rgba(255,194,166,0.32); }
+      .bg-bubble--lilac { background-color: rgba(216,205,246,0.36); }
+      .bg-bubble--sage { background-color: rgba(204,221,205,0.36); }
+      .bg-bubble--tl-soft { width: 130px; height: 130px; top: 28px; left: -50px; animation-duration: 26s; animation-delay: -8s; }
+      .bg-bubble--tr-soft { width: 90px; height: 90px; top: 110px; right: -30px; animation-duration: 24s; animation-delay: -6s; }
+      .bg-bubble--bl-soft { width: 110px; height: 110px; bottom: -40px; left: 6%; animation-duration: 28s; animation-delay: -10s; }
+      .bg-bubble--br-soft { width: 150px; height: 150px; bottom: -70px; right: 20%; animation-duration: 30s; animation-delay: -4s; }
+      .bg-bubble--mid-soft { width: 90px; height: 90px; top: 60%; left: 58%; animation-duration: 22s; animation-delay: -12s; }
+      @keyframes bubble-drift {
+        0% { transform: translate3d(0,0,0) scale(1); }
+        50% { transform: translate3d(10px,-6px,0) scale(1.03); }
+        100% { transform: translate3d(-8px,6px,0) scale(0.98); }
+      }
+      .events-hero-eyebrow { font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase; color: #8c6a61; margin-bottom: 8px; }
+      .events-hero-title { font-size: 40px; line-height: 1.4; font-weight: 600; margin-bottom: 8px; }
+      .events-hero-subtitle { font-size: 17px; line-height: 1.8; color: #6b5a56; max-width: 640px; margin-bottom: 24px; }
+      .admin-stats-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 24px; }
+      .admin-stat-card { background: #fff7f3; border-radius: 14px; padding: 14px 16px; border: 1px solid #ffe0d4; box-shadow: 0 4px 10px rgba(0,0,0,0.06); display: flex; flex-direction: column; justify-content: space-between; }
+      .admin-stat-label { font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; color: #a67666; margin-bottom: 4px; }
+      .admin-stat-value { font-size: 34px; font-weight: 700; color: #2f2623; }
+      .events-card { background: #ffffff; border-radius: 18px; padding: 16px 18px; border: 1px solid #f0ddd6; box-shadow: 0 6px 16px rgba(0,0,0,0.08); margin-bottom: 20px; }
+      .events-filters { display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; margin-bottom:14px; }
+      .events-filters-left { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+      .events-filters-right { display:flex; gap:8px; align-items:center; }
+      .events-select { padding: 6px 8px; border-radius: 999px; border: 1px solid #d1d5db; font-size: 13px; background: #ffffff; }
+      table.events-table { width:100%; border-collapse:collapse; font-size:13px; }
+      table.events-table thead { background:#ffe8de; }
+      table.events-table th, table.events-table td { padding:8px 10px; text-align:left; }
+      table.events-table th { font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:#8c6a61; border-bottom:1px solid #f0ddd6; }
+      table.events-table tbody tr:nth-child(even) { background:#fffaf7; }
+      .events-pagination { display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:12px; color:#6b5a56; }
+      .events-pagination a { text-decoration:none; color:#2f2623; padding:4px 10px; border-radius:999px; border:1px solid #e5d4ce; background:rgba(255,255,255,0.9); }
+      .events-pagination a:hover { background:#ffe8de; }
+      .events-empty { font-size:14px; color:#8b7a75; padding:12px 0; }
+      .events-primary-btn { padding:6px 12px; border-radius:999px; border:none; background:#2f2623; color:#ffffff; font-size:13px; cursor:pointer; }
+      .events-primary-btn:hover { background:#43302a; }
+      .delete-pill { border:none; cursor:pointer; font-size:12px; padding:4px 10px; border-radius:999px; background:rgba(254,202,202,0.7); color:#7f1d1d; }
+      .delete-pill:hover { background:rgba(248,113,113,0.9); color:#7f1d1d; }
+      .events-inline-link { color:#2563eb; text-decoration:underline; cursor:pointer; font-size:13px; }
+      .events-pill {
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        border-radius:999px;
+        padding:4px 10px;
+        font-size:12px;
+        cursor:pointer;
+        text-decoration:none;
+        white-space:nowrap;
+      }
+      .events-pill--edit {
+        border:1px solid #e5d4ce;
+        background:#fff7f3;
+        color:#2f2623;
+        box-shadow:0 2px 6px rgba(0,0,0,0.05);
+        transition:background 0.12s ease,color 0.12s ease,box-shadow 0.12s ease,border-color 0.12s ease;
+      }
+      .events-pill--edit:hover {
+        background:#ffe8de;
+        border-color:#e0bfb0;
+        box-shadow:0 3px 8px rgba(0,0,0,0.08);
+        color:#2f2623;
+      }
+      .events-pill--success {
+        background:rgba(187,247,208,0.95);
+        color:#166534;
+      }
+      .events-pill--success:hover {
+        background:rgba(22,163,74,0.9);
+        color:#ecfdf3;
+      }
+      .events-modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.35); display:none; align-items:center; justify-content:center; z-index:50; }
+      .events-modal { background:#ffffff; border-radius:16px; padding:18px 20px; max-width:520px; width:100%; box-shadow:0 18px 45px rgba(0,0,0,0.22); max-height:80vh; overflow-y:auto; }
+      .events-modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+      .events-modal-title { font-size:18px; font-weight:600; }
+      .events-modal-close { border:none; background:none; font-size:18px; cursor:pointer; }
+      .events-modal-field { margin-bottom:10px; }
+      .events-modal-label { font-size:13px; color:#6b5a56; display:block; margin-bottom:4px; }
+      .events-modal-input { width:100%; padding:6px 8px; border-radius:6px; border:1px solid #d1d5db; font-size:13px; }
+      .events-modal-actions { margin-top:12px; display:flex; justify-content:flex-end; gap:8px; }
+      @media (max-width: 768px) {
+        .admin-main-shell { padding:32px 20px 40px; }
+      }
+      @media (max-width: 640px) {
+        .admin-main-shell { padding:24px 16px 32px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-bubble bg-bubble--peach bg-bubble--tl-soft"></div>
+    <div class="bg-bubble bg-bubble--lilac bg-bubble--tr-soft"></div>
+    <div class="bg-bubble bg-bubble--sage bg-bubble--bl-soft"></div>
+    <div class="bg-bubble bg-bubble--peach bg-bubble--br-soft"></div>
+    <div class="bg-bubble bg-bubble--lilac bg-bubble--mid-soft"></div>
+
+    <main class="admin-main-shell">
+      <div class="admin-main">
+        <header class="admin-header">
+          <div class="admin-header-left">
+            <div class="admin-logo">
+              <img src="/images/Untitled design (48).png" alt="Ella Rises" />
+            </div>
+            <div class="admin-brand">Ella Rises</div>
+          </div>
+          <div class="admin-header-right">
+            <nav class="admin-nav">
+              <a href="/admin/home" class="admin-nav-link-back">
+                <span class="admin-nav-link-back-icon">&#8592;</span>
+                <span>Back to home</span>
+              </a>
+            </nav>
+            <span class="admin-header-user">Signed in as <strong><%= user.firstName %></strong></span>
+            <form method="POST" action="/admin/logout" style="margin: 0">
+              <button type="submit" class="admin-header-signout">Sign out</button>
+            </form>
+          </div>
+        </header>
+
+        <section class="events-hero">
+          <div class="events-hero-eyebrow">Programs</div>
+          <h1 class="events-hero-title">Events</h1>
+          <p class="events-hero-subtitle">
+            Browse upcoming and past Ella Rises events. Standard admins can view schedules and
+            attendees, while managers can edit and remove instances as needed.
+          </p>
+        </section>
+
+        <section class="events-card">
+          <form method="GET" action="/admin/events" class="events-filters">
+            <div class="events-filters-left">
+              <label style="font-size:13px;color:#6b5a56;">
+                Show
+                <select name="timeFilter" class="events-select">
+                  <option value="upcoming" <%= timeFilter === 'upcoming' ? 'selected' : '' %>>Upcoming events</option>
+                  <option value="all" <%= timeFilter === 'all' ? 'selected' : '' %>>All events</option>
+                  <option value="past" <%= timeFilter === 'past' ? 'selected' : '' %>>Past events</option>
+                </select>
+              </label>
+            </div>
+            <div class="events-filters-right">
+              <label style="font-size:13px;color:#6b5a56;display:flex;align-items:center;gap:6px;">
+                Order by
+                <select name="orderBy" class="events-select">
+                  <option value="date_desc" <%= orderBy === 'date_desc' ? 'selected' : '' %>>Newest date</option>
+                  <option value="date_asc" <%= orderBy === 'date_asc' ? 'selected' : '' %>>Oldest date</option>
+                  <option value="name_asc" <%= orderBy === 'name_asc' ? 'selected' : '' %>>Name A–Z</option>
+                  <option value="name_desc" <%= orderBy === 'name_desc' ? 'selected' : '' %>>Name Z–A</option>
+                  <option value="participants_desc" <%= orderBy === 'participants_desc' ? 'selected' : '' %>>Most participants</option>
+                  <option value="participants_asc" <%= orderBy === 'participants_asc' ? 'selected' : '' %>>Fewest participants</option>
+                </select>
+              </label>
+              <button type="submit" class="events-primary-btn">Apply</button>
+            </div>
+          </form>
+
+          <% if (typeof error !== 'undefined' && error) { %>
+          <div class="events-empty"><%= error %></div>
+          <% } %>
+
+          <% if (!events || events.length === 0) { %>
+          <div class="events-empty">No events found for the selected filters.</div>
+          <% } else { %>
+          <div style="overflow-x:auto;">
+            <table class="events-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Name</th>
+                  <th>Location</th>
+                  <th>Capacity</th>
+                  <th>Registration deadline</th>
+                  <th>Participants</th>
+                  <% if (user.permission === 'manager') { %>
+                  <th style="text-align:right;">Actions</th>
+                  <% } %>
+                </tr>
+              </thead>
+              <tbody>
+                <% events.forEach(function (e) { %>
+                <tr>
+                  <td><%= e.eventdatetimestart ? e.eventdatetimestart.toISOString().slice(0,10) : '' %></td>
+                  <td><%= e.eventname || '' %></td>
+                  <td><%= e.eventlocation || '' %></td>
+                  <td><%= e.eventcapacity || '' %></td>
+                  <td><%= e.eventregistrationdeadline ? e.eventregistrationdeadline.toISOString().slice(0,10) : '' %></td>
+                  <td>
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                      <span><%= Number(e.participant_count || 0).toLocaleString('en-US') %></span>
+                      <a
+                        href="/admin/events?timeFilter=<%= encodeURIComponent(timeFilter) %>&orderBy=<%= encodeURIComponent(orderBy) %>&page=<%= page %>&viewParticipantsId=<%= e.instanceid %>"
+                        class="events-pill events-pill--success"
+                      >
+                        View participants
+                      </a>
+                    </div>
+                  </td>
+                  <% if (user.permission === 'manager') { %>
+                  <td style="text-align:right; white-space:nowrap;">
+                    <a
+                      href="/admin/events?timeFilter=<%= encodeURIComponent(timeFilter) %>&orderBy=<%= encodeURIComponent(orderBy) %>&page=<%= page %>&editId=<%= e.instanceid %>"
+                      class="events-pill events-pill--edit"
+                      style="margin-right:8px;"
+                    >
+                      Edit
+                    </a>
+                    <form
+                      method="POST"
+                      action="/admin/events/<%= e.instanceid %>/delete"
+                      style="display:inline-block;"
+                      onsubmit="return confirm('Delete this event instance and its registrations?');"
+                    >
+                      <button type="submit" class="delete-pill">Delete</button>
+                    </form>
+                  </td>
+                  <% } %>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+
+          <% if (totalPages > 1) { %>
+          <div class="events-pagination">
+            <div>
+              Page <%= page %> of <%= totalPages %>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <% if (page > 1) { %>
+              <a href="/admin/events?page=<%= page - 1 %>&timeFilter=<%= encodeURIComponent(timeFilter) %>&orderBy=<%= encodeURIComponent(orderBy) %>">
+                Previous
+              </a>
+              <% } %>
+              <% if (page < totalPages) { %>
+              <a href="/admin/events?page=<%= page + 1 %>&timeFilter=<%= encodeURIComponent(timeFilter) %>&orderBy=<%= encodeURIComponent(orderBy) %>">
+                Next
+              </a>
+              <% } %>
+            </div>
+          </div>
+          <% } %>
+          <% } %>
+        </section>
+      </div>
+    </main>
+
+    <!-- Participants modal -->
+    <div class="events-modal-backdrop" id="events-participants-modal" style="<%= viewParticipantsId ? 'display:flex;' : 'display:none;' %>">
+      <div class="events-modal">
+        <div class="events-modal-header">
+          <div class="events-modal-title">Event participants</div>
+          <button type="button" class="events-modal-close" data-close-participants>&times;</button>
+        </div>
+        <% if (!participants || participants.length === 0) { %>
+        <div class="events-empty">No participants found for this event.</div>
+        <% } else { %>
+        <div style="font-size:13px; color:#6b5a56;">
+          <table style="width:100%; border-collapse:collapse; font-size:13px;">
+            <thead>
+              <tr>
+                <th style="text-align:left; padding:4px 6px;">Name</th>
+                <th style="text-align:left; padding:4px 6px;">Email</th>
+                <th style="text-align:left; padding:4px 6px;">Status</th>
+                <th style="text-align:left; padding:4px 6px;">Attended</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% participants.forEach(function (p) { %>
+              <tr>
+                <td style="padding:4px 6px;"><%= p.participantfirstname || '' %> <%= p.participantlastname || '' %></td>
+                <td style="padding:4px 6px;"><%= p.participantemail || '' %></td>
+                <td style="padding:4px 6px;"><%= p.registrationstatus || '' %></td>
+                <td style="padding:4px 6px;"><%= p.registrationattendedflag ? 'Yes' : 'No' %></td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+        <% } %>
+      </div>
+    </div>
+
+    <!-- Edit event modal (manager only) -->
+    <% if (user.permission === 'manager') { %>
+    <div class="events-modal-backdrop" id="events-edit-modal" style="<%= editEvent ? 'display:flex;' : 'display:none;' %>">
+      <div class="events-modal">
+        <div class="events-modal-header">
+          <div class="events-modal-title">Edit event</div>
+          <button type="button" class="events-modal-close" data-close-edit>&times;</button>
+        </div>
+        <% if (editEvent) { %>
+        <form method="POST" action="/admin/events/<%= editEvent.instanceid %>/update">
+          <div class="events-modal-field">
+            <label class="events-modal-label" for="eventname">Event name</label>
+            <input
+              id="eventname"
+              name="eventname"
+              class="events-modal-input"
+              type="text"
+              value="<%= editEvent.eventname || '' %>"
+              required
+            />
+          </div>
+          <div class="events-modal-field">
+            <label class="events-modal-label" for="eventdatetimestart">Start</label>
+            <input
+              id="eventdatetimestart"
+              name="eventdatetimestart"
+              class="events-modal-input"
+              type="datetime-local"
+              value="<%= editEvent.eventdatetimestart ? editEvent.eventdatetimestart.toISOString().slice(0,16) : '' %>"
+            />
+          </div>
+          <div class="events-modal-field">
+            <label class="events-modal-label" for="eventdatetimeend">End</label>
+            <input
+              id="eventdatetimeend"
+              name="eventdatetimeend"
+              class="events-modal-input"
+              type="datetime-local"
+              value="<%= editEvent.eventdatetimeend ? editEvent.eventdatetimeend.toISOString().slice(0,16) : '' %>"
+            />
+          </div>
+          <div class="events-modal-field">
+            <label class="events-modal-label" for="eventlocation">Location</label>
+            <input
+              id="eventlocation"
+              name="eventlocation"
+              class="events-modal-input"
+              type="text"
+              value="<%= editEvent.eventlocation || '' %>"
+            />
+          </div>
+          <div class="events-modal-field">
+            <label class="events-modal-label" for="eventcapacity">Capacity</label>
+            <input
+              id="eventcapacity"
+              name="eventcapacity"
+              class="events-modal-input"
+              type="number"
+              value="<%= editEvent.eventcapacity || '' %>"
+            />
+          </div>
+          <div class="events-modal-field">
+            <label class="events-modal-label" for="eventregistrationdeadline">Registration deadline</label>
+            <input
+              id="eventregistrationdeadline"
+              name="eventregistrationdeadline"
+              class="events-modal-input"
+              type="datetime-local"
+              value="<%= editEvent.eventregistrationdeadline ? editEvent.eventregistrationdeadline.toISOString().slice(0,16) : '' %>"
+            />
+          </div>
+          <div class="events-modal-actions">
+            <button type="button" class="events-modal-close events-primary-btn" data-close-edit>Cancel</button>
+            <button type="submit" class="events-primary-btn">Save changes</button>
+          </div>
+        </form>
+        <% } else { %>
+        <div class="events-empty">No event selected for editing.</div>
+        <% } %>
+      </div>
+    </div>
+    <% } %>
+
+    <script>
+      (function () {
+        // Close participants modal
+        var participantsModal = document.getElementById('events-participants-modal');
+        var closeParticipants = document.querySelectorAll('[data-close-participants]');
+        if (participantsModal && closeParticipants && closeParticipants.length) {
+          closeParticipants.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+              window.location.href = '/admin/events?timeFilter=<%= encodeURIComponent(timeFilter) %>&orderBy=<%= encodeURIComponent(orderBy) %>&page=<%= page %>';
+            });
+          });
+        }
+
+        // Close edit modal
+        var editModal = document.getElementById('events-edit-modal');
+        var closeEdit = document.querySelectorAll('[data-close-edit]');
+        if (editModal && closeEdit && closeEdit.length) {
+          closeEdit.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+              window.location.href = '/admin/events?timeFilter=<%= encodeURIComponent(timeFilter) %>&orderBy=<%= encodeURIComponent(orderBy) %>&page=<%= page %>';
+            });
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>

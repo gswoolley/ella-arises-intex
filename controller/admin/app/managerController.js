@@ -1,4 +1,6 @@
 const knex = require('../../../util/db');
+const authRepository = require('../../../models/authRepository');
+const accountRequestRepository = require('../../../models/accountRequestRepository');
 
 const getManagerCorner = async (req, res) => {
   if (!req.session || !req.session.user || req.session.user.permission !== 'manager') {
@@ -31,27 +33,11 @@ const getManagerCorner = async (req, res) => {
         .orWhereILike('last_name', `%${search}%`);
     }
 
-    const requestsQuery = knex('account_requests')
-      .select(
-        'id',
-        'email',
-        'first_name',
-        'last_name',
-        'organization',
-        'status',
-        'created_at',
-        'reviewed_at',
-        'reviewed_by',
-        'message'
-      );
-
-    if (statusFilter === 'pending' || statusFilter === 'approved' || statusFilter === 'rejected') {
-      requestsQuery.where({ status: statusFilter });
-    }
+    const requestsPromise = accountRequestRepository.listRequests({ statusFilter });
 
     const [
-      pendingRow,
-      approvedThisMonthRow,
+      pendingCount,
+      approvedThisMonthCount,
       totalAccountsRow,
       totalUsersRow,
       totalManagersRow,
@@ -59,16 +45,12 @@ const getManagerCorner = async (req, res) => {
       usersPage,
       usersCountRow,
     ] = await Promise.all([
-      knex('account_requests').where({ status: 'pending' }).count('* as count').first(),
-      knex('account_requests')
-        .where({ status: 'approved' })
-        .andWhereRaw("DATE_TRUNC('month', reviewed_at) = DATE_TRUNC('month', NOW())")
-        .count('* as count')
-        .first(),
+      accountRequestRepository.countPendingRequests(),
+      accountRequestRepository.countApprovedThisMonth(),
       knex('loginpermissions').count('* as count').first(),
       knex('loginpermissions').where({ permission: 'user' }).count('* as count').first(),
       knex('loginpermissions').where({ permission: 'manager' }).count('* as count').first(),
-      requestsQuery.orderBy('created_at', 'desc'),
+      requestsPromise,
       baseUsersQuery
         .clone()
         .orderBy('id', 'desc')
@@ -87,8 +69,8 @@ const getManagerCorner = async (req, res) => {
     ]);
 
     const metrics = {
-      pending: Number(pendingRow?.count || 0),
-      approvedThisMonth: Number(approvedThisMonthRow?.count || 0),
+      pending: Number(pendingCount || 0),
+      approvedThisMonth: Number(approvedThisMonthCount || 0),
       totalAccounts: Number(totalAccountsRow?.count || 0),
       totalUsers: Number(totalUsersRow?.count || 0),
       totalManagers: Number(totalManagersRow?.count || 0),
@@ -143,7 +125,7 @@ const approveRequest = async (req, res) => {
 
   try {
     await knex.transaction(async (trx) => {
-      const request = await trx('account_requests').where({ id }).first();
+      const request = await accountRequestRepository.findById(id, trx);
       if (!request) {
         return;
       }
@@ -152,13 +134,10 @@ const approveRequest = async (req, res) => {
         return;
       }
 
-      await trx('account_requests')
-        .where({ id })
-        .update({
-          status: 'approved',
-          reviewed_at: trx.fn.now(),
-          reviewed_by: managerEmail,
-        });
+      await accountRequestRepository.updateStatus(id, {
+        status: 'approved',
+        reviewedBy: managerEmail,
+      }, trx);
 
       const existingUser = await trx('loginpermissions')
         .where({ email: request.email })
@@ -190,13 +169,10 @@ const rejectRequest = async (req, res) => {
   const managerEmail = req.session.user.email;
 
   try {
-    await knex('account_requests')
-      .where({ id })
-      .update({
-        status: 'rejected',
-        reviewed_at: knex.fn.now(),
-        reviewed_by: managerEmail,
-      });
+    await accountRequestRepository.updateStatus(id, {
+      status: 'rejected',
+      reviewedBy: managerEmail,
+    });
   } catch (error) {
     console.error('Error rejecting account request:', error);
   }
@@ -211,21 +187,23 @@ const elevateUser = async (req, res) => {
 
   const { id } = req.params;
   const returnQuery = (req.body && req.body.q) || '';
+  const bodyRole = (req.body && req.body.role) || '';
 
   try {
-    await knex('loginpermissions')
-      .where({ id })
-      .update({
-        permission: 'manager',
-        updated_at: knex.fn.now(),
-      });
+    await authRepository.updateUserPermission(id, 'manager');
   } catch (error) {
     console.error('Error elevating user to manager:', error);
   }
 
-  const redirectUrl = returnQuery
-    ? `/admin/manager?q=${encodeURIComponent(returnQuery)}`
-    : '/admin/manager';
+  const queryParts = [];
+  if (returnQuery) {
+    queryParts.push(`q=${encodeURIComponent(returnQuery)}`);
+  }
+  if (bodyRole) {
+    queryParts.push(`role=${encodeURIComponent(bodyRole)}`);
+  }
+  const queryString = queryParts.length ? `?${queryParts.join('&')}` : '';
+  const redirectUrl = `/admin/manager${queryString}#manager-section-users`;
 
   return res.redirect(redirectUrl);
 };
@@ -239,19 +217,14 @@ const demoteUser = async (req, res) => {
   const returnQuery = (req.body && req.body.q) || '';
 
   try {
-    await knex('loginpermissions')
-      .where({ id })
-      .update({
-        permission: 'user',
-        updated_at: knex.fn.now(),
-      });
+    await authRepository.updateUserPermission(id, 'user');
   } catch (error) {
     console.error('Error demoting manager to user:', error);
   }
 
   const redirectUrl = returnQuery
-    ? `/admin/manager?q=${encodeURIComponent(returnQuery)}`
-    : '/admin/manager';
+    ? `/admin/manager?q=${encodeURIComponent(returnQuery)}#manager-section-users`
+    : '/admin/manager#manager-section-users';
 
   return res.redirect(redirectUrl);
 };
@@ -264,6 +237,7 @@ const deleteUser = async (req, res) => {
   const { id } = req.params;
   const currentUserId = req.session.user.id;
   const returnQuery = (req.body && req.body.q) || '';
+  const bodyRole = (req.body && req.body.role) || '';
   const managerEmail = req.session.user.email;
 
   // Do not allow a manager to delete their own account from this screen
@@ -285,15 +259,9 @@ const deleteUser = async (req, res) => {
       await trx('loginpermissions').where({ id }).del();
 
       // If there was an account request for this email, mark it as rejected
-      const matchingRequest = await trx('account_requests').where({ email: user.email }).first();
+      const matchingRequest = await accountRequestRepository.findByEmail(user.email, trx);
       if (matchingRequest) {
-        await trx('account_requests')
-          .where({ email: user.email })
-          .update({
-            status: 'rejected',
-            reviewed_at: trx.fn.now(),
-            reviewed_by: managerEmail,
-          });
+        await accountRequestRepository.markRejectedByEmail(user.email, managerEmail, trx);
       }
     });
   } catch (error) {
@@ -301,8 +269,8 @@ const deleteUser = async (req, res) => {
   }
 
   const redirectUrl = returnQuery
-    ? `/admin/manager?q=${encodeURIComponent(returnQuery)}`
-    : '/admin/manager';
+    ? `/admin/manager?q=${encodeURIComponent(returnQuery)}#manager-section-users`
+    : '/admin/manager#manager-section-users';
 
   return res.redirect(redirectUrl);
 };
