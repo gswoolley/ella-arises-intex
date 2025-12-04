@@ -132,42 +132,42 @@ async function auditDrop(knex, row, reason) {
   }
 }
 
-// Ensure there is exactly one participantinfo record per participantemail.
-// Returns the participantid primary key.
+// Ensure there is exactly one personinfo record per email.
+// Returns the personid primary key.
 async function getOrCreateParticipant(knex, row) {
   const email = toNullIfBlank(row.participantemail);
   if (!email) return null;
 
-  const existing = await knex('participantinfo')
-    .where({ participantemail: email })
+  const existing = await knex('personinfo')
+    .where({ personemail: email })
     .first();
 
   const base = {
-    participantemail: email,
-    participantfirstname: toNullIfBlank(row.participantfirstname),
-    participantlastname: toNullIfBlank(row.participantlastname),
-    participantdob: parseDateOnly(row.participantdob),
-    participantrole: toNullIfBlank(row.participantrole),
-    participantphone: normalizePhone(row.participantphone),
-    participantcity: toNullIfBlank(row.participantcity),
-    participantstate: toNullIfBlank(row.participantstate),
-    participantzip: toNullIfBlank(row.participantzip),
-    participantschooloremployer: toNullIfBlank(row.participantschooloremployer),
-    participantfieldofinterest: toNullIfBlank(row.participantfieldofinterest),
+    personemail: email,
+    personfirstname: toNullIfBlank(row.participantfirstname),
+    personlastname: toNullIfBlank(row.participantlastname),
+    persondob: parseDateOnly(row.participantdob),
+    personrole: toNullIfBlank(row.participantrole),
+    personphone: normalizePhone(row.participantphone),
+    personcity: toNullIfBlank(row.participantcity),
+    personstate: toNullIfBlank(row.participantstate),
+    personzip: toNullIfBlank(row.participantzip),
+    personschooloremployer: toNullIfBlank(row.participantschooloremployer),
+    personfieldofinterest: toNullIfBlank(row.participantfieldofinterest),
   };
 
   if (existing) {
-    console.log('[participant] Reusing existing participant', { email, participantId: existing.participantid });
-    return existing.participantid;
+    console.log('[participant] Reusing existing participant', { email, personId: existing.personid });
+    return existing.personid;
   }
 
-  const [inserted] = await knex('participantinfo')
+  const [inserted] = await knex('personinfo')
     .insert(base)
-    .returning('participantid');
+    .returning('personid');
 
-  const participantId = inserted.participantid ?? inserted;
-  console.log('[participant] Inserted new participant', { email, participantId });
-  return participantId;
+  const personId = inserted.personid ?? inserted;
+  console.log('[participant] Inserted new participant', { email, personId });
+  return personId;
 }
 
 // Ensure the eventtypes table has a row for the given event name, inserting
@@ -236,7 +236,7 @@ async function getOrCreateAttendance(knex, participantId, instanceId, row) {
   if (!participantId || !instanceId) return null;
 
   const existing = await knex('participantattendanceinstances')
-    .where({ participantid: participantId, instanceid: instanceId })
+    .where({ personid: participantId, instanceid: instanceId })
     .first();
 
   if (existing) {
@@ -246,7 +246,7 @@ async function getOrCreateAttendance(knex, participantId, instanceId, row) {
 
   const [inserted] = await knex('participantattendanceinstances')
     .insert({
-      participantid: participantId,
+      personid: participantId,
       instanceid: instanceId,
       eventdatetimestart: toTimestampLiteral(row.eventdatetimestart),
       registrationstatus: toNullIfBlank(row.registrationstatus),
@@ -334,7 +334,7 @@ async function createMilestonesIfNeeded(knex, participantId, row) {
     // eslint-disable-next-line no-await-in-loop
     const existing = await knex('participantmilestones')
       .where({
-        participantid: participantId,
+        personid: participantId,
         milestonetitle: title || null,
         milestonedate: date || null,
       })
@@ -347,7 +347,7 @@ async function createMilestonesIfNeeded(knex, participantId, row) {
 
     // eslint-disable-next-line no-await-in-loop
     await knex('participantmilestones').insert({
-      participantid: participantId,
+      personid: participantId,
       milestonetitle: title,
       milestonedate: date,
     });
@@ -356,7 +356,7 @@ async function createMilestonesIfNeeded(knex, participantId, row) {
 
   // Recompute milestoneno ordering for this participant
   const milestones = await knex('participantmilestones')
-    .where({ participantid: participantId })
+    .where({ personid: participantId })
     .orderBy([{ column: 'milestonedate', order: 'asc' }, { column: 'participantmilestoneid', order: 'asc' }]);
 
   for (let i = 0; i < milestones.length; i += 1) {
@@ -398,9 +398,9 @@ async function createDonationsIfNeeded(knex, participantId, row) {
     }
 
     // eslint-disable-next-line no-await-in-loop
-    const existing = await knex('participantdonations')
+    const existing = await knex('donations')
       .where({
-        participantid: participantId,
+        personid: participantId,
         donationdate: donationDate,
         donationamount: donationAmount,
       })
@@ -413,23 +413,24 @@ async function createDonationsIfNeeded(knex, participantId, row) {
     }
 
     // eslint-disable-next-line no-await-in-loop
-    await knex('participantdonations').insert({
-      participantid: participantId,
+    await knex('donations').insert({
+      personid: participantId,
       donationdate: donationDate,
       donationamount: donationAmount,
+      donationno: 0,
     });
     console.log('[donations] Inserted donation', { participantId, donationDate, donationAmount });
   }
 
   // Recompute donationno for this participant
-  const donations = await knex('participantdonations')
-    .where({ participantid: participantId })
+  const donations = await knex('donations')
+    .where({ personid: participantId })
     .orderBy([{ column: 'donationdate', order: 'asc' }, { column: 'donationid', order: 'asc' }]);
 
   for (let i = 0; i < donations.length; i += 1) {
     const d = donations[i];
     // eslint-disable-next-line no-await-in-loop
-    await knex('participantdonations')
+    await knex('donations')
       .where({ donationid: d.donationid })
       .update({ donationno: i + 1 });
   }

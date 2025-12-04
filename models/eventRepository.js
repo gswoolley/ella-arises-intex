@@ -99,17 +99,17 @@ async function getEventParticipants(instanceId) {
   if (!instanceId) return [];
 
   return knex('participantattendanceinstances as a')
-    .leftJoin('participantinfo as p', 'a.participantid', 'p.participantid')
+    .leftJoin('personinfo as p', 'a.personid', 'p.personid')
     .select(
       'a.attendanceinstanceid',
       'a.registrationstatus',
       'a.registrationattendedflag',
       'a.registrationcheckintime',
       'a.registrationcreateddate',
-      'p.participantid',
-      'p.participantfirstname',
-      'p.participantlastname',
-      'p.participantemail'
+      'p.personid',
+      'p.personfirstname',
+      'p.personlastname',
+      'p.personemail'
     )
     .where('a.instanceid', instanceId)
     .orderBy('a.registrationcreateddate', 'asc');

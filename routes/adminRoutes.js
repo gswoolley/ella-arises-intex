@@ -1,4 +1,11 @@
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const csv = require('csv-parser');
+const knex = require('../util/db');
+const mapCsvRowsToStaging = require('../etl/mapCsvToStaging');
+const { runNormalization } = require('../etl/normalize');
 const { getAdminGateway } = require('../controller/admin/auth/adminGatewayController');
 const {
   renderLogin,
@@ -32,8 +39,21 @@ const {
   updateEvent,
   deleteEvent,
 } = require('../controller/admin/app/eventsController');
+const {
+  getParticipants,
+  getParticipantDetails,
+  addParticipant,
+  updateParticipant,
+  deleteParticipant,
+  addMilestone,
+  updateMilestone,
+  deleteMilestone,
+} = require('../controller/admin/app/participantsController');
+const { getUploadPage } = require('../controller/uploadController');
+const { getDataAnalysis } = require('../controller/admin/app/dataAnalysisController');
 
 const router = express.Router();
+const upload = multer({ dest: path.join(__dirname, '../uploads') });
 
 function ensureAuthenticated(req, res, next) {
   if (req.session && req.session.user) {
@@ -81,6 +101,63 @@ router.get('/events', ensureAuthenticated, getEvents);
 // Events actions (manager only)
 router.post('/events/:id/update', ensureAuthenticated, ensureManager, updateEvent);
 router.post('/events/:id/delete', ensureAuthenticated, ensureManager, deleteEvent);
+
+// Participants admin view
+router.get('/participants', ensureAuthenticated, getParticipants);
+router.get('/participants/:id/details', ensureAuthenticated, getParticipantDetails);
+
+// Participants actions (manager only)
+router.post('/participants', ensureAuthenticated, ensureManager, addParticipant);
+router.post('/participants/:id/update', ensureAuthenticated, ensureManager, updateParticipant);
+router.post('/participants/:id/delete', ensureAuthenticated, ensureManager, deleteParticipant);
+
+// Milestones actions (manager only)
+router.post('/milestones', ensureAuthenticated, ensureManager, addMilestone);
+router.post('/milestones/:id/update', ensureAuthenticated, ensureManager, updateMilestone);
+router.post('/milestones/:id/delete', ensureAuthenticated, ensureManager, deleteMilestone);
+
+// Data Analysis
+router.get('/data-analysis', ensureAuthenticated, getDataAnalysis);
+
+// CSV Upload (manager only)
+router.get('/csv-upload', ensureAuthenticated, ensureManager, getUploadPage);
+router.post('/csv-upload', ensureAuthenticated, ensureManager, upload.single('csvFile'), async (req, res) => {
+  if (!req.file) {
+    return res.redirect('/admin/csv-upload?error=' + encodeURIComponent('No file uploaded. Please choose a CSV file.'));
+  }
+
+  const filePath = req.file.path;
+  const rows = [];
+
+  try {
+    console.log('--- Upload started ---');
+    console.log('[upload] Received file', { originalname: req.file.originalname, size: req.file.size, path: filePath });
+    
+    await new Promise((resolve, reject) => {
+      fs.createReadStream(filePath)
+        .pipe(csv())
+        .on('data', (data) => {
+          rows.push(data);
+        })
+        .on('end', resolve)
+        .on('error', reject);
+    });
+
+    console.log('[upload] Finished reading CSV file', { rowCount: rows.length });
+
+    await mapCsvRowsToStaging(knex, rows);
+    await runNormalization(knex);
+
+    fs.unlink(filePath, () => {});
+
+    console.log('--- Upload + normalization completed successfully ---');
+    res.redirect('/admin/csv-upload?message=' + encodeURIComponent('Upload and normalization completed successfully.') + '&showResults=true');
+  } catch (err) {
+    console.error('Error during upload/normalization:', err);
+    fs.unlink(filePath, () => {});
+    res.redirect('/admin/csv-upload?error=' + encodeURIComponent('An error occurred while processing the CSV. Check server logs for details.'));
+  }
+});
 
 // Manager corner (only for manager accounts)
 router.get('/manager', ensureAuthenticated, ensureManager, getManagerCorner);

@@ -468,7 +468,7 @@
             </div>
           </article>
 
-          <article class="admin-feature-card">
+          <article class="admin-feature-card admin-feature-card--clickable" data-link="/admin/participants">
             <div>
               <div class="admin-feature-header">
                 <div class="admin-feature-icon">P</div>
@@ -498,7 +498,24 @@
             </div>
           </article>
 
-          <article class="admin-feature-card">
+          <% if (user.permission === 'manager') { %>
+          <article class="admin-feature-card admin-feature-card--clickable" data-link="/admin/csv-upload">
+            <div>
+              <div class="admin-feature-header">
+                <div class="admin-feature-icon">↑</div>
+                <div class="admin-feature-title">CSV Upload</div>
+              </div>
+              <p class="admin-feature-body">
+                Upload and process CSV files to update participant and event data.
+              </p>
+            </div>
+            <div class="admin-feature-footer">
+              <span>Upload data →</span>
+            </div>
+          </article>
+          <% } %>
+
+          <article class="admin-feature-card admin-feature-card--clickable" data-link="/admin/data-analysis">
             <div>
               <div class="admin-feature-header">
                 <div class="admin-feature-icon">A</div>
@@ -513,6 +530,7 @@
             </div>
           </article>
 
+          <% if (user.permission === 'manager') { %>
           <article class="admin-feature-card admin-feature-card--clickable" data-link="/admin/manager">
             <div>
               <div class="admin-feature-header">
@@ -527,6 +545,7 @@
               <span><a href="/admin/manager" style="color: inherit; text-decoration: none;">Go to admin tools →</a></span>
             </div>
           </article>
+          <% } %>
         </section>
       </div>
     </main>

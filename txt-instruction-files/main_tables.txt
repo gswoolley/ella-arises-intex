@@ -1,0 +1,282 @@
+-- These are the main tables:
+    create table personinfo (
+            personid               serial primary key,
+            personemail            varchar(150),
+            personfirstname        varchar(50),
+            personlastname         varchar(50),
+            persondob              date,
+            personrole             varchar(20),
+            personphone            varchar(20),
+            personcity             varchar(80),
+            personstate            varchar(2),
+            personzip              varchar(10),
+            personschooloremployer varchar(100),
+            personfieldofinterest  varchar(50)
+        );
+
+        create table donations (
+            donationid      serial primary key,
+            personid        int not null references personinfo(personid),
+            donationdate    date,
+            donationamount  numeric(10,2),
+            donationno      int not null
+        );
+
+        create table participantmilestones (
+            participantmilestoneid  serial primary key,
+            personid                int not null references personinfo(personid),
+            milestoneno             int,
+            milestonetitle          varchar(100),
+            milestonedate           date
+        );
+
+        create table eventtypes (
+            eventname                varchar(50) primary key,
+            eventtype                varchar(50),
+            eventdescription         varchar(300),
+            eventrecourrancepatter   varchar(50),
+            eventdefaultcapacity     int
+        );
+
+        create table eventinstances (
+            instanceid         serial primary key,
+            eventname          varchar(50) not null references eventtypes(eventname),
+            eventdatetimestart timestamp,
+            eventdatetimeend   timestamp,
+            eventlocation      varchar(100),
+            eventcapacity      int,
+            eventregistrationdeadline timestamp
+        );
+
+        create table participantattendanceinstances (
+            attendanceinstanceid      serial primary key,
+            personid                  int not null references personinfo(personid),
+            instanceid                int not null references eventinstances(instanceid),
+            eventdatetimestart        timestamp,
+            registrationstatus        varchar(20),
+            registrationattendedflag  boolean,
+            registrationcheckintime   timestamp,
+            registrationcreateddate   timestamp
+        );
+
+        create table surveyinstances (
+            attendanceinstanceid      int not null primary key
+                                        references participantattendanceinstances(attendanceinstanceid),
+            surveysatisfactionscore   numeric(3,1),
+            surveyusefulnesscore     numeric(3,1),
+            surveyinstructorscore     numeric(3,1),
+            surveyrecommendationscore numeric(3,1),
+            surveyoverallscore        numeric(3,1),
+            surveynpsbucket           varchar(20)
+                                        check (surveynpsbucket in ('Passive','Promoter','Detractor')),
+            surveycomments            varchar(3000),
+            surveysubmissiondate      timestamp
+        );
+
+
+--These are the staging tables for the raw data:
+
+    create table stagingrawsurvey (
+        rowid serial primary key,
+
+        participantemail text,
+        participantfirstname text,
+        participantlastname text,
+        participantdob text,
+        participantrole text,
+        participantphone text,
+        participantcity text,
+        participantstate text,
+        participantzip text,
+        participantschooloremployer text,
+        participantfieldofinterest text,
+
+        eventname text,
+        eventtype text,
+        eventdescription text,
+        eventrecurrencepattern text,
+        eventdefaultcapacity text,
+
+        eventdatetimestart text,
+        eventdatetimeend text,
+        eventlocation text,
+        eventcapacity text,
+        eventregistrationdeadline text,
+
+        registrationstatus text,
+        registrationattendedflag text,
+        registrationcheckintime text,
+        registrationcreatedat text,
+
+        surveysatisfactionscore text,
+        surveyusefulnessscore text,
+        surveyinstructorscore text,
+        surveyrecommendationscore text,
+        surveyoverallscore text,
+        surveynpsbucket text,
+        surveycomments text,
+        surveysubmissiondate text,
+
+        milestonetitles text,
+        milestonedates text,
+
+        donationhistory text,
+        totaldonations text
+    );
+
+    -- archive staging table
+
+    create table stagingarchive (
+        archiveid serial primary key,
+        archivedat timestamp not null default now(),
+
+        participantemail text,
+        participantfirstname text,
+        participantlastname text,
+        participantdob text,
+        participantrole text,
+        participantphone text,
+        participantcity text,
+        participantstate text,
+        participantzip text,
+        participantschooloremployer text,
+        participantfieldofinterest text,
+
+        eventname text,
+        eventtype text,
+        eventdescription text,
+        eventrecurrencepattern text,
+        eventdefaultcapacity text,
+
+        eventdatetimestart text,
+        eventdatetimeend text,
+        eventlocation text,
+        eventcapacity text,
+        eventregistrationdeadline text,
+
+        registrationstatus text,
+        registrationattendedflag text,
+        registrationcheckintime text,
+        registrationcreatedat text,
+
+        surveysatisfactionscore text,
+        surveyusefulnessscore text,
+        surveyinstructorscore text,
+        surveyrecommendationscore text,
+        surveyoverallscore text,
+        surveynpsbucket text,
+        surveycomments text,
+        surveysubmissiondate text,
+
+        milestonetitles text,
+        milestonedates text,
+
+        donationhistory text,
+        totaldonations text,
+
+        originalrowid integer
+    );
+
+    -- normalization audit table
+    create table normalization_audit (
+        auditid       serial primary key,
+        rowid         int not null,
+        reason        text not null,
+
+        participantemail            text,
+        participantfirstname        text,
+        participantlastname         text,
+        participantdob              text,
+        participantrole             text,
+        participantphone            text,
+        participantcity             text,
+        participantstate            text,
+        participantzip              text,
+        participantschooloremployer text,
+        participantfieldofinterest  text,
+
+        logged_at timestamp not null default now()
+    );
+
+
+
+-- These are the staging tables for the normalized data:
+-- Staging table for personinfo
+CREATE TABLE IF NOT EXISTS staging_personinfo (
+    personid               INT,
+    personemail            varchar(150),
+    personfirstname        varchar(50),
+    personlastname         varchar(50),
+    persondob              date,
+    personrole             varchar(20),
+    personphone            varchar(20),
+    personcity             varchar(80),
+    personstate            varchar(2),
+    personzip              varchar(10),
+    personschooloremployer varchar(100),
+    personfieldofinterest  varchar(50)
+);
+
+-- Staging table for donations
+CREATE TABLE IF NOT EXISTS staging_donations (
+    donationid      INT,
+    personid        INT,
+    donationdate    DATE,
+    donationamount  NUMERIC(10,2),
+    donationno      INT
+);
+
+-- Staging table for participantmilestones
+CREATE TABLE IF NOT EXISTS staging_participantmilestones (
+    participantmilestoneid  INT,
+    personid                INT,
+    milestoneno             INT,
+    milestonetitle          VARCHAR(100),
+    milestonedate           DATE
+);
+
+-- Staging table for eventtypes
+CREATE TABLE IF NOT EXISTS staging_eventtypes (
+    eventname                VARCHAR(50),
+    eventtype                VARCHAR(50),
+    eventdescription         VARCHAR(300),
+    eventrecourrancepatter   VARCHAR(50),
+    eventdefaultcapacity     INT
+);
+
+-- Staging table for eventinstances
+CREATE TABLE IF NOT EXISTS staging_eventinstances (
+    instanceid         INT,
+    eventname          VARCHAR(50),
+    eventdatetimestart TIMESTAMP,
+    eventdatetimeend   TIMESTAMP,
+    eventlocation      VARCHAR(100),
+    eventcapacity      INT,
+    eventregistrationdeadline TIMESTAMP
+);
+
+-- Staging table for participantattendanceinstances
+CREATE TABLE IF NOT EXISTS staging_participantattendanceinstances (
+    attendanceinstanceid      INT,
+    personid                  INT,
+    instanceid                INT,
+    eventdatetimestart        TIMESTAMP,
+    registrationstatus        VARCHAR(20),
+    registrationattendedflag  BOOLEAN,
+    registrationcheckintime   TIMESTAMP,
+    registrationcreateddate   TIMESTAMP
+);
+
+-- Staging table for surveyinstances
+CREATE TABLE IF NOT EXISTS staging_surveyinstances (
+    attendanceinstanceid      INT,
+    surveysatisfactionscore   NUMERIC(3,1),
+    surveyusefulnesscore     NUMERIC(3,1),
+    surveyinstructorscore     NUMERIC(3,1),
+    surveyrecommendationscore NUMERIC(3,1),
+    surveyoverallscore        NUMERIC(3,1),
+    surveynpsbucket           VARCHAR(20),
+    surveycomments            VARCHAR(3000),
+    surveysubmissiondate      TIMESTAMP
+);
+

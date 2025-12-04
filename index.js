@@ -74,65 +74,12 @@ app.use(express.static(path.join(__dirname, 'public', 'ella-rises-landingpage'))
 app.use('/dashboard', dashboardRoutes);
 app.use('/admin', adminRoutes);
 
-// Render the dedicated CSV upload page (server-rendered EJS template)
-app.get('/upload', (req, res) => {
-  res.render('upload', { message: null, error: null });
-});
-
-
 // Root route: send the static Ella Rises landing page HTML file directly
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'ella-rises-landingpage', 'index.html'));
 });
 
-// Upload endpoint: accept a CSV file, stream rows into the staging table,
-// and then run the normalization pipeline to populate the reporting tables.
-app.post('/upload', upload.single('csvFile'), async (req, res) => {
-  if (!req.file) {
-    return res.status(400).render('upload', { message: null, error: 'No file uploaded. Please choose a CSV file.' });
-  }
-
-  // Absolute path to the temporary file on disk created by Multer
-  const filePath = req.file.path;
-
-  const rows = [];
-
-  try {
-    console.log('--- Upload started ---');
-    console.log('[upload] Received file', { originalname: req.file.originalname, size: req.file.size, path: filePath });
-    // Stream the CSV file row-by-row to avoid loading the entire file into
-    // memory at once. Each parsed row is pushed into the rows array.
-    await new Promise((resolve, reject) => {
-      fs.createReadStream(filePath)
-        .pipe(csv())
-        .on('data', (data) => {
-          rows.push(data);
-        })
-        .on('end', resolve)
-        .on('error', reject);
-    });
-
-    console.log('[upload] Finished reading CSV file', { rowCount: rows.length });
-
-    // Insert all raw rows into the staging table (stagingrawsurvey). This
-    // keeps uploaded data separate from the normalized reporting tables.
-    await mapCsvRowsToStaging(knex, rows);
-
-    // Run the normalization pipeline, which reads from stagingrawsurvey,
-    // populates the normalized schema, archives rows, and truncates staging.
-    await runNormalization(knex);
-
-    // Clean up: remove the temporary CSV file once processing is complete.
-    fs.unlink(filePath, () => {});
-
-    console.log('--- Upload + normalization completed successfully ---');
-    res.render('upload', { message: 'Upload and normalization completed successfully.', error: null });
-  } catch (err) {
-    console.error('Error during upload/normalization:', err);
-    fs.unlink(filePath, () => {});
-    res.status(500).render('upload', { message: null, error: 'An error occurred while processing the CSV. Check server logs for details.' });
-  }
-});
+// CSV upload is now handled by admin routes at /admin/csv-upload
 
 // Start the HTTP server. In production, Elastic Beanstalk will route
 // external traffic (HTTP/HTTPS) through a load balancer/Nginx to this port.

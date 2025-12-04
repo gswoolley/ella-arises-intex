@@ -3,25 +3,26 @@ const knex = require('../util/db');
 const DEFAULT_PAGE_SIZE = 20;
 
 function baseDonationQuery() {
-  return knex('participantdonations as d')
-    .leftJoin('participantinfo as p', 'd.participantid', 'p.participantid')
+  return knex('donations as d')
+    .leftJoin('personinfo as p', 'd.personid', 'p.personid')
     .select(
       'd.donationid',
-      'd.participantid',
+      'd.personid',
       'd.donationdate',
       'd.donationamount',
-      'p.participantfirstname as firstname',
-      'p.participantlastname as lastname',
-      'p.participantemail as email'
+      'd.donationno',
+      'p.personfirstname as firstname',
+      'p.personlastname as lastname',
+      'p.personemail as email'
     );
 }
 
 function applySearch(query, search) {
   if (!search) return query;
   return query.where(function () {
-    this.whereILike('p.participantfirstname', `%${search}%`)
-      .orWhereILike('p.participantlastname', `%${search}%`)
-      .orWhereILike('p.participantemail', `%${search}%`);
+    this.whereILike('p.personfirstname', `%${search}%`)
+      .orWhereILike('p.personlastname', `%${search}%`)
+      .orWhereILike('p.personemail', `%${search}%`);
   });
 }
 
@@ -60,7 +61,7 @@ async function listDonations({ search = '', orderBy = 'date_desc', page = 1, pag
 
   // Total count for pagination (respecting search, but ignoring ordering)
   const countQuery = applySearch(
-    knex('participantdonations as d').leftJoin('participantinfo as p', 'd.participantid', 'p.participantid'),
+    knex('donations as d').leftJoin('personinfo as p', 'd.personid', 'p.personid'),
     search
   ).count('* as count');
 
@@ -73,7 +74,7 @@ async function listDonations({ search = '', orderBy = 'date_desc', page = 1, pag
 async function getMonthlyTotal() {
   const result = await knex.raw(
     `SELECT COALESCE(SUM(donationamount), 0) AS monthly_donations
-     FROM participantdonations
+     FROM donations
      WHERE donationdate >= date_trunc('month', CURRENT_DATE)
        AND donationdate <  date_trunc('month', CURRENT_DATE) + INTERVAL '1 month'`
   );
@@ -83,7 +84,7 @@ async function getMonthlyTotal() {
 async function getOverallTotal() {
   const result = await knex.raw(
     `SELECT COALESCE(SUM(donationamount), 0) AS overall_donations
-     FROM participantdonations`
+     FROM donations`
   );
   return Number(result.rows[0] && result.rows[0].overall_donations) || 0;
 }
@@ -91,7 +92,7 @@ async function getOverallTotal() {
 async function getDonationCount() {
   const result = await knex.raw(
     `SELECT COUNT(*)::int AS donation_count
-     FROM participantdonations`
+     FROM donations`
   );
   return Number(result.rows[0] && result.rows[0].donation_count) || 0;
 }
@@ -105,16 +106,17 @@ async function findById(donationId) {
 
 async function createDonation({ participantId, donationDate, donationAmount }) {
   if (!participantId || !donationDate || !donationAmount) return null;
-  return knex('participantdonations').insert({
-    participantid: participantId,
+  return knex('donations').insert({
+    personid: participantId,
     donationdate: donationDate,
     donationamount: donationAmount,
+    donationno: 0,
   });
 }
 
 async function updateDonationById(donationId, { donationDate, donationAmount }) {
   if (!donationId) return null;
-  return knex('participantdonations')
+  return knex('donations')
     .where({ donationid: donationId })
     .update({
       donationdate: donationDate,
@@ -124,7 +126,7 @@ async function updateDonationById(donationId, { donationDate, donationAmount }) 
 
 async function deleteDonationById(donationId) {
   if (!donationId) return null;
-  return knex('participantdonations').where({ donationid: donationId }).del();
+  return knex('donations').where({ donationid: donationId }).del();
 }
 
 module.exports = {
