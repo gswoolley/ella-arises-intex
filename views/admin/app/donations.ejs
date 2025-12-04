@@ -51,19 +51,21 @@
         gap: 12px;
       }
 
-      .admin-logo {
-        width: 40px;
-        height: 40px;
-        border-radius: 999px;
-        overflow: hidden;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
-      }
+          .admin-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 999px;
+      overflow: hidden;
+      background-color: #ffece4; /* same as page bg so edge blends */
+      box-shadow: none;          /* remove pink-ish glow */
+    }
 
-      .admin-logo img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
+    .admin-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;       /* show full logo */
+      transform: none;           /* no zoom */
+    }
 
       .admin-brand {
         font-size: 16px;
@@ -453,12 +455,14 @@
     <main class="admin-main-shell">
       <div class="admin-main">
         <header class="admin-header">
-          <div class="admin-header-left">
-            <div class="admin-logo">
-              <img src="/images/Untitled design (48).png" alt="Ella Rises" />
+            <div class="admin-header-left">
+              <a href="/admin/home" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit;">
+                <div class="admin-logo">
+                  <img src="/images/ella-rises-logo.png" alt="Ella Rises" />
+                </div>
+                <div class="admin-brand">Ella Rises</div>
+              </a>
             </div>
-            <div class="admin-brand">Ella Rises</div>
-          </div>
           <div class="admin-header-right">
             <nav class="admin-nav">
               <a href="/admin/home" class="admin-nav-link-back">
