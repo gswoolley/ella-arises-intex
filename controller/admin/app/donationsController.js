@@ -9,7 +9,6 @@ const getDonations = async (req, res) => {
   const search = (req.query && req.query.q) || '';
   const orderBy = (req.query && req.query.orderBy) || 'date_desc';
   const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
-  const editId = req.query && req.query.editId ? Number(req.query.editId) : null;
 
   try {
     const donationNotice = req.session && req.session.donationNotice;
@@ -23,11 +22,6 @@ const getDonations = async (req, res) => {
       donationRepository.getOverallTotal(),
       donationRepository.getDonationCount(),
     ]);
-
-    let editDonation = null;
-    if (editId) {
-      editDonation = await donationRepository.findById(editId);
-    }
 
     const totalPages = Math.max(
       Math.ceil(totalCount / donationRepository.DEFAULT_PAGE_SIZE),
@@ -54,7 +48,6 @@ const getDonations = async (req, res) => {
       page,
       totalPages,
       totalCount,
-      editDonation,
       pendingDonation,
       donationNotice,
     });
@@ -69,7 +62,6 @@ const getDonations = async (req, res) => {
       page: 1,
       totalPages: 1,
       totalCount: 0,
-      editDonation: null,
       pendingDonation: null,
       donationNotice: 'Unable to load donations right now.',
     });

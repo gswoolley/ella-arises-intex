@@ -9,12 +9,13 @@ const getParticipants = async (req, res) => {
   const tab = req.query.tab || 'participants';
   const search = req.query.q || '';
   const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const orderBy = req.query.orderBy || 'name_asc';
 
   try {
     // Load data for ALL tabs at once to support tab switching without page reload
     const [participantsData, surveysData, milestonesData] = await Promise.all([
-      participantRepository.listParticipants({ search: tab === 'participants' ? search : '', page: tab === 'participants' ? page : 1, limit: 25 }),
-      participantRepository.listRecentSurveys({ page: tab === 'surveys' ? page : 1, limit: 25 }),
+      participantRepository.listParticipants({ search: tab === 'participants' ? search : '', page: tab === 'participants' ? page : 1, limit: 25, orderBy: tab === 'participants' ? orderBy : 'name_asc' }),
+      participantRepository.listRecentSurveys({ search: tab === 'surveys' ? search : '', page: tab === 'surveys' ? page : 1, limit: 25, orderBy: tab === 'surveys' ? orderBy : 'date_desc' }),
       participantRepository.listMilestones({ search: tab === 'milestones' ? search : '', page: tab === 'milestones' ? page : 1, limit: 25 }),
     ]);
 
@@ -34,6 +35,7 @@ const getParticipants = async (req, res) => {
       tab,
       search,
       page,
+      orderBy,
       participants: participantsData.participants || [],
       surveys: surveysData.surveys || [],
       milestones: milestonesData.milestones || [],
@@ -50,6 +52,7 @@ const getParticipants = async (req, res) => {
       tab,
       search,
       page,
+      orderBy: 'name_asc',
       participants: [],
       surveys: [],
       milestones: [],
@@ -278,6 +281,79 @@ const addParticipant = async (req, res) => {
   return res.redirect(redirectUrl);
 };
 
+const updateSurvey = async (req, res) => {
+  if (!req.session || !req.session.user || req.session.user.permission !== 'manager') {
+    return res.redirect('/admin/home');
+  }
+
+  const { id } = req.params;
+  const {
+    overallScore,
+    npsBucket,
+    satisfactionScore,
+    usefulnessScore,
+    instructorScore,
+    recommendationScore,
+    comments,
+  } = req.body;
+
+  try {
+    await require('../../../util/db')('surveyinstances')
+      .where({ attendanceinstanceid: id })
+      .update({
+        surveyoverallscore: overallScore || null,
+        surveynpsbucket: npsBucket || null,
+        surveysatisfactionscore: satisfactionScore || null,
+        surveyusefulnesscore: usefulnessScore || null,
+        surveyinstructorscore: instructorScore || null,
+        surveyrecommendationscore: recommendationScore || null,
+        surveycomments: comments || null,
+      });
+  } catch (error) {
+    console.error('Error updating survey:', error);
+  }
+
+  const returnTab = req.body.tab || 'surveys';
+  const returnPage = req.body.page || 1;
+  const returnSearch = req.body.q || '';
+  const returnOrderBy = req.body.orderBy || 'date_desc';
+
+  let redirectUrl = `/admin/participants?tab=${returnTab}&page=${returnPage}&orderBy=${encodeURIComponent(returnOrderBy)}`;
+  if (returnSearch) {
+    redirectUrl += `&q=${encodeURIComponent(returnSearch)}`;
+  }
+
+  return res.redirect(redirectUrl);
+};
+
+const deleteSurvey = async (req, res) => {
+  if (!req.session || !req.session.user || req.session.user.permission !== 'manager') {
+    return res.redirect('/admin/home');
+  }
+
+  const { id } = req.params;
+
+  try {
+    await require('../../../util/db')('surveyinstances')
+      .where({ attendanceinstanceid: id })
+      .del();
+  } catch (error) {
+    console.error('Error deleting survey:', error);
+  }
+
+  const returnTab = req.body.tab || 'surveys';
+  const returnPage = req.body.page || 1;
+  const returnSearch = req.body.q || '';
+  const returnOrderBy = req.body.orderBy || 'date_desc';
+
+  let redirectUrl = `/admin/participants?tab=${returnTab}&page=${returnPage}&orderBy=${encodeURIComponent(returnOrderBy)}`;
+  if (returnSearch) {
+    redirectUrl += `&q=${encodeURIComponent(returnSearch)}`;
+  }
+
+  return res.redirect(redirectUrl);
+};
+
 module.exports = {
   getParticipants,
   getParticipantDetails,
@@ -287,4 +363,6 @@ module.exports = {
   addMilestone,
   updateMilestone,
   deleteMilestone,
+  updateSurvey,
+  deleteSurvey,
 };

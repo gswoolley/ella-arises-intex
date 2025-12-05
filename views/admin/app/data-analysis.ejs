@@ -1,448 +1,475 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1"
-      id="wixDesktopViewport"
-    />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="generator" content="Wix.com Website Builder" />
 
-    <link
-      rel="icon"
-      sizes="192x192"
-      href="/images/pfavico.ico"
-      type="image/x-icon"
-    />
-    <link rel="shortcut icon" href="/images/pfavico.ico" type="image/x-icon" />
-    <link
-      rel="apple-touch-icon"
-      href="/images/pfavico.ico"
-      type="image/x-icon"
-    />
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Data analysis – Ella Rises Admin</title>
 
-    <title>Data analysis – Ella Rises Admin</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 15px;
+      background-color: #ffece4;
+      color: #231815;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+    .admin-main-shell {
+      flex: 1;
+      padding: 40px 72px 56px;
+      display: flex;
+      justify-content: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .admin-main {
+      width: 100%;
+      max-width: 1160px;
+    }
+
+    .admin-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+
+    .admin-header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .admin-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 999px;
+      overflow: hidden;
+      background-color: #ffece4;
+      box-shadow: none;
+    }
+
+    .admin-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transform: none;
+    }
+
+    .admin-brand {
+      font-size: 16px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #8c6a61;
+    }
+
+    .admin-header-right {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      font-size: 13px;
+      color: #6b5a56;
+    }
+
+    .admin-header-user {
+      font-size: 13px;
+      color: #6b5a56;
+    }
+
+    .admin-header-signout {
+      border: none;
+      background: none;
+      font-size: 13px;
+      color: #6b5a56;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .admin-nav {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .admin-nav-link-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      color: #2f2623;
+      text-decoration: none;
+      position: relative;
+    }
+
+    .admin-nav-link-back::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: transparent;
+      transition: background 0.12s ease, box-shadow 0.12s ease;
+      z-index: -1;
+    }
+
+    .admin-nav-link-back:hover::before {
+      background: #f8cdb9;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+    }
+
+    .admin-nav-link-back-icon {
+      font-size: 14px;
+    }
+
+    /* Background bubbles (same style as home dashboard) */
+    .bg-bubble {
+      position: absolute;
+      border-radius: 999px;
+      background-color: rgba(255, 255, 255, 0.26);
+      pointer-events: none;
+      mix-blend-mode: normal;
+      animation-name: bubble-drift;
+      animation-timing-function: ease-in-out;
+      animation-iteration-count: infinite;
+      animation-direction: alternate;
+      z-index: 0;
+    }
+
+    .bg-bubble--peach {
+      background-color: rgba(255, 194, 166, 0.32);
+    }
+
+    .bg-bubble--lilac {
+      background-color: rgba(216, 205, 246, 0.36);
+    }
+
+    .bg-bubble--sage {
+      background-color: rgba(204, 221, 205, 0.36);
+    }
+
+    .bg-bubble--tl-soft {
+      width: 130px;
+      height: 130px;
+      top: 28px;
+      left: -50px;
+      animation-duration: 26s;
+      animation-delay: -8s;
+    }
+
+    .bg-bubble--tr-soft {
+      width: 90px;
+      height: 90px;
+      top: 110px;
+      right: -30px;
+      animation-duration: 24s;
+      animation-delay: -6s;
+    }
+
+    .bg-bubble--bl-soft {
+      width: 110px;
+      height: 110px;
+      bottom: -40px;
+      left: 6%;
+      animation-duration: 28s;
+      animation-delay: -10s;
+    }
+
+    .bg-bubble--br-soft {
+      width: 150px;
+      height: 150px;
+      bottom: -70px;
+      right: 20%;
+      animation-duration: 30s;
+      animation-delay: -4s;
+    }
+
+    .bg-bubble--mid-soft {
+      width: 90px;
+      height: 90px;
+      top: 60%;
+      left: 58%;
+      animation-duration: 22s;
+      animation-delay: -12s;
+    }
+
+    @keyframes bubble-drift {
+      0% {
+        transform: translate3d(0, 0, 0) scale(1);
       }
 
-      body {
-        font-family: Arial, Helvetica, sans-serif;
-        font-size: 14px;
-        background-color: #ffece4;
-        color: #333;
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
+      50% {
+        transform: translate3d(10px, -6px, 0) scale(1.03);
       }
 
-      /* Admin shell */
+      100% {
+        transform: translate3d(-8px, 6px, 0) scale(0.98);
+      }
+    }
+
+    /* Page layout */
+    .dashboard-content {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .dashboard-hero {
+      margin-bottom: 28px;
+      padding: 24px 28px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, #ffd8d1 0%, #ffeceb 40%, #ffffff 100%);
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+    }
+
+    .dashboard-hero-eyebrow {
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #a65c50;
+      margin-bottom: 8px;
+    }
+
+    .dashboard-hero-title {
+      font-size: 28px;
+      line-height: 1.35;
+      margin-bottom: 10px;
+      color: #3a2925;
+    }
+
+    .dashboard-hero-subtitle {
+      font-size: 14px;
+      line-height: 1.7;
+      color: #4f3b36;
+      max-width: 720px;
+    }
+
+    .dashboard-story {
+      margin-bottom: 32px;
+      display: grid;
+      grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.4fr);
+      gap: 24px;
+    }
+
+    .dashboard-story-main {
+      background: #fff7f4;
+      border-radius: 16px;
+      padding: 18px 20px;
+      border: 1px solid #ffe0d8;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+    }
+
+    .dashboard-story-main p {
+      font-size: 14px;
+      line-height: 1.7;
+      color: #4a4a4a;
+      margin-bottom: 12px;
+    }
+
+    .dashboard-story-main p:last-child {
+      margin-bottom: 0;
+    }
+
+    .dashboard-story-main p strong {
+      color: #2f1f1a;
+    }
+
+    .dashboard-story-aside {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 18px 20px;
+      border: 1px solid #ffe5dd;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+    }
+
+    .dashboard-story-aside-title {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #b06556;
+      margin-bottom: 10px;
+    }
+
+    .dashboard-metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .dashboard-metric-card {
+      background: #fff7f4;
+      border-radius: 12px;
+      padding: 10px 12px;
+      border: 1px solid #ffe0d8;
+    }
+
+    .dashboard-metric-label {
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #9a6b60;
+      margin-bottom: 3px;
+    }
+
+    .dashboard-metric-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #2d1f1b;
+      margin-bottom: 2px;
+    }
+
+    .dashboard-metric-caption {
+      font-size: 11px;
+      color: #7a6a66;
+    }
+
+    .dashboard-viz-header {
+      margin: 32px 0 12px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .dashboard-viz-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #3a2925;
+    }
+
+    .dashboard-viz-caption {
+      font-size: 12px;
+      color: #7a6a66;
+      max-width: 420px;
+    }
+
+    /* Responsive Tableau embed wrapper */
+    .viz-wrapper {
+      position: relative;
+      width: 100%;
+      padding-bottom: 70%;
+      /* aspect ratio */
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
+      border: 1px solid #f0ddd6;
+      background: #ffffff;
+    }
+
+    .viz-wrapper iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    @media (max-width: 900px) {
+      .dashboard-story {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
       .admin-main-shell {
-        flex: 1;
-        padding: 40px 72px 56px;
-        display: flex;
-        justify-content: center;
-      }
-
-      .admin-main {
-        width: 100%;
-        max-width: 1160px;
-      }
-
-      .admin-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 32px;
-      }
-
-      .admin-header-left {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-
-        .admin-logo {
-        width: 56px;
-        height: 56px;
-        border-radius: 999px;
-        overflow: hidden;
-        background-color: #ffece4; /* same as page bg so edge blends */
-        box-shadow: none;          /* remove pink-ish glow */
-        }
-
-        .admin-logo img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;       /* show full logo */
-        transform: none;           /* no zoom */
-        }
-
-      .admin-brand {
-        font-size: 16px;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-        color: #8c6a61;
-      }
-
-      .admin-header-right {
-        display: flex;
-        align-items: center;
-        gap: 18px;
-        font-size: 13px;
-        color: #6b5a56;
-      }
-
-      .admin-header-user {
-        font-size: 13px;
-        color: #6b5a56;
-      }
-
-      .admin-header-signout {
-        border: none;
-        background: none;
-        font-size: 13px;
-        color: #6b5a56;
-        cursor: pointer;
-        text-decoration: underline;
-      }
-
-      /* Dashboard layout (mirrors public dashboard.ejs) */
-      main {
-        padding: 0; /* handled by .admin-main-shell */
-        min-height: auto;
-      }
-
-      .dashboard-content {
-        max-width: 1200px;
-        margin: 0 auto;
-      }
-
-      h1 {
-        font-size: 28px;
-        margin-bottom: 20px;
-        color: #333;
-      }
-
-      .dashboard-hero {
-        margin-bottom: 32px;
-        padding: 28px 32px;
-        border-radius: 16px;
-        background: linear-gradient(135deg, #ffd8d1 0%, #ffeceb 35%, #ffffff 100%);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-      }
-
-      .dashboard-hero-eyebrow {
-        font-size: 12px;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: #a65c50;
-        margin-bottom: 8px;
+        padding: 24px 16px 32px;
       }
 
       .dashboard-hero-title {
-        font-size: 30px;
-        line-height: 1.2;
-        margin-bottom: 12px;
-        color: #3a2925;
+        font-size: 24px;
       }
+    }
+  </style>
+</head>
 
-      .dashboard-hero-subtitle {
-        font-size: 15px;
-        line-height: 1.6;
-        color: #4f3b36;
-        max-width: 720px;
-      }
+<body>
+  <div class="bg-bubble bg-bubble--peach bg-bubble--tl-soft"></div>
+  <div class="bg-bubble bg-bubble--lilac bg-bubble--tr-soft"></div>
+  <div class="bg-bubble bg-bubble--sage bg-bubble--bl-soft"></div>
+  <div class="bg-bubble bg-bubble--peach bg-bubble--br-soft"></div>
+  <div class="bg-bubble bg-bubble--lilac bg-bubble--mid-soft"></div>
 
-      .dashboard-story {
-        margin-bottom: 32px;
-        display: grid;
-        grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.4fr);
-        gap: 28px;
-      }
-
-      .dashboard-story-main p {
-        font-size: 14px;
-        line-height: 1.7;
-        color: #4a4a4a;
-        margin-bottom: 12px;
-      }
-
-      .dashboard-story-main p strong {
-        color: #2f1f1a;
-      }
-
-      .dashboard-story-aside {
-        background: #fff7f4;
-        border-radius: 16px;
-        padding: 18px 20px;
-        border: 1px solid #ffe0d8;
-      }
-
-      .dashboard-story-aside-title {
-        font-size: 13px;
-        font-weight: bold;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: #b06556;
-        margin-bottom: 10px;
-      }
-
-      .dashboard-metrics {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 16px;
-        margin-top: 8px;
-      }
-
-      .dashboard-metric-card {
-        background: #ffffff;
-        border-radius: 14px;
-        padding: 14px 16px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-        border: 1px solid #ffe5dd;
-      }
-
-      .dashboard-metric-label {
-        font-size: 11px;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-        color: #9a6b60;
-        margin-bottom: 4px;
-      }
-
-      .dashboard-metric-value {
-        font-size: 20px;
-        font-weight: 700;
-        color: #2d1f1b;
-        margin-bottom: 2px;
-      }
-
-      .dashboard-metric-caption {
-        font-size: 11px;
-        color: #7a6a66;
-      }
-
-      .dashboard-viz-header {
-        margin-bottom: 12px;
-        display: flex;
-        flex-wrap: wrap;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 8px;
-      }
-
-      .dashboard-viz-title {
-        font-size: 18px;
-        font-weight: 600;
-        color: #3a2925;
-      }
-
-      .dashboard-viz-caption {
-        font-size: 12px;
-        color: #7a6a66;
-        max-width: 420px;
-      }
-
-      footer {
-        background-color: #f6f6f6;
-        padding: 20px 40px;
-        text-align: center;
-        border-top: 1px solid #f0f0f0;
-        font-size: 12px;
-        color: #666;
-      }
-
-      @media (max-width: 900px) {
-        .dashboard-story {
-          grid-template-columns: minmax(0, 1fr);
-        }
-
-        .dashboard-metrics {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-      }
-
-      @media (max-width: 768px) {
-        .admin-main-shell {
-          padding: 24px 16px 32px;
-        }
-
-        .dashboard-hero-title {
-          font-size: 24px;
-        }
-      }
-    </style>
-  </head>
-
-  <body>
-    <main class="admin-main-shell">
-      <div class="admin-main">
-        <header class="admin-header">
-            <div class="admin-header-left">
-              <a href="/admin/home" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit;">
-                <div class="admin-logo">
-                  <img src="/images/ella-rises-logo.png" alt="Ella Rises" />
-                </div>
-                <div class="admin-brand">Ella Rises</div>
-              </a>
+  <main class="admin-main-shell">
+    <div class="admin-main">
+      <header class="admin-header">
+        <div class="admin-header-left">
+          <a href="/admin/home"
+            style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit;">
+            <div class="admin-logo">
+              <img src="/images/ella-rises-logo.png" alt="Ella Rises" />
             </div>
-              <div class="admin-brand">Ella Rises</div>
-            </a>
-          </div>
-          <div class="admin-header-right">
-            <span class="admin-header-user">
-              Signed in as <strong><%= user.firstName %></strong>
-            </span>
-            <form method="POST" action="/admin/logout" style="margin: 0">
-              <button type="submit" class="admin-header-signout">Sign out</button>
-            </form>
-          </div>
-        </header>
-
-        <div class="dashboard-content">
-          <section class="dashboard-hero">
-            <div class="dashboard-hero-eyebrow">Admin data analysis</div>
-            <h1 class="dashboard-hero-title">
-              Explore the story behind Ella Rises program impact.
-            </h1>
-            <p class="dashboard-hero-subtitle">
-              This private dashboard is for Ella Rises staff and trusted partners to
-              explore detailed impact and engagement trends over time. Use it to
-              inform decisions, refine programs, and steward support with care.
-            </p>
-          </section>
-
-          <section class="dashboard-story">
-            <div class="dashboard-story-main">
-              <p>
-                Ella Rises partners with schools, families, and community leaders to
-                create spaces where girls can be
-                <strong>seen, heard, and celebrated</strong>.
-              </p>
-              <p>
-                The insights on this page come directly from participants and the
-                communities we serve. They help us understand what is working, where
-                we can grow, and how to align resources with the greatest needs.
-              </p>
-              <p>
-                Behind every data point is a girl learning to trust her own story.
-                This internal dashboard helps our team honor those stories and act
-                on them with intention.
-              </p>
-            </div>
-
-            <aside class="dashboard-story-aside">
-              <div class="dashboard-story-aside-title">At a glance</div>
-              <div class="dashboard-metrics">
-                <div class="dashboard-metric-card">
-                  <div class="dashboard-metric-label">Sites reporting</div>
-                  <div class="dashboard-metric-value">Multiple</div>
-                  <div class="dashboard-metric-caption">
-                    school and community partners sharing data
-                  </div>
-                </div>
-                <div class="dashboard-metric-card">
-                  <div class="dashboard-metric-label">Data sources</div>
-                  <div class="dashboard-metric-value">Surveys</div>
-                  <div class="dashboard-metric-caption">
-                    attendance, feedback, and program records
-                  </div>
-                </div>
-                <div class="dashboard-metric-card">
-                  <div class="dashboard-metric-label">Focus areas</div>
-                  <div class="dashboard-metric-value">Impact</div>
-                  <div class="dashboard-metric-caption">
-                    confidence, belonging, and engagement over time
-                  </div>
-                </div>
-              </div>
-            </aside>
-          </section>
-
-          <section>
-            <div class="dashboard-viz-header">
-              <div class="dashboard-viz-title">
-                Ella Rises Impact &amp; Engagement Dashboard
-              </div>
-              <div class="dashboard-viz-caption">
-                Use the filters in the embedded view to explore trends by site,
-                timeframe, and program. This view is private and intended for
-                internal decision-making.
-              </div>
-            </div>
-
-            <div
-              class="tableauPlaceholder"
-              id="adminDataViz"
-              style="position: relative"
-            >
-              <noscript>
-                <a href="#">
-                  <img
-                    alt="Ella Rises Impact & Engagement Dashboard"
-                    src="https://public.tableau.com/static/images/El/EllaArisesPrivate/EllaArisesImpactEngagementD/1.png"
-                    style="border: none"
-                  />
-                </a>
-              </noscript>
-              <object class="tableauViz" style="display: none">
-                <param
-                  name="host_url"
-                  value="https%3A%2F%2Fpublic.tableau.com%2F"
-                />
-                <param name="embed_code_version" value="3" />
-                <param name="site_root" value="" />
-                <param
-                  name="name"
-                  value="EllaArisesPrivate/EllaArisesImpactEngagementD"
-                />
-                <param name="tabs" value="no" />
-                <param name="toolbar" value="yes" />
-                <param
-                  name="static_image"
-                  value="https://public.tableau.com/static/images/El/EllaArisesPrivate/EllaArisesImpactEngagementD/1.png"
-                />
-                <param name="animate_transition" value="yes" />
-                <param name="display_static_image" value="yes" />
-                <param name="display_spinner" value="yes" />
-                <param name="display_overlay" value="yes" />
-                <param name="display_count" value="yes" />
-                <param name="language" value="en-US" />
-              </object>
-            </div>
-            <script type="text/javascript">
-              var divElement = document.getElementById("adminDataViz");
-              var vizElement = divElement.getElementsByTagName("object")[0];
-              if (divElement.offsetWidth > 800) {
-                vizElement.style.width = "100%";
-                vizElement.style.height = "1200px";
-              } else if (divElement.offsetWidth > 500) {
-                vizElement.style.width = "1200px";
-                vizElement.style.height = "927px";
-              } else {
-                vizElement.style.width = "100%";
-                vizElement.style.height = "1227px";
-              }
-              var scriptElement = document.createElement("script");
-              scriptElement.src =
-                "https://public.tableau.com/javascripts/api/viz_v1.js";
-              vizElement.parentNode.insertBefore(scriptElement, vizElement);
-            </script>
-          </section>
+            <div class="admin-brand">Ella Rises</div>
+          </a>
         </div>
+        <div class="admin-header-right">
+          <nav class="admin-nav">
+            <a href="/admin/home" class="admin-nav-link-back">
+              <span class="admin-nav-link-back-icon">&#8592;</span>
+              <span>Back to home</span>
+            </a>
+          </nav>
+          <span class="admin-header-user">
+            Signed in as <strong>
+              <%= user.firstName %>
+            </strong>
+          </span>
+          <form method="POST" action="/admin/logout" style="margin: 0">
+            <button type="submit" class="admin-header-signout">Sign out</button>
+          </form>
+        </div>
+      </header>
+
+      <div class="dashboard-content">
+        <section class="dashboard-hero">
+          <div class="dashboard-hero-eyebrow">Data analysis</div>
+          <h1 class="dashboard-hero-title">
+            See how Ella Rises programs shape confidence and belonging.
+          </h1>
+          <p class="dashboard-hero-subtitle">
+            Use this private dashboard to explore impact and engagement across
+            sites, timeframes, and program types. Filter thoughtfully and use
+            what you see here to guide decisions, conversations with partners,
+            and future program design.
+          </p>
+        </section>
+
+
+        <section>
+          <div class="dashboard-viz-header">
+            <div class="dashboard-viz-title">
+              Ella Rises Impact &amp; Engagement Dashboard
+            </div>
+            <div class="dashboard-viz-caption">
+              Interactive Tableau view powered by Ella Rises program and survey
+              data. Use the controls inside the dashboard to slice by site,
+              program, and time.
+            </div>
+          </div>
+
+          <div class="viz-wrapper">
+            <iframe
+              src="https://public.tableau.com/views/EllaArisesPrivate/EllaArisesImpactEngagementDashboard2?:showVizHome=no&:embed=true"
+              title="Ella Rises Impact &amp; Engagement Dashboard" allowfullscreen></iframe>
+          </div>
+        </section>
       </div>
-    </main>
+    </div>
+  </main>
+</body>
 
-    <footer>
-      <p>&copy; 2025 Ella Rises. All rights reserved.</p>
-    </footer>
-  </body>
 </html>
-

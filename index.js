@@ -66,6 +66,9 @@ app.use(
 // Configure Multer to store uploaded CSV files temporarily on disk
 const upload = multer({ dest: path.join(__dirname, 'uploads') });
 
+// Serve static files from the public directory (for images, icons, etc.)
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Serve the static Ella Rises landing page (HTML/CSS/JS) from the public
 // directory so the root route can simply send index.html.
 app.use(express.static(path.join(__dirname, 'public', 'ella-rises-landingpage')));

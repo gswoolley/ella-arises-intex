@@ -14,8 +14,9 @@ const getEvents = async (req, res) => {
   const editId = req.query && req.query.editId ? Number(req.query.editId) : null;
 
   try {
-    const [{ rows, totalCount }] = await Promise.all([
+    const [{ rows, totalCount }, eventTemplates] = await Promise.all([
       eventRepository.listEvents({ timeFilter, orderBy, page, pageSize: eventRepository.DEFAULT_PAGE_SIZE }),
+      eventRepository.getAllEventTemplates(),
     ]);
 
     const totalPages = Math.max(
@@ -36,6 +37,7 @@ const getEvents = async (req, res) => {
     return res.render('admin/app/events', {
       user: req.session.user,
       events: rows,
+      eventTemplates,
       timeFilter,
       orderBy,
       page,
@@ -50,6 +52,7 @@ const getEvents = async (req, res) => {
     return res.status(500).render('admin/app/events', {
       user: req.session.user,
       events: [],
+      eventTemplates: [],
       timeFilter,
       orderBy,
       page: 1,
@@ -116,8 +119,95 @@ const deleteEvent = async (req, res) => {
   return res.redirect('/admin/events');
 };
 
+const addEventFromTemplate = async (req, res) => {
+  if (!req.session || !req.session.user || req.session.user.permission !== 'manager') {
+    return res.redirect('/admin/home');
+  }
+
+  const {
+    eventtypeid,
+    eventdatetimestart,
+    eventdatetimeend,
+    eventlocation,
+    eventcapacity,
+    eventregistrationdeadline,
+  } = req.body;
+
+  try {
+    // Get the template to get the event name
+    const template = await eventRepository.getEventTemplateById(eventtypeid);
+    
+    if (!template) {
+      console.error('Template not found');
+      return res.redirect('/admin/events');
+    }
+
+    // Create the event instance
+    await eventRepository.createEventInstance({
+      eventname: template.eventname,
+      eventdatetimestart,
+      eventdatetimeend: eventdatetimeend || null,
+      eventlocation: eventlocation || null,
+      eventcapacity: eventcapacity || template.eventdefaultcapacity || null,
+      eventregistrationdeadline: eventregistrationdeadline || null,
+    });
+
+    return res.redirect('/admin/events');
+  } catch (error) {
+    console.error('Error creating event from template:', error);
+    return res.redirect('/admin/events');
+  }
+};
+
+const addEventWithNewTemplate = async (req, res) => {
+  if (!req.session || !req.session.user || req.session.user.permission !== 'manager') {
+    return res.redirect('/admin/home');
+  }
+
+  const {
+    eventname,
+    eventtype,
+    eventdescription,
+    eventrecurrencepattern,
+    eventdefaultcapacity,
+    eventdatetimestart,
+    eventdatetimeend,
+    eventlocation,
+    eventcapacity,
+    eventregistrationdeadline,
+  } = req.body;
+
+  try {
+    // Create the template first
+    await eventRepository.createEventTemplate({
+      eventname,
+      eventtype: eventtype || null,
+      eventdescription: eventdescription || null,
+      eventrecurrencepattern: eventrecurrencepattern || null,
+      eventdefaultcapacity: eventdefaultcapacity || null,
+    });
+
+    // Create the event instance
+    await eventRepository.createEventInstance({
+      eventname,
+      eventdatetimestart,
+      eventdatetimeend: eventdatetimeend || null,
+      eventlocation: eventlocation || null,
+      eventcapacity: eventcapacity || eventdefaultcapacity || null,
+      eventregistrationdeadline: eventregistrationdeadline || null,
+    });
+
+    return res.redirect('/admin/events');
+  } catch (error) {
+    console.error('Error creating event with new template:', error);
+    return res.redirect('/admin/events');
+  }
+};
+
 module.exports = {
   getEvents,
   updateEvent,
   deleteEvent,
+  addEventFromTemplate,
+  addEventWithNewTemplate,
 };

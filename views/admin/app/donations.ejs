@@ -382,22 +382,27 @@
       }
 
       .donations-actions-button {
-        border: 1px solid #e5d4ce;
-        border-radius: 999px;
-        background: #fff7f3;
-        color: #5b4038;
-        font-size: 11px;
-        cursor: pointer;
-        padding: 4px 10px;
-        text-decoration: none;
-        line-height: 1;
-        transition: background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        border-radius:999px;
+        padding:4px 10px;
+        font-size:12px;
+        cursor:pointer;
+        text-decoration:none;
+        white-space:nowrap;
+        border:1px solid #e5d4ce;
+        background:#fff7f3;
+        color:#2f2623;
+        box-shadow:0 2px 6px rgba(0,0,0,0.05);
+        transition:background 0.12s ease,color 0.12s ease,box-shadow 0.12s ease,border-color 0.12s ease;
       }
 
       .donations-actions-button:hover {
-        background: #ffe8de;
-        border-color: #e0bfb0;
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+        background:#ffe8de;
+        border-color:#e0bfb0;
+        box-shadow:0 3px 8px rgba(0,0,0,0.08);
+        color:#2f2623;
       }
 
       /* Match Manager Corner delete pill styling */
@@ -441,6 +446,104 @@
 
       .donations-primary-btn:hover {
         background: #43302a;
+      }
+
+      /* Modal styles (matching manager corner) */
+      .donations-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+      }
+      .donations-modal-backdrop.active {
+        display: flex;
+      }
+      .donations-modal {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 18px 20px;
+        width: 90%;
+        max-width: 480px;
+        max-height: 85vh;
+        overflow-y: auto;
+      }
+      .donations-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+      .donations-modal-title {
+        font-size: 18px;
+        font-weight: 600;
+      }
+      .donations-modal-close {
+        border: none;
+        background: none;
+        font-size: 18px;
+        cursor: pointer;
+      }
+      .donations-modal-body {
+        font-size: 14px;
+        color: #4b4542;
+        line-height: 1.6;
+        margin-bottom: 16px;
+      }
+      .donations-modal-actions {
+        margin-top: 12px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+      .donations-modal-btn {
+        padding: 6px 14px;
+        border-radius: 999px;
+        border: none;
+        font-size: 13px;
+        cursor: pointer;
+      }
+      .donations-modal-btn--cancel {
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid #e5d4ce;
+        color: #2f2623;
+      }
+      .donations-modal-btn--cancel:hover {
+        background: #ffe8de;
+      }
+      .donations-modal-btn--save {
+        background: #2f2623;
+        color: #ffffff;
+      }
+      .donations-modal-btn--save:hover {
+        background: #1f1714;
+      }
+      .donations-modal-field {
+        margin-bottom: 10px;
+      }
+      .donations-modal-label {
+        font-size: 13px;
+        color: #6b5a56;
+        display: block;
+        margin-bottom: 4px;
+      }
+      .donations-modal-input {
+        width: 100%;
+        padding: 6px 8px;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+        font-size: 13px;
+      }
+      .donations-modal-info {
+        background: #fff7f3;
+        border: 1px solid #ffe0d4;
+        border-radius: 8px;
+        padding: 10px 12px;
+        font-size: 13px;
+        color: #6b5a56;
+        margin-bottom: 12px;
       }
     </style>
   </head>
@@ -515,73 +618,6 @@
           </article>
         </section>
 
-        <% if (user.permission === 'manager') { %>
-        <section class="donations-card" style="margin-bottom: 18px;">
-          <h2 style="font-size:18px;font-weight:600;margin-bottom:10px;">Add participant donation</h2>
-          <form method="POST" action="/admin/donations/prepare" style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;">
-            <label style="font-size:13px;color:#6b5a56;display:flex;flex-direction:column;gap:4px;">
-              Participant email
-              <input type="email" name="participantEmail" class="donations-inline-input" required />
-            </label>
-            <label style="font-size:13px;color:#6b5a56;display:flex;flex-direction:column;gap:4px;">
-              Date
-              <input
-                type="date"
-                name="donationDate"
-                class="donations-inline-input"
-                value="<%= new Date().toISOString().slice(0, 10) %>"
-                required
-              />
-            </label>
-            <label style="font-size:13px;color:#6b5a56;display:flex;flex-direction:column;gap:4px;">
-              Amount
-              <input type="number" step="0.01" name="donationAmount" class="donations-inline-input" required />
-            </label>
-            <button type="submit" class="donations-primary-btn">Save donation</button>
-          </form>
-        </section>
-
-        <% if (editDonation) { %>
-        <section class="donations-card" style="margin-bottom: 18px;">
-          <h2 style="font-size:18px;font-weight:600;margin-bottom:10px;">Edit participant donation</h2>
-          <form
-            method="POST"
-            action="/admin/donations/<%= editDonation.donationid %>/update"
-            style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;"
-          >
-            <div style="font-size:13px;color:#6b5a56;">
-              <strong><%= editDonation.firstname %> <%= editDonation.lastname %></strong>
-              <% if (editDonation.email) { %>
-              (<%= editDonation.email %>)
-              <% } %>
-            </div>
-            <label style="font-size:13px;color:#6b5a56;display:flex;flex-direction:column;gap:4px;">
-              Date
-              <input
-                type="date"
-                name="donationDate"
-                class="donations-inline-input"
-                value="<%= editDonation.donationdate ? editDonation.donationdate.toISOString().slice(0, 10) : '' %>"
-                required
-              />
-            </label>
-            <label style="font-size:13px;color:#6b5a56;display:flex;flex-direction:column;gap:4px;">
-              Amount
-              <input
-                type="number"
-                step="0.01"
-                name="donationAmount"
-                class="donations-inline-input"
-                value="<%= editDonation.donationamount %>"
-                required
-              />
-            </label>
-            <button type="submit" class="donations-primary-btn">Update donation</button>
-          </form>
-        </section>
-        <% } %>
-        <% } %>
-
         <section class="donations-card" id="donations-table-card">
           <form method="GET" action="/admin/donations" class="donations-filters">
             <div class="donations-filters-left">
@@ -651,13 +687,14 @@
                   <td style="text-align:right;">$<%= Number(d.donationamount || 0).toFixed(2) %></td>
                   <% if (user.permission === 'manager') { %>
                   <td style="text-align:right; white-space:nowrap;">
-                    <a
-                      href="/admin/donations?editId=<%= d.donationid %><%= search ? '&q=' + encodeURIComponent(search) : '' %>"
+                    <button
+                      type="button"
+                      onclick="openEditDonationModal('<%= d.donationid %>', '<%= d.firstname || '' %>', '<%= d.lastname || '' %>', '<%= d.email || '' %>', '<%= d.donationdate ? d.donationdate.toISOString().slice(0, 10) : '' %>', '<%= d.donationamount %>')"
                       class="donations-actions-button"
-                      style="margin-right:8px; text-decoration:none;"
+                      style="margin-right:8px;"
                     >
                       Edit
-                    </a>
+                    </button>
                     <form
                       method="POST"
                       action="/admin/donations/<%= d.donationid %>/delete"
@@ -699,8 +736,64 @@
           <% } %>
           <% } %>
         </section>
+
+        <!-- Edit Donation Modal -->
+        <div class="donations-modal-backdrop" id="editDonationModal">
+          <div class="donations-modal">
+            <div class="donations-modal-header">
+              <div class="donations-modal-title">Edit Donation</div>
+              <button type="button" class="donations-modal-close" onclick="closeEditDonationModal()">&times;</button>
+            </div>
+            <div class="donations-modal-info">
+              <strong id="editDonationParticipantName"></strong>
+              <div id="editDonationParticipantEmail" style="font-size: 12px; margin-top: 2px;"></div>
+            </div>
+            <form id="editDonationForm" method="POST">
+              <div class="donations-modal-field">
+                <label class="donations-modal-label" for="editDonationDate">Donation Date</label>
+                <input type="date" name="donationDate" id="editDonationDate" class="donations-modal-input" required>
+              </div>
+              <div class="donations-modal-field">
+                <label class="donations-modal-label" for="editDonationAmount">Amount ($)</label>
+                <input type="number" step="0.01" name="donationAmount" id="editDonationAmount" class="donations-modal-input" required>
+              </div>
+              <div class="donations-modal-actions">
+                <button type="button" class="donations-modal-btn donations-modal-btn--cancel" onclick="closeEditDonationModal()">Cancel</button>
+                <button type="submit" class="donations-modal-btn donations-modal-btn--save">Save changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
     </main>
+    <script>
+      function openEditDonationModal(donationId, firstName, lastName, email, date, amount) {
+        document.getElementById('editDonationParticipantName').textContent = firstName + ' ' + lastName;
+        document.getElementById('editDonationParticipantEmail').textContent = email ? '(' + email + ')' : '';
+        document.getElementById('editDonationDate').value = date;
+        document.getElementById('editDonationAmount').value = amount;
+        document.getElementById('editDonationForm').action = '/admin/donations/' + donationId + '/update';
+        document.getElementById('editDonationModal').classList.add('active');
+      }
+
+      function closeEditDonationModal() {
+        document.getElementById('editDonationModal').classList.remove('active');
+      }
+
+      // Close modal when clicking backdrop
+      document.getElementById('editDonationModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeEditDonationModal();
+        }
+      });
+
+      // Close modal on Escape key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeEditDonationModal();
+        }
+      });
+    </script>
     <script>
       (function () {
         // Keep pagination in sync with the current orderBy selection

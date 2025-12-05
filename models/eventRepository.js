@@ -115,9 +115,52 @@ async function getEventParticipants(instanceId) {
     .orderBy('a.registrationcreateddate', 'asc');
 }
 
+async function getAllEventTemplates() {
+  return knex('eventtypes')
+    .select('*')
+    .orderBy('eventname', 'asc');
+}
+
+async function createEventTemplate(templateData) {
+  const [template] = await knex('eventtypes')
+    .insert({
+      eventname: templateData.eventname,
+      eventtype: templateData.eventtype || null,
+      eventdescription: templateData.eventdescription || null,
+      eventrecurrencepattern: templateData.eventrecurrencepattern || null,
+      eventdefaultcapacity: templateData.eventdefaultcapacity || null,
+    })
+    .returning('*');
+  return template;
+}
+
+async function createEventInstance(instanceData) {
+  const [instance] = await knex('eventinstances')
+    .insert({
+      eventname: instanceData.eventname,
+      eventdatetimestart: instanceData.eventdatetimestart,
+      eventdatetimeend: instanceData.eventdatetimeend || null,
+      eventlocation: instanceData.eventlocation || null,
+      eventcapacity: instanceData.eventcapacity || null,
+      eventregistrationdeadline: instanceData.eventregistrationdeadline || null,
+    })
+    .returning('*');
+  return instance;
+}
+
+async function getEventTemplateById(eventtypeid) {
+  return knex('eventtypes')
+    .where({ eventtypeid })
+    .first();
+}
+
 module.exports = {
   DEFAULT_PAGE_SIZE,
   getUpcomingEventsCount,
   listEvents,
   getEventParticipants,
+  getAllEventTemplates,
+  createEventTemplate,
+  createEventInstance,
+  getEventTemplateById,
 };

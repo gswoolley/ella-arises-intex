@@ -138,14 +138,20 @@
         color:#ecfdf3;
       }
       .events-modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.35); display:none; align-items:center; justify-content:center; z-index:50; }
-      .events-modal { background:#ffffff; border-radius:16px; padding:18px 20px; max-width:520px; width:100%; box-shadow:0 18px 45px rgba(0,0,0,0.22); max-height:80vh; overflow-y:auto; }
-      .events-modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-      .events-modal-title { font-size:18px; font-weight:600; }
-      .events-modal-close { border:none; background:none; font-size:18px; cursor:pointer; }
-      .events-modal-field { margin-bottom:10px; }
-      .events-modal-label { font-size:13px; color:#6b5a56; display:block; margin-bottom:4px; }
-      .events-modal-input { width:100%; padding:6px 8px; border-radius:6px; border:1px solid #d1d5db; font-size:13px; }
-      .events-modal-actions { margin-top:12px; display:flex; justify-content:flex-end; gap:8px; }
+      .events-modal { background:#ffffff; border-radius:16px; padding:24px 28px; max-width:560px; width:100%; box-shadow:0 18px 45px rgba(0,0,0,0.22); max-height:85vh; overflow-y:auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+      .events-modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #f0ddd6; }
+      .events-modal-title { font-size:22px; font-weight:600; color:#2f2623; }
+      .events-modal-close { border:none; background:none; font-size:24px; cursor:pointer; color:#6b5a56; padding:0; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:999px; }
+      .events-modal-close:hover { background:#f8cdb9; }
+      .events-modal-body { font-size:15px; line-height:1.6; color:#4b4542; }
+      .events-modal-field { margin-bottom:16px; }
+      .events-modal-label { font-size:14px; font-weight:500; color:#2f2623; display:block; margin-bottom:6px; }
+      .events-modal-input, .events-modal-input select, .events-modal-input textarea { width:100%; padding:10px 12px; border-radius:8px; border:1px solid #d1d5db; font-size:15px; font-family:inherit; transition:border-color 0.2s ease, box-shadow 0.2s ease; }
+      .events-modal-input:focus, .events-modal-input select:focus, .events-modal-input textarea:focus { outline:none; border-color:#f8cdb9; box-shadow:0 0 0 3px rgba(248,205,185,0.2); }
+      .events-modal-input textarea { resize:vertical; min-height:80px; }
+      .events-modal-actions { margin-top:20px; display:flex; justify-content:flex-end; gap:10px; padding-top:16px; border-top:1px solid #f0ddd6; }
+      .events-secondary-btn { padding:8px 16px; border-radius:999px; border:1px solid #e5d4ce; background:#ffffff; color:#2f2623; font-size:14px; cursor:pointer; transition:background 0.2s ease; }
+      .events-secondary-btn:hover { background:#ffe8de; }
       @media (max-width: 768px) {
         .admin-main-shell { padding:32px 20px 40px; }
       }
@@ -220,6 +226,9 @@
                 </select>
               </label>
               <button type="submit" class="events-primary-btn">Apply</button>
+              <% if (user.permission === 'manager') { %>
+              <button type="button" class="events-primary-btn" onclick="openAddEventChoiceModal()">+ Add Event</button>
+              <% } %>
             </div>
           </form>
 
@@ -421,13 +430,152 @@
             />
           </div>
           <div class="events-modal-actions">
-            <button type="button" class="events-modal-close events-primary-btn" data-close-edit>Cancel</button>
+            <button type="button" class="events-secondary-btn" data-close-edit>Cancel</button>
             <button type="submit" class="events-primary-btn">Save changes</button>
           </div>
         </form>
         <% } else { %>
         <div class="events-empty">No event selected for editing.</div>
         <% } %>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Add Event Choice Modal -->
+    <% if (user.permission === 'manager') { %>
+    <div class="events-modal-backdrop" id="add-event-choice-modal" style="display:none;">
+      <div class="events-modal">
+        <div class="events-modal-header">
+          <div class="events-modal-title">Add Event</div>
+          <button type="button" class="events-modal-close" onclick="closeAddEventChoiceModal()">&times;</button>
+        </div>
+        <div class="events-modal-body">
+          <p style="margin-bottom: 16px;">Would you like to use an existing event template or create a new one?</p>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <button type="button" class="events-primary-btn" onclick="openUseTemplateModal()" style="width: 100%;">Use Existing Template</button>
+            <button type="button" class="events-primary-btn" onclick="openCreateNewTemplateModal()" style="width: 100%;">Create New Template & Event</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Use Existing Template Modal -->
+    <div class="events-modal-backdrop" id="use-template-modal" style="display:none;">
+      <div class="events-modal">
+        <div class="events-modal-header">
+          <div class="events-modal-title">Use Existing Template</div>
+          <button type="button" class="events-modal-close" onclick="closeUseTemplateModal()">&times;</button>
+        </div>
+        <form method="POST" action="/admin/events/add-from-template">
+          <div class="events-modal-field">
+            <label class="events-modal-label" for="template-select">Select Event Template</label>
+            <select id="template-select" name="eventtypeid" class="events-modal-input" required onchange="updateTemplateInfo(this.value)">
+              <option value="">-- Select a template --</option>
+              <% if (eventTemplates && eventTemplates.length > 0) { %>
+                <% eventTemplates.forEach(function(template) { %>
+                  <option value="<%= template.eventtypeid %>" 
+                    data-name="<%= template.eventname %>"
+                    data-type="<%= template.eventtype || '' %>"
+                    data-description="<%= template.eventdescription || '' %>"
+                    data-capacity="<%= template.eventdefaultcapacity || '' %>">
+                    <%= template.eventname %> (<%= template.eventtype || 'No type' %>)
+                  </option>
+                <% }); %>
+              <% } %>
+            </select>
+          </div>
+          <div id="template-info" style="display:none; background: #fff7f3; border: 1px solid #ffe0d4; border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-bottom: 12px;">
+            <div><strong>Type:</strong> <span id="template-type"></span></div>
+            <div><strong>Description:</strong> <span id="template-description"></span></div>
+            <div><strong>Default Capacity:</strong> <span id="template-capacity"></span></div>
+          </div>
+          <div class="events-modal-field">
+            <label class="events-modal-label" for="instance-start">Event Start Date & Time</label>
+            <input type="datetime-local" id="instance-start" name="eventdatetimestart" class="events-modal-input" required />
+          </div>
+          <div class="events-modal-field">
+            <label class="events-modal-label" for="instance-end">Event End Date & Time</label>
+            <input type="datetime-local" id="instance-end" name="eventdatetimeend" class="events-modal-input" />
+          </div>
+          <div class="events-modal-field">
+            <label class="events-modal-label" for="instance-location">Event Location</label>
+            <input type="text" id="instance-location" name="eventlocation" class="events-modal-input" placeholder="e.g., Community Center, Room 101" />
+          </div>
+          <div class="events-modal-field">
+            <label class="events-modal-label" for="instance-capacity">Event Capacity</label>
+            <input type="number" id="instance-capacity" name="eventcapacity" class="events-modal-input" min="1" />
+          </div>
+          <div class="events-modal-field">
+            <label class="events-modal-label" for="instance-deadline">Registration Deadline</label>
+            <input type="datetime-local" id="instance-deadline" name="eventregistrationdeadline" class="events-modal-input" />
+          </div>
+          <div class="events-modal-actions">
+            <button type="button" class="events-secondary-btn" onclick="closeUseTemplateModal()">Cancel</button>
+            <button type="submit" class="events-primary-btn">Create Event</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Create New Template Modal -->
+    <div class="events-modal-backdrop" id="create-new-template-modal" style="display:none;">
+      <div class="events-modal">
+        <div class="events-modal-header">
+          <div class="events-modal-title">Create New Template & Event</div>
+          <button type="button" class="events-modal-close" onclick="closeCreateNewTemplateModal()">&times;</button>
+        </div>
+        <form method="POST" action="/admin/events/add-with-new-template">
+          <div style="background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-bottom: 12px;">
+            <strong>Step 1:</strong> Create Event Template
+          </div>
+          <div class="events-modal-field">
+            <label class="events-modal-label" for="new-template-name">Template Name</label>
+            <input type="text" id="new-template-name" name="eventname" class="events-modal-input" placeholder="e.g., Weekly Workshop" required />
+          </div>
+          <div class="events-modal-field">
+            <label class="events-modal-label" for="new-template-type">Event Type</label>
+            <input type="text" id="new-template-type" name="eventtype" class="events-modal-input" placeholder="e.g., Workshop, Seminar, Social" />
+          </div>
+          <div class="events-modal-field">
+            <label class="events-modal-label" for="new-template-description">Description</label>
+            <textarea id="new-template-description" name="eventdescription" class="events-modal-input" rows="3" placeholder="Brief description of this event type"></textarea>
+          </div>
+          <div class="events-modal-field">
+            <label class="events-modal-label" for="new-template-recurrence">Recurrence Pattern</label>
+            <input type="text" id="new-template-recurrence" name="eventrecurrencepattern" class="events-modal-input" placeholder="e.g., Weekly, Monthly, One-time" />
+          </div>
+          <div class="events-modal-field">
+            <label class="events-modal-label" for="new-template-capacity">Default Capacity</label>
+            <input type="number" id="new-template-capacity" name="eventdefaultcapacity" class="events-modal-input" min="1" placeholder="e.g., 30" />
+          </div>
+          <div style="background: #e0f2fe; border: 1px solid #bae6fd; border-radius: 8px; padding: 10px 12px; font-size: 13px; margin-bottom: 12px; margin-top: 16px;">
+            <strong>Step 2:</strong> Create First Event Instance
+          </div>
+          <div class="events-modal-field">
+            <label class="events-modal-label" for="new-instance-start">Event Start Date & Time</label>
+            <input type="datetime-local" id="new-instance-start" name="eventdatetimestart" class="events-modal-input" required />
+          </div>
+          <div class="events-modal-field">
+            <label class="events-modal-label" for="new-instance-end">Event End Date & Time</label>
+            <input type="datetime-local" id="new-instance-end" name="eventdatetimeend" class="events-modal-input" />
+          </div>
+          <div class="events-modal-field">
+            <label class="events-modal-label" for="new-instance-location">Event Location</label>
+            <input type="text" id="new-instance-location" name="eventlocation" class="events-modal-input" placeholder="e.g., Community Center, Room 101" />
+          </div>
+          <div class="events-modal-field">
+            <label class="events-modal-label" for="new-instance-capacity">Event Capacity (overrides default)</label>
+            <input type="number" id="new-instance-capacity" name="eventcapacity" class="events-modal-input" min="1" />
+          </div>
+          <div class="events-modal-field">
+            <label class="events-modal-label" for="new-instance-deadline">Registration Deadline</label>
+            <input type="datetime-local" id="new-instance-deadline" name="eventregistrationdeadline" class="events-modal-input" />
+          </div>
+          <div class="events-modal-actions">
+            <button type="button" class="events-secondary-btn" onclick="closeCreateNewTemplateModal()">Cancel</button>
+            <button type="submit" class="events-primary-btn">Create Template & Event</button>
+          </div>
+        </form>
       </div>
     </div>
     <% } %>
@@ -455,6 +603,64 @@
             });
           });
         }
+
+        // Add Event Modal Functions
+        window.openAddEventChoiceModal = function() {
+          document.getElementById('add-event-choice-modal').style.display = 'flex';
+        };
+
+        window.closeAddEventChoiceModal = function() {
+          document.getElementById('add-event-choice-modal').style.display = 'none';
+        };
+
+        window.openUseTemplateModal = function() {
+          closeAddEventChoiceModal();
+          document.getElementById('use-template-modal').style.display = 'flex';
+        };
+
+        window.closeUseTemplateModal = function() {
+          document.getElementById('use-template-modal').style.display = 'none';
+        };
+
+        window.openCreateNewTemplateModal = function() {
+          closeAddEventChoiceModal();
+          document.getElementById('create-new-template-modal').style.display = 'flex';
+        };
+
+        window.closeCreateNewTemplateModal = function() {
+          document.getElementById('create-new-template-modal').style.display = 'none';
+        };
+
+        window.updateTemplateInfo = function(templateId) {
+          var select = document.getElementById('template-select');
+          var option = select.options[select.selectedIndex];
+          var infoDiv = document.getElementById('template-info');
+          
+          if (templateId && option) {
+            document.getElementById('template-type').textContent = option.getAttribute('data-type') || 'N/A';
+            document.getElementById('template-description').textContent = option.getAttribute('data-description') || 'N/A';
+            document.getElementById('template-capacity').textContent = option.getAttribute('data-capacity') || 'N/A';
+            
+            // Pre-fill capacity if available
+            var capacity = option.getAttribute('data-capacity');
+            if (capacity) {
+              document.getElementById('instance-capacity').value = capacity;
+            }
+            
+            infoDiv.style.display = 'block';
+          } else {
+            infoDiv.style.display = 'none';
+          }
+        };
+
+        // Close modals when clicking backdrop
+        document.querySelectorAll('.events-modal-backdrop').forEach(function(backdrop) {
+          backdrop.addEventListener('click', function(e) {
+            if (e.target === backdrop) {
+              backdrop.style.display = 'none';
+            }
+          });
+        });
       })();
     </script>
   </body>

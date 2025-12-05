@@ -26,12 +26,10 @@ async function getActiveParticipantsCount() {
 }
 
 // List all participants with optional search and pagination
-async function listParticipants({ search = '', page = 1, limit = 25 } = {}) {
+async function listParticipants({ search = '', page = 1, limit = 25, orderBy = 'name_asc' } = {}) {
   const offset = (page - 1) * limit;
 
-  let query = knex('personinfo')
-    .select('*')
-    .orderBy('personid', 'desc');
+  let query = knex('personinfo').select('*');
 
   if (search) {
     query = query.where(function () {
@@ -41,6 +39,29 @@ async function listParticipants({ search = '', page = 1, limit = 25 } = {}) {
         .orWhereILike('personcity', `%${search}%`)
         .orWhereILike('personschooloremployer', `%${search}%`);
     });
+  }
+
+  // Apply ordering
+  switch (orderBy) {
+    case 'name_desc':
+      query = query.orderBy('personfirstname', 'desc').orderBy('personlastname', 'desc');
+      break;
+    case 'email_asc':
+      query = query.orderBy('personemail', 'asc');
+      break;
+    case 'email_desc':
+      query = query.orderBy('personemail', 'desc');
+      break;
+    case 'city_asc':
+      query = query.orderBy('personcity', 'asc');
+      break;
+    case 'city_desc':
+      query = query.orderBy('personcity', 'desc');
+      break;
+    case 'name_asc':
+    default:
+      query = query.orderBy('personfirstname', 'asc').orderBy('personlastname', 'asc');
+      break;
   }
 
   const participants = await query.clone().limit(limit).offset(offset);
@@ -154,27 +175,75 @@ async function deleteParticipant(personId) {
 }
 
 // List recent surveys with participant and event info
-async function listRecentSurveys({ page = 1, limit = 25 } = {}) {
+async function listRecentSurveys({ search = '', page = 1, limit = 25, orderBy = 'date_desc' } = {}) {
   const offset = (page - 1) * limit;
 
-  const surveys = await knex('surveyinstances as s')
+  let query = knex('surveyinstances as s')
     .join('participantattendanceinstances as a', 's.attendanceinstanceid', 'a.attendanceinstanceid')
     .join('personinfo as p', 'a.personid', 'p.personid')
     .join('eventinstances as ei', 'a.instanceid', 'ei.instanceid')
     .select(
       's.*',
+      'a.attendanceinstanceid',
       'p.personid',
       'p.personfirstname',
       'p.personlastname',
       'p.personemail',
       'ei.eventname',
       'ei.eventdatetimestart'
-    )
-    .orderBy('s.surveysubmissiondate', 'desc')
-    .limit(limit)
-    .offset(offset);
+    );
 
-  const countResult = await knex('surveyinstances').count('* as count').first();
+  // Apply search filter
+  if (search) {
+    query = query.where(function () {
+      this.whereILike('p.personfirstname', `%${search}%`)
+        .orWhereILike('p.personlastname', `%${search}%`)
+        .orWhereILike('p.personemail', `%${search}%`)
+        .orWhereILike('ei.eventname', `%${search}%`);
+    });
+  }
+
+  // Apply ordering
+  switch (orderBy) {
+    case 'date_asc':
+      query = query.orderBy('s.surveysubmissiondate', 'asc');
+      break;
+    case 'score_desc':
+      query = query.orderBy('s.surveyoverallscore', 'desc');
+      break;
+    case 'score_asc':
+      query = query.orderBy('s.surveyoverallscore', 'asc');
+      break;
+    case 'participant_asc':
+      query = query.orderBy('p.personfirstname', 'asc').orderBy('p.personlastname', 'asc');
+      break;
+    case 'participant_desc':
+      query = query.orderBy('p.personfirstname', 'desc').orderBy('p.personlastname', 'desc');
+      break;
+    case 'date_desc':
+    default:
+      query = query.orderBy('s.surveysubmissiondate', 'desc');
+      break;
+  }
+
+  const surveys = await query.clone().limit(limit).offset(offset);
+
+  // Count with search filter
+  let countQuery = knex('surveyinstances as s')
+    .join('participantattendanceinstances as a', 's.attendanceinstanceid', 'a.attendanceinstanceid')
+    .join('personinfo as p', 'a.personid', 'p.personid')
+    .join('eventinstances as ei', 'a.instanceid', 'ei.instanceid');
+
+  if (search) {
+    countQuery = countQuery.where(function () {
+      this.whereILike('p.personfirstname', `%${search}%`)
+        .orWhereILike('p.personlastname', `%${search}%`)
+        .orWhereILike('p.personemail', `%${search}%`)
+        .orWhereILike('ei.eventname', `%${search}%`);
+    });
+  }
+
+  const countResult = await countQuery.count('* as count').first();
   const total = Number(countResult?.count || 0);
 
   return { surveys, total, page, limit };

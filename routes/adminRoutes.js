@@ -38,6 +38,8 @@ const {
   getEvents,
   updateEvent,
   deleteEvent,
+  addEventFromTemplate,
+  addEventWithNewTemplate,
 } = require('../controller/admin/app/eventsController');
 const {
   getParticipants,
@@ -48,6 +50,8 @@ const {
   addMilestone,
   updateMilestone,
   deleteMilestone,
+  updateSurvey,
+  deleteSurvey,
 } = require('../controller/admin/app/participantsController');
 const { getUploadPage } = require('../controller/uploadController');
 const { getDataAnalysis } = require('../controller/admin/app/dataAnalysisController');
@@ -99,6 +103,8 @@ router.post('/donations/:id/delete', ensureAuthenticated, ensureManager, deleteD
 router.get('/events', ensureAuthenticated, getEvents);
 
 // Events actions (manager only)
+router.post('/events/add-from-template', ensureAuthenticated, ensureManager, addEventFromTemplate);
+router.post('/events/add-with-new-template', ensureAuthenticated, ensureManager, addEventWithNewTemplate);
 router.post('/events/:id/update', ensureAuthenticated, ensureManager, updateEvent);
 router.post('/events/:id/delete', ensureAuthenticated, ensureManager, deleteEvent);
 
@@ -115,6 +121,10 @@ router.post('/participants/:id/delete', ensureAuthenticated, ensureManager, dele
 router.post('/milestones', ensureAuthenticated, ensureManager, addMilestone);
 router.post('/milestones/:id/update', ensureAuthenticated, ensureManager, updateMilestone);
 router.post('/milestones/:id/delete', ensureAuthenticated, ensureManager, deleteMilestone);
+
+// Surveys actions (manager only)
+router.post('/surveys/:id/update', ensureAuthenticated, ensureManager, updateSurvey);
+router.post('/surveys/:id/delete', ensureAuthenticated, ensureManager, deleteSurvey);
 
 // Data Analysis
 router.get('/data-analysis', ensureAuthenticated, getDataAnalysis);
