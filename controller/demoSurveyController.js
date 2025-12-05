@@ -105,11 +105,16 @@ function getDemoSurveyForm(req, res) {
 async function submitDemoSurvey(req, res) {
   try {
     await createDemoSurvey(req.body);
-    res.redirect('/demo-survey?message=' + encodeURIComponent('Thank you! Your response has been recorded.'));
+    res.redirect('/demo-survey/thank-you');
   } catch (error) {
     console.error('Error submitting demo survey:', error);
-    res.redirect('/demo-survey?message=' + encodeURIComponent('Error submitting survey. Please try again.'));
+    res.status(500).send('Error submitting survey');
   }
+}
+
+// Render the thank you page after survey submission
+function getThankYouPage(req, res) {
+  res.render('demo/thank-you');
 }
 
 // Reset demo (clear all submissions)
@@ -129,5 +134,6 @@ module.exports = {
   downloadCSV,
   getDemoSurveyForm,
   submitDemoSurvey,
+  getThankYouPage,
   resetDemo,
 };

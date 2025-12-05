@@ -18,6 +18,7 @@ const {
   downloadCSV,
   getDemoSurveyForm,
   submitDemoSurvey,
+  getThankYouPage,
   resetDemo,
 } = require('../controller/demoSurveyController');
 
@@ -40,5 +41,8 @@ router.get('/demo-survey', getDemoSurveyForm);
 
 // Handle demo survey form submission
 router.post('/demo-survey', submitDemoSurvey);
+
+// Thank you page after survey submission
+router.get('/demo-survey/thank-you', getThankYouPage);
 
 module.exports = router;
