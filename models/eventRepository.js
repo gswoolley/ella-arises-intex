@@ -1,7 +1,9 @@
+// Event Repository - Database operations for events
 const knex = require('../util/db');
 
 const DEFAULT_PAGE_SIZE = 20;
 
+// Get count of upcoming events
 async function getUpcomingEventsCount() {
   const result = await knex.raw(
     `SELECT COUNT(*)::int AS upcoming_events
@@ -14,6 +16,7 @@ async function getUpcomingEventsCount() {
   );
 }
 
+// Base query for events with participant count
 function baseEventsQuery() {
   return knex('eventinstances').select(
     'eventinstances.instanceid',
@@ -29,6 +32,7 @@ function baseEventsQuery() {
   );
 }
 
+// Filter events by time (upcoming, past, or all)
 function applyTimeFilter(query, timeFilter) {
   const q = query.clone();
   switch ((timeFilter || 'upcoming').toLowerCase()) {
@@ -46,6 +50,7 @@ function applyTimeFilter(query, timeFilter) {
   return q;
 }
 
+// Apply sorting to events query
 function applyOrdering(query, orderBy) {
   const q = query.clone();
   switch (orderBy) {
@@ -72,6 +77,7 @@ function applyOrdering(query, orderBy) {
   return q;
 }
 
+// Get paginated list of events with filtering and sorting
 async function listEvents({
   timeFilter = 'upcoming',
   orderBy = 'date_desc',
@@ -95,6 +101,7 @@ async function listEvents({
   return { rows, totalCount };
 }
 
+// Get all participants for a specific event
 async function getEventParticipants(instanceId) {
   if (!instanceId) return [];
 
@@ -115,12 +122,14 @@ async function getEventParticipants(instanceId) {
     .orderBy('a.registrationcreateddate', 'asc');
 }
 
+// Get all event templates (event types)
 async function getAllEventTemplates() {
   return knex('eventtypes')
     .select('*')
     .orderBy('eventname', 'asc');
 }
 
+// Create a new event template
 async function createEventTemplate(templateData) {
   const [template] = await knex('eventtypes')
     .insert({
@@ -134,6 +143,7 @@ async function createEventTemplate(templateData) {
   return template;
 }
 
+// Create a new event instance
 async function createEventInstance(instanceData) {
   const [instance] = await knex('eventinstances')
     .insert({
@@ -148,6 +158,7 @@ async function createEventInstance(instanceData) {
   return instance;
 }
 
+// Get event template by ID
 async function getEventTemplateById(eventtypeid) {
   return knex('eventtypes')
     .where({ eventtypeid })

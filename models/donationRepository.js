@@ -1,7 +1,9 @@
+// Donation Repository - Database operations for donations
 const knex = require('../util/db');
 
 const DEFAULT_PAGE_SIZE = 20;
 
+// Base query that joins donations with person info
 function baseDonationQuery() {
   return knex('donations as d')
     .leftJoin('personinfo as p', 'd.personid', 'p.personid')
@@ -17,6 +19,7 @@ function baseDonationQuery() {
     );
 }
 
+// Apply search filter to query (searches name and email)
 function applySearch(query, search) {
   if (!search) return query;
   return query.where(function () {
@@ -26,6 +29,7 @@ function applySearch(query, search) {
   });
 }
 
+// Apply sorting to query based on orderBy parameter
 function applyOrdering(query, orderBy) {
   const ordered = query.clone();
   switch (orderBy) {
@@ -52,6 +56,7 @@ function applyOrdering(query, orderBy) {
   return ordered;
 }
 
+// Get paginated list of donations with search and sorting
 async function listDonations({ search = '', orderBy = 'date_desc', page = 1, pageSize = DEFAULT_PAGE_SIZE }) {
   const base = applySearch(baseDonationQuery(), search);
   const ordered = applyOrdering(base, orderBy);
@@ -71,6 +76,7 @@ async function listDonations({ search = '', orderBy = 'date_desc', page = 1, pag
   return { rows, totalCount };
 }
 
+// Get total donation amount for current month
 async function getMonthlyTotal() {
   const result = await knex.raw(
     `SELECT COALESCE(SUM(donationamount), 0) AS monthly_donations
@@ -81,6 +87,7 @@ async function getMonthlyTotal() {
   return Number(result.rows[0] && result.rows[0].monthly_donations) || 0;
 }
 
+// Get total donation amount across all time
 async function getOverallTotal() {
   const result = await knex.raw(
     `SELECT COALESCE(SUM(donationamount), 0) AS overall_donations
@@ -89,6 +96,7 @@ async function getOverallTotal() {
   return Number(result.rows[0] && result.rows[0].overall_donations) || 0;
 }
 
+// Get total count of all donations
 async function getDonationCount() {
   const result = await knex.raw(
     `SELECT COUNT(*)::int AS donation_count
@@ -97,6 +105,7 @@ async function getDonationCount() {
   return Number(result.rows[0] && result.rows[0].donation_count) || 0;
 }
 
+// Find a single donation by ID
 async function findById(donationId) {
   if (!donationId) return null;
   return baseDonationQuery()
@@ -104,6 +113,7 @@ async function findById(donationId) {
     .first();
 }
 
+// Create a new donation record
 async function createDonation({ participantId, donationDate, donationAmount }) {
   if (!participantId || !donationDate || !donationAmount) return null;
   return knex('donations').insert({
@@ -114,6 +124,7 @@ async function createDonation({ participantId, donationDate, donationAmount }) {
   });
 }
 
+// Update an existing donation
 async function updateDonationById(donationId, { donationDate, donationAmount }) {
   if (!donationId) return null;
   return knex('donations')
@@ -124,6 +135,7 @@ async function updateDonationById(donationId, { donationDate, donationAmount }) 
     });
 }
 
+// Delete a donation by ID
 async function deleteDonationById(donationId) {
   if (!donationId) return null;
   return knex('donations').where({ donationid: donationId }).del();

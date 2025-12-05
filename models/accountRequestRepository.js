@@ -1,5 +1,8 @@
+// Account Request Repository - Manage user access requests
+
 const knex = require('../util/db');
 
+// Base query for account requests
 function baseRequestsQuery() {
   return knex('account_requests').select(
     'id',
@@ -15,6 +18,7 @@ function baseRequestsQuery() {
   );
 }
 
+// List account requests with optional status filter
 function listRequests({ statusFilter = 'all' }) {
   const query = baseRequestsQuery();
 
@@ -25,11 +29,13 @@ function listRequests({ statusFilter = 'all' }) {
   return query.orderBy('created_at', 'desc');
 }
 
+// Count pending requests
 async function countPendingRequests() {
   const row = await knex('account_requests').where({ status: 'pending' }).count('* as count').first();
   return Number(row?.count || 0);
 }
 
+// Count requests approved this month
 async function countApprovedThisMonth() {
   const row = await knex('account_requests')
     .where({ status: 'approved' })
@@ -39,16 +45,19 @@ async function countApprovedThisMonth() {
   return Number(row?.count || 0);
 }
 
+// Find request by ID
 async function findById(id, trx = null) {
   const q = (trx || knex)('account_requests').where({ id });
   return q.first();
 }
 
+// Find request by email
 async function findByEmail(email, trx = null) {
   const q = (trx || knex)('account_requests').where({ email });
   return q.first();
 }
 
+// Update request status (approve/reject)
 async function updateStatus(id, { status, reviewedBy }, trx = null) {
   const runner = trx || knex;
   return runner('account_requests')
@@ -60,6 +69,7 @@ async function updateStatus(id, { status, reviewedBy }, trx = null) {
     });
 }
 
+// Mark request as rejected by email
 async function markRejectedByEmail(email, reviewedBy, trx = null) {
   const runner = trx || knex;
   return runner('account_requests')
@@ -71,11 +81,13 @@ async function markRejectedByEmail(email, reviewedBy, trx = null) {
     });
 }
 
+// Delete request by ID
 async function deleteById(id, trx = null) {
   const runner = trx || knex;
   return runner('account_requests').where({ id }).del();
 }
 
+// Update request details
 async function updateById(id, { firstName, lastName, organization, message }, trx = null) {
   const runner = trx || knex;
   return runner('account_requests')

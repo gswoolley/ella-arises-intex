@@ -1,535 +1,398 @@
-# Ella Rises INTEX Project
+# Ella Rises - Web Application
 
-A Node.js/Express web application for managing participants, events, surveys, milestones, and donations for the Ella Rises nonprofit. Built with EJS, PostgreSQL, and deployed on AWS.
+A comprehensive web application for managing participants, events, donations, and surveys for the Ella Rises organization.
 
-## Features
+## Table of Contents
+- [Architecture Overview](#architecture-overview)
+- [Technology Stack](#technology-stack)
+- [Database Schema](#database-schema)
+- [Getting Started](#getting-started)
+- [Application Features](#application-features)
+- [CSV Upload & ETL Pipeline](#csv-upload--etl-pipeline)
+- [User Roles & Permissions](#user-roles--permissions)
+- [Deployment](#deployment)
 
-- **User Authentication**: Manager and common user roles
-- **CRUD Management**: Participants, Events, Surveys, Milestones, Donations
-- **Role-Based Access**: Managers maintain data; common users view only
-- **Responsive UI**: Built with EJS templates and modern CSS
-- **Secure Sessions**: Express sessions with flash messages
+---
 
-## Tech Stack
+## Architecture Overview
 
-- **Backend**: Node.js, Express.js
-- **Frontend**: EJS templating, HTML, CSS
-- **Database**: PostgreSQL (via Knex.js ORM)
-- **Security**: bcrypt, helmet, express-session
-- **Deployment**: AWS (Elastic Beanstalk + RDS)
+The application follows a **Model-View-Controller (MVC)** architecture with an **ETL pipeline** for data processing.
 
-## Local Setup
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Client Browser                          │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│                    Express.js Server                         │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │   Routes     │  │ Controllers  │  │    Views     │      │
+│  │ (adminRoutes)│─▶│ (CRUD logic) │─▶│  (EJS pages) │      │
+│  └──────────────┘  └──────────────┘  └──────────────┘      │
+│         │                  │                                 │
+│         ▼                  ▼                                 │
+│  ┌──────────────┐  ┌──────────────┐                        │
+│  │ Middleware   │  │  Repositories│                        │
+│  │ (auth/perms) │  │ (DB queries) │                        │
+│  └──────────────┘  └──────────────┘                        │
+└─────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  PostgreSQL Database                         │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │ Main Tables  │  │Staging Tables│  │ Archive      │      │
+│  │ (normalized) │  │ (recent data)│  │ (history)    │      │
+│  └──────────────┘  └──────────────┘  └──────────────┘      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Key Components
+
+#### **1. Routes** (`/routes`)
+- `adminRoutes.js` - Admin panel routes (authentication, CRUD, CSV upload)
+- `dashboardRoutes.js` - Public dashboard routes
+
+#### **2. Controllers** (`/controller`)
+- Handle business logic and request/response flow
+- `admin/app/` - CRUD controllers for participants, events, donations
+- `admin/auth/` - Authentication and account request controllers
+- `uploadController.js` - CSV upload page controller
+
+#### **3. Models/Repositories** (`/models`)
+- Database access layer using Knex.js
+- Each repository handles queries for a specific entity
+- Examples: `participantRepository.js`, `eventRepository.js`, `donationRepository.js`
+
+#### **4. Views** (`/views`)
+- EJS templates for dynamic HTML rendering
+- `admin/app/` - Admin panel pages
+- `admin/auth/` - Login and account request pages
+- `public/` - Public dashboard
+
+#### **5. ETL Pipeline** (`/etl`)
+- `mapCsvToStaging.js` - Maps CSV columns to staging table
+- `normalize.js` - Transforms raw data into normalized database schema
+
+---
+
+## Technology Stack
+
+- **Backend**: Node.js + Express.js
+- **Database**: PostgreSQL
+- **Query Builder**: Knex.js
+- **Template Engine**: EJS
+- **Session Management**: express-session
+- **File Upload**: Multer
+- **CSV Parsing**: csv-parser
+- **Date Handling**: Luxon
+- **Deployment**: AWS Elastic Beanstalk
+
+---
+
+## Database Schema
+
+### Main Tables (Normalized Data)
+- `personinfo` - Participant information
+- `eventtypes` - Event templates
+- `eventinstances` - Specific event occurrences
+- `participantattendanceinstances` - Event attendance records
+- `surveyinstances` - Survey responses
+- `participantmilestones` - Participant achievements
+- `donations` - Donation records
+- `loginpermissions` - User accounts and permissions
+- `account_requests` - Pending access requests
+
+### Staging Tables (Recent Upload Data)
+- `stagingrawsurvey` - Raw CSV data (unnormalized)
+- `stagingarchive` - Historical archive of raw uploads
+- `staging_personinfo` - Recently added participants
+- `staging_eventinstances` - Recently added events
+- `staging_participantattendanceinstances` - Recent attendance
+- `staging_surveyinstances` - Recent surveys
+- `staging_participantmilestones` - Recent milestones
+- `staging_donations` - Recent donations
+
+**Note**: Staging tables are cleared at the start of each CSV upload and show only the most recent data added.
+
+---
+
+## Getting Started
 
 ### Prerequisites
-
-- Node.js (v14+)
-- npm
-- PostgreSQL (local or AWS RDS)
+- Node.js (v14 or higher)
+- PostgreSQL (v12 or higher)
+- npm or yarn
 
 ### Installation
 
-1. Clone the repository:
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd ella-arises-intex
+   ```
 
-```bash
-git clone https://github.com/gswoolley/ella-arises-intex.git
-cd ella-arises-intex
-```
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-2. Install dependencies:
+3. **Set up environment variables**
+   
+   Create a `.env` file in the root directory:
+   ```env
+   # Database Configuration
+   DB_HOST=localhost
+   DB_USER=your_db_user
+   DB_PASSWORD=your_db_password
+   DB_NAME=ella_rises
+   DB_PORT=5432
 
-```bash
-npm install
-```
+   # Session Secret
+   SESSION_SECRET=your-secret-key-here
 
-3. Create a `.env` file (copy from `.env.example`):
+   # Environment
+   NODE_ENV=development
+   ```
 
-```bash
-cp .env.example .env
-```
+4. **Set up the database**
+   
+   Run the SQL schema from `/txt-instruction-files/main_tables.txt` to create all tables.
 
-4. Update `.env` with your database credentials (leave blank for now if using mock auth):
+5. **Start the server**
+   ```bash
+   npm start
+   ```
 
-```
-PORT=3000
-NODE_ENV=development
-SESSION_SECRET=your-secret-key-here
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=your-password
-DB_NAME=ella_rises_dev
-```
+6. **Access the application**
+   - Main site: `http://localhost:3016/`
+   - Admin panel: `http://localhost:3016/admin`
+   - Public dashboard: `http://localhost:3016/dashboard`
 
-### Running Locally
+---
 
-```bash
-npm start
-```
+## Application Features
 
-Visit `http://localhost:3000` in your browser.
+### Public Features
+- **Landing Page** - Marketing/informational site
+- **Public Dashboard** - Read-only data visualizations
 
-### Demo Credentials
+### Admin Features (Authentication Required)
 
-For testing (works without a database):
+#### **Participants Management**
+- View all participants with search and filtering
+- Add new participants manually
+- Edit participant information
+- Delete participants (cascades to related data)
+- View detailed participant profiles with:
+  - Event attendance history
+  - Survey responses
+  - Milestones achieved
+  - Donation history
 
-**Manager Account:**
+#### **Events Management**
+- View upcoming, past, or all events
+- Create event templates (reusable event types)
+- Create event instances from templates
+- View participant lists for each event
+- Edit and delete events
 
-- Email: `manager@ellarises.org`
-- Password: `manager123`
+#### **Donations Management**
+- View all donations with search and sorting
+- Add new donations
+- Edit donation amounts and dates
+- Delete donations
+- View monthly and overall donation totals
 
-**Common User Account:**
+#### **Surveys Management**
+- View all survey responses
+- Filter by participant or event
+- Edit survey data
+- Delete surveys
 
-- Email: `user@ellarises.org`
-- Password: `user123`
+#### **Data Analysis**
+- Embedded Tableau dashboard
+- Interactive data visualizations
+
+#### **CSV Upload** (Manager Only)
+- Upload CSV files with participant, event, and survey data
+- Automatic data normalization and validation
+- View upload results showing what was added
+- Historical archive of all uploads
+
+### Manager-Only Features
+- **Manager Corner**
+  - Approve/reject account requests
+  - Manage user accounts
+  - Elevate users to manager status
+  - View pending requests count
+- **All CRUD operations** (regular users have read-only access)
+
+---
+
+## CSV Upload & ETL Pipeline
+
+### How It Works
+
+1. **Upload CSV File**
+   - Manager uploads CSV via `/admin/csv-upload`
+   - File is temporarily stored in `/uploads` directory
+
+2. **Clear Staging Tables**
+   - All `staging_*` tables are truncated
+   - Ensures only new data is shown in results
+
+3. **Map to Raw Staging**
+   - CSV columns are mapped to `stagingrawsurvey` table
+   - All data stored as text for flexibility
+
+4. **Normalization Process**
+   - Raw data is transformed into normalized schema
+   - Participants are created/updated in `personinfo`
+   - Events are created in `eventtypes` and `eventinstances`
+   - Attendance records link participants to events
+   - Surveys are associated with attendance
+   - Milestones and donations are parsed and inserted
+   - **Dual insertion**: Data goes into both main tables AND staging tables
+
+5. **Archive & Cleanup**
+   - Raw data is archived to `stagingarchive`
+   - `stagingrawsurvey` is truncated for next upload
+   - Temporary CSV file is deleted
+
+6. **Display Results**
+   - Upload page shows data from `staging_*` tables
+   - Users can verify what was just added
+
+### CSV Format
+
+The CSV must have these columns:
+- Participant info: Email, FirstName, LastName, DOB, Role, Phone, City, State, Zip, etc.
+- Event info: EventName, EventType, EventDateTimeStart, EventLocation, etc.
+- Registration: RegistrationStatus, RegistrationAttendedFlag, etc.
+- Survey: SurveySatisfactionScore, SurveyOverallScore, SurveyNPSBucket, etc.
+- Milestones: MilestoneTitles (semicolon-separated), MilestoneDates (semicolon-separated)
+- Donations: DonationHistory (format: `YYYY-MM-DD:$amount;YYYY-MM-DD:$amount`)
+
+### Date Formats Supported
+- `YYYY-MM-DD` (e.g., 2024-10-06)
+- `M/D/YY` (e.g., 10/6/24)
+- `M/D/YY H:mm` (e.g., 10/6/24 10:00)
+
+---
+
+## User Roles & Permissions
+
+### Manager
+- Full CRUD access to all entities
+- Can upload CSV files
+- Can approve/reject account requests
+- Can manage user accounts and permissions
+
+### Regular User
+- Read-only access to all data
+- Can view participants, events, donations, surveys
+- Cannot create, edit, or delete records
+- Cannot access Manager Corner or CSV upload
+
+### Public (No Authentication)
+- Access to landing page
+- Access to public dashboard
+
+---
+
+## Deployment
+
+### AWS Elastic Beanstalk
+
+The application is configured for deployment on AWS Elastic Beanstalk.
+
+**Key Configuration Files:**
+- `.ebextensions/nodecommand.config` - EB configuration
+- `.platform/nginx/conf.d/` - Nginx configuration
+- `knexfile.js` - Database configuration (uses RDS_* environment variables)
+
+**Environment Variables (Production):**
+- `RDS_HOSTNAME` - Database host
+- `RDS_USERNAME` - Database user
+- `RDS_PASSWORD` - Database password
+- `RDS_DB_NAME` - Database name
+- `RDS_PORT` - Database port
+- `SESSION_SECRET` - Session encryption key
+- `NODE_ENV=production`
+
+**Security Features:**
+- Automatic HTTPS redirect in production
+- Session cookies secured in production
+- Proxy trust for load balancer
+- Health check endpoint for ELB
+
+---
 
 ## Project Structure
 
 ```
 ella-arises-intex/
-├── app.js                    # Express app entry point
-├── knexfile.js              # Knex database configuration
-├── .env.example             # Environment template
-├── routes/
-│   ├── auth.js              # Authentication routes
-│   ├── home.js              # Landing page
-│   └── ... (others)
-├── src/
-│   ├── routes/              # CRUD routes (participants, events, etc.)
-│   ├── controllers/         # Route handlers
-│   ├── models/              # Database models (Knex)
-│   ├── middleware/          # Auth, validation middleware
-│   └── validation/          # Request schemas
-├── views/
-│   ├── layout.ejs           # Main layout
-│   ├── index.ejs            # Landing page
-│   ├── partials/            # Header, footer, etc.
-│   └── (participants, events, surveys, etc.)
-├── public/
-│   ├── css/                 # Stylesheets
-│   └── js/                  # Client-side scripts
-└── db/
-    ├── migrations/          # Knex migrations (when DB ready)
-    └── seeds/               # Seed data (when DB ready)
+├── controller/           # Request handlers
+│   ├── admin/
+│   │   ├── app/         # Admin CRUD controllers
+│   │   └── auth/        # Authentication controllers
+│   ├── dashboardController.js
+│   └── uploadController.js
+├── etl/                 # ETL pipeline
+│   ├── mapCsvToStaging.js
+│   └── normalize.js
+├── models/              # Database repositories
+│   ├── authRepository.js
+│   ├── participantRepository.js
+│   ├── eventRepository.js
+│   └── ...
+├── routes/              # Route definitions
+│   ├── adminRoutes.js
+│   └── dashboardRoutes.js
+├── views/               # EJS templates
+│   ├── admin/
+│   └── public/
+├── public/              # Static files
+│   ├── images/
+│   └── ella-rises-landingpage/
+├── uploads/             # Temporary CSV uploads
+├── util/                # Utilities
+│   └── db              # Database connection
+├── index.js            # Main application entry point
+├── knexfile.js         # Database configuration
+└── package.json        # Dependencies
 ```
 
-## Development Workflow
+---
 
-1. Create a feature branch:
+## Development
 
+### Running Locally
 ```bash
-git checkout -b feature/your-feature-name
-```
-
-2. Make changes and commit:
-
-```bash
-git add .
-git commit -m "feat: your message here"
-git push origin feature/your-feature-name
-```
-
-3. Open a pull request to `main` for review.
-
-## Database Setup (When Ready)
-
-Once your team provisions an AWS RDS PostgreSQL instance:
-
-1. Update `.env` with RDS connection details
-2. Run Knex migrations:
-
-```bash
-npx knex migrate:latest
-```
-
-3. Seed sample data:
-
-```bash
-npx knex seed:run
-```
-
-## Deployment (AWS)
-
-### Deploy to Elastic Beanstalk
-
-```bash
-# Install EB CLI
-brew install awsebcli
-
-# Initialize EB app (one time)
-eb init -p node.js-18 ella-arises-intex
-
-# Create environment
-eb create ella-rises-prod
-
-# Deploy
-eb deploy
-```
-
-### Configure Custom Domain & HTTPS
-
-1. Register domain or use `is404.net` subdomain
-2. Create Route53 DNS record pointing to your EB environment
-3. Request ACM certificate for your domain
-4. Attach certificate to load balancer in EB console
-
-## Testing
-
-```bash
-npm test
-```
-
-(Tests coming soon)
-
-## Documentation
-
-- **Rubric**: See course-specific requirements
-- **Normalization Spreadsheet**: Maintained by database team
-- **ERD**: Database ER diagram (link in team docs)
-- **Analytics Dashboard**: Embedded in app (pending analytics team)
-
-## Team Roles
-
-- **Backend/App** (you): Routes, controllers, views, auth
-- **Database** (team): Normalization, AWS RDS setup, migrations
-- **AWS/DevOps** (team): Elastic Beanstalk, RDS, Route53, ACM
-- **Analytics** (team): Python EDA, Tableau dashboard
-
-## Common Commands
-
-```bash
-# Run locally
 npm start
-
-# Run Knex migrations
-npx knex migrate:latest
-
-# Create new migration
-npx knex migrate:make migration_name
-
-# Seed database
-npm run seed
 ```
 
-## Notes
+### Environment
+- Development: Uses local PostgreSQL database
+- Production: Uses AWS RDS PostgreSQL
 
-- Auth currently uses in-memory storage for demo. Replace with DB queries once PostgreSQL is ready.
-- Flash messages show errors and success messages.
-- Sessions expire after 24 hours of inactivity.
-- All manager-only routes will be protected with middleware once DB is integrated.
-
----
-
-## Routes & Views — Detailed Reference
-
-### Public Routes (No Login Required)
-
-#### `GET /` - Landing Page
-
-- **File**: `routes/home.js` → `views/index.ejs`
-- **Description**: Welcome page explaining Ella Rises mission. Shows different content based on login status.
-  - **Not Logged In**: Shows login/register links and donation CTA
-  - **Logged In (User)**: Shows view-only navigation to participants, events, surveys
-  - **Logged In (Manager)**: Shows maintenance links to manage all resources
-
-#### `GET /ping` - Ping Test
-
-- **File**: `routes/ping.js`
-- **Description**: Simple health check route. Returns JSON `{ "message": "pong" }`
-
-#### `GET /teapot` - HTTP 418 Test
-
-- **File**: `routes/teapot.js`
-- **Description**: Returns HTTP 418 status with "I'm a teapot ☕" message. Required by IS 404 rubric.
+### Adding New Features
+1. Create repository functions in `/models`
+2. Create controller logic in `/controller`
+3. Add routes in `/routes`
+4. Create EJS views in `/views`
+5. Update this README if needed
 
 ---
 
-### Authentication Routes
+## Support
 
-#### `GET /auth/login` - Login Form
-
-- **File**: `routes/auth.js` → `views/auth/login.ejs`
-- **Description**: Displays login form. Allows user to enter email and password.
-- **Demo**: Use `manager@ellarises.org / manager123` or `user@ellarises.org / user123`
-
-#### `POST /auth/login` - Process Login
-
-- **File**: `routes/auth.js`
-- **Description**: Validates email/password against in-memory user list (TODO: replace with DB).
-  - On success: Creates session and redirects to home
-  - On failure: Flashes error message and redirects back to login
-
-#### `GET /auth/register` - Register Form
-
-- **File**: `routes/auth.js` → `views/auth/register.ejs`
-- **Description**: Displays registration form. User enters name, email, password.
-
-#### `POST /auth/register` - Process Registration
-
-- **File**: `routes/auth.js`
-- **Description**: Creates new user account with bcrypt-hashed password.
-  - On success: Creates session and redirects to home
-  - On failure: Flashes error (missing fields, password mismatch, email exists) and redirects back
-
-#### `GET /auth/logout` - Logout
-
-- **File**: `routes/auth.js`
-- **Description**: Destroys session and redirects to home with logout message.
+For questions or issues, contact the development team.
 
 ---
 
-### Participant Management Routes
+## License
 
-#### `GET /participants` - List Participants
-
-- **File**: `src/routes/participants.js` → `views/participants/list.ejs`
-- **Requires Auth**: Yes (ensureAuthenticated middleware - coming soon)
-- **Description**: Displays all participants with search/filter (TODO: implement DB queries).
-- **Permissions**:
-  - Common user: View only
-  - Manager: See edit/delete buttons
-
-#### `GET /participants/new` - New Participant Form
-
-- **File**: `src/routes/participants.js` → `views/participants/new.ejs`
-- **Requires Auth**: Yes + Manager role (TODO: wire middleware)
-- **Description**: Form to create new participant. Fields: first_name, last_name, email, etc.
-
-#### `POST /participants` - Create Participant
-
-- **File**: `src/routes/participants.js`
-- **Controller**: `src/controllers/participantsController.js`
-- **Requires Auth**: Yes + Manager role
-- **Description**: Inserts new participant into database (TODO: wire controller).
-
-#### `GET /participants/:id` - View Participant
-
-- **File**: `src/routes/participants.js` → `views/participants/show.ejs`
-- **Requires Auth**: Yes
-- **Description**: Displays detailed view of single participant.
-
-#### `GET /participants/:id/edit` - Edit Participant Form
-
-- **Requires Auth**: Yes + Manager role (TODO: add route)
-- **Description**: Pre-populated form to edit participant details.
-
-#### `POST /participants/:id` - Update Participant
-
-- **Requires Auth**: Yes + Manager role (TODO: add route)
-- **Description**: Updates participant record in database.
-
-#### `DELETE /participants/:id` - Delete Participant
-
-- **Requires Auth**: Yes + Manager role (TODO: add route)
-- **Description**: Removes participant from database.
-
----
-
-### Events Management Routes
-
-#### `GET /events` - List Events
-
-- **File**: `src/routes/events.js` → `views/events/list.ejs`
-- **Requires Auth**: Yes
-- **Description**: Displays all events/workshops. (TODO: implement full CRUD)
-
-#### `GET /events/new` - New Event Form
-
-- **Requires Auth**: Yes + Manager role (TODO: add route)
-
-#### `POST /events` - Create Event
-
-- **Requires Auth**: Yes + Manager role (TODO: add route)
-
----
-
-### Surveys Management Routes
-
-#### `GET /surveys` - List Surveys
-
-- **File**: `src/routes/surveys.js` → `views/surveys/list.ejs`
-- **Requires Auth**: Yes
-- **Description**: Displays post-event surveys. (TODO: implement full CRUD)
-
-#### `GET /surveys/new` - New Survey Form
-
-- **Requires Auth**: Yes + Manager role (TODO: add route)
-
-#### `POST /surveys` - Create Survey
-
-- **Requires Auth**: Yes + Manager role (TODO: add route)
-
----
-
-### Milestones Management Routes
-
-#### `GET /milestones` - List Milestones
-
-- **File**: `src/routes/milestones.js` → `views/milestones/list.ejs`
-- **Requires Auth**: Yes
-- **Description**: Displays milestones (achievements). (TODO: implement full CRUD)
-- **Note**: Milestones have 1:M relationship with participants.
-
-#### `GET /milestones/new` - New Milestone Form
-
-- **Requires Auth**: Yes + Manager role (TODO: add route)
-
-#### `POST /milestones` - Create Milestone
-
-- **Requires Auth**: Yes + Manager role (TODO: add route)
-
----
-
-### Donations Routes
-
-#### `GET /donations` - Donations Page
-
-- **File**: `src/routes/donations.js` → `views/donations/new.ejs`
-- **Requires Auth**: No (public donation form)
-- **Description**: Displays donation form. Allows anyone to contribute.
-
-#### `GET /donations/new` - Donation Form
-
-- **File**: `src/routes/donations.js` → `views/donations/new.ejs`
-- **Requires Auth**: No
-- **Description**: Same as `/donations`. (TODO: add POST handler for payment processing)
-
-#### `POST /donations` - Process Donation
-
-- **Requires Auth**: No (TODO: add route)
-- **Description**: Handles payment processing and stores donation record.
-
----
-
-## Views & Layouts
-
-### Layout Structure
-
-#### `views/layout.ejs` - Main Layout
-
-- Wraps every page with header/footer
-- Sets up HTML structure and basic styles
-- Displays page `title` in browser tab
-
-#### `views/partials/header.ejs` - Navigation Header
-
-- Black header bar with navigation links
-- Shows:
-  - **Home** link
-  - **Ping** link
-  - **Login/Register** links (if not logged in)
-  - **User name, role badge, Logout button** (if logged in)
-
-#### `views/partials/footer.ejs` - Footer
-
-- Displays at bottom of every page
-
-### Page Views
-
-#### `views/index.ejs` - Landing Page
-
-- Welcome message about Ella Rises mission
-- Conditional content based on login status
-- Donation CTA for visitors
-- Navigation shortcuts for logged-in users
-
-#### `views/auth/login.ejs` - Login Form
-
-- Email and password fields
-- Styled form with error message display
-- Link to register page
-- Demo credentials (for testing)
-
-#### `views/auth/register.ejs` - Register Form
-
-- Name, email, password, confirm password fields
-- Error handling for missing fields, password mismatch, duplicate email
-- Link to login page
-
-#### `views/participants/list.ejs` - Participants List
-
-- (TODO: Implement table with participants, search, edit/delete buttons for managers)
-
-#### `views/participants/new.ejs` - New Participant Form
-
-- (TODO: Form to add participant)
-
-#### `views/participants/show.ejs` - Participant Detail
-
-- (TODO: Display single participant details, edit/delete options for managers)
-
-#### `views/events/list.ejs` - Events List
-
-- (TODO: Implement list of workshops/events)
-
-#### `views/surveys/list.ejs` - Surveys List
-
-- (TODO: Implement list of post-event surveys with response data)
-
-#### `views/milestones/list.ejs` - Milestones List
-
-- (TODO: Implement list of milestone achievements, link to participants)
-
-#### `views/donations/new.ejs` - Donation Form
-
-- Name, email, donation amount fields
-- (TODO: Add payment processing integration)
-
----
-
-## Middleware & Authentication
-
-### `src/middleware/auth.js`
-
-#### `ensureAuthenticated(req, res, next)`
-
-- Checks if user is logged in (session exists)
-- If not: Redirects to `/auth/login` with flash message
-- If yes: Allows access to route
-- **Usage**: `router.get('/participants', ensureAuthenticated, controller)`
-
-#### `ensureManager(req, res, next)`
-
-- Checks if user is logged in AND has `role === 'manager'`
-- If not: Returns 403 error and redirects to home
-- **Usage**: `router.post('/participants', ensureAuthenticated, ensureManager, controller)`
-
----
-
-## Controllers
-
-### `src/controllers/participantsController.js`
-
-- Contains all participant CRUD logic
-- Methods:
-  - `list()` - Fetch all participants
-  - `show()` - Fetch single participant
-  - `newForm()` - Render new form
-  - `create()` - Insert participant
-  - `edit()` - Render edit form
-  - `update()` - Update participant
-  - `delete()` - Remove participant
-- (TODO: Replace placeholder methods with real DB queries using Knex)
-
----
-
-## Key Implementation Notes
-
-### Authentication Flow
-
-1. User visits `/auth/login` or `/auth/register`
-2. Session middleware (`express-session`) creates session
-3. On successful login/register: `req.session.user` is set with `{ id, email, role, name }`
-4. On every request: Middleware copies `req.session.user` to `res.locals.currentUser`
-5. All views can access `currentUser` to show/hide content by role
-6. On logout: `req.session.user` is cleared
-
-### Role-Based Access
-
-- **Common User** (`role: 'user'`): Can view participants, events, surveys but not edit
-- **Manager** (`role: 'manager'`): Full CRUD access to all resources
-- Middleware enforces this with `ensureManager()` guard
-
-
-
-**Last Updated**: December 1, 2025  
-**Presentation**: Friday, December 5, 2025
+Proprietary - Ella Rises Organization

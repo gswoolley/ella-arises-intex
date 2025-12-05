@@ -1,5 +1,7 @@
+// Participant Repository - Database operations for participants
 const knex = require('../util/db');
 
+// Find participant by email
 async function findByEmail(email) {
   if (!email) return null;
   return knex('personinfo')
@@ -7,6 +9,7 @@ async function findByEmail(email) {
     .first();
 }
 
+// Find participant by ID
 async function findById(personId) {
   if (!personId) return null;
   return knex('personinfo')
@@ -14,21 +17,25 @@ async function findById(personId) {
     .first();
 }
 
+// Get total count of all participants
 async function getActiveParticipantsCount() {
   const result = await knex.raw(
     `SELECT COUNT(*)::int AS active_participants
      FROM personinfo`
   );
 
+  // Return count or 0 if result is empty
   return (
     (result.rows[0] && result.rows[0].active_participants) || 0
   );
 }
 
-// List all participants with optional search and pagination
+// List participants with search, pagination, and survey filtering
 async function listParticipants({ search = '', page = 1, limit = 25, orderBy = 'name_asc', surveyFilter = 'all' } = {}) {
+  // Calculate offset for pagination
   const offset = (page - 1) * limit;
 
+  // Initialize query for personinfo table
   let query = knex('personinfo as p');
   
   // Apply survey filter
@@ -115,7 +122,7 @@ async function listParticipants({ search = '', page = 1, limit = 25, orderBy = '
   return { participants, total, page, limit };
 }
 
-// Get participant with all related data
+// Get participant details with donations, milestones, and attendance
 async function getParticipantDetails(personId) {
   const participant = await findById(personId);
   if (!participant) return null;
@@ -149,7 +156,7 @@ async function getParticipantDetails(personId) {
   return { ...participant, donations, milestones, attendance };
 }
 
-// Update participant info
+// Update participant information
 async function updateParticipant(personId, data) {
   return knex('personinfo')
     .where({ personid: personId })
@@ -168,7 +175,7 @@ async function updateParticipant(personId, data) {
     });
 }
 
-// Add a new participant
+// Create a new participant
 async function addParticipant(data) {
   const [personId] = await knex('personinfo')
     .insert({
@@ -189,7 +196,7 @@ async function addParticipant(data) {
   return personId;
 }
 
-// Delete participant and all related data
+// Delete participant and all related records (surveys, attendance, donations, milestones)
 async function deleteParticipant(personId) {
   return knex.transaction(async (trx) => {
     const attendanceIds = await trx('participantattendanceinstances')
@@ -207,7 +214,7 @@ async function deleteParticipant(personId) {
   });
 }
 
-// List recent surveys with participant and event info
+// List surveys with participant and event info
 async function listRecentSurveys({ search = '', page = 1, limit = 25, orderBy = 'date_desc' } = {}) {
   const offset = (page - 1) * limit;
 
@@ -282,7 +289,7 @@ async function listRecentSurveys({ search = '', page = 1, limit = 25, orderBy = 
   return { surveys, total, page, limit };
 }
 
-// List all milestones with participant info
+// List milestones with participant info
 async function listMilestones({ search = '', page = 1, limit = 25 } = {}) {
   const offset = (page - 1) * limit;
 
@@ -323,7 +330,7 @@ async function listMilestones({ search = '', page = 1, limit = 25 } = {}) {
   return { milestones, total, page, limit };
 }
 
-// Add a milestone
+// Create a new milestone
 async function addMilestone(personId, { title, date }) {
   return knex('participantmilestones').insert({
     personid: personId,
@@ -332,7 +339,7 @@ async function addMilestone(personId, { title, date }) {
   });
 }
 
-// Update a milestone
+// Update milestone information
 async function updateMilestone(milestoneId, { title, date }) {
   return knex('participantmilestones')
     .where({ participantmilestoneid: milestoneId })
@@ -342,7 +349,7 @@ async function updateMilestone(milestoneId, { title, date }) {
     });
 }
 
-// Delete a milestone
+// Delete a milestone by ID
 async function deleteMilestone(milestoneId) {
   return knex('participantmilestones')
     .where({ participantmilestoneid: milestoneId })

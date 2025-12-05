@@ -1,3 +1,6 @@
+// Ella Rises - Main Application Entry Point
+// Configures Express server, middleware, routes, and starts HTTP server
+
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
@@ -12,21 +15,25 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
+
+// Server port - defaults to 8080 for local development
+// In production (Elastic Beanstalk), this is set via environment variable
 const PORT = process.env.PORT || 8080;
 
+// Environment detection (development or production)
 const ENV = process.env.NODE_ENV || 'development';
 
-// ---------------------------------------------------------------------
-// FORCE HTTPS ON ELASTIC BEANSTALK (Classic Load Balancer Compatible)
-// ---------------------------------------------------------------------
+// Force HTTPS in production (AWS Elastic Beanstalk)
 if (ENV === 'production') {
   app.use((req, res, next) => {
+    // Allow health check requests from Elastic Load Balancer without redirect
     const isHealthCheck =
       req.headers['user-agent'] &&
       req.headers['user-agent'].includes('ELB-HealthChecker');
 
     if (isHealthCheck) return next();
 
+    // If request came in via HTTP (not HTTPS), redirect to HTTPS
     if (req.headers['x-forwarded-proto'] !== 'https') {
       return res.redirect(301, 'https://' + req.headers.host + req.url);
     }
@@ -34,58 +41,61 @@ if (ENV === 'production') {
     next();
   });
 }
-// ---------------------------------------------------------------------
 
-// Configure EJS
+// Configure EJS template engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-
-
-// Tell Express it is running behind a reverse proxy (Elastic Beanstalk
-// load balancer / Nginx). This enables correct handling of X-Forwarded-* headers.
+// Trust proxy (for Elastic Beanstalk load balancer)
 app.set('trust proxy', 1);
 
-// Parse URL-encoded form bodies (used by the CSV upload form)
+// Parse request bodies (forms and JSON)
 app.use(express.urlencoded({ extended: true, limit: '100mb' }));
+// Parse JSON request bodies (for API endpoints if needed)
 app.use(express.json({ limit: '100mb' }));
 
-// Session middleware for login/auth
+// Configure sessions for authentication
 app.use(
   session({
+    // Secret key for signing session cookies (should be set via environment variable in production)
     secret: process.env.SESSION_SECRET || 'ella-rises-dev-secret',
+    // Don't save session if unmodified
     resave: false,
+    // Don't create session until something is stored
     saveUninitialized: false,
     cookie: {
+      // Lax SameSite prevents CSRF attacks while allowing normal navigation
       sameSite: 'lax',
+      // Only send cookie over HTTPS in production
       secure: process.env.NODE_ENV === 'production',
     },
   })
 );
 
-// Configure Multer to store uploaded CSV files temporarily on disk
+// Configure file uploads
 const upload = multer({ dest: path.join(__dirname, 'uploads') });
 
-// Serve static files from the public directory (for images, icons, etc.)
+// Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Serve the static Ella Rises landing page (HTML/CSS/JS) from the public
-// directory so the root route can simply send index.html.
+// Serve the static Ella Rises landing page (HTML/CSS/JS)
+// This allows the root route to serve the marketing/informational page
 app.use(express.static(path.join(__dirname, 'public', 'ella-rises-landingpage')));
 
-// Routes
+// Register routes
+
+// Public dashboard routes - Read-only data visualization for the public
 app.use('/dashboard', dashboardRoutes);
+
+// Admin panel routes - Authentication, CRUD operations, CSV upload, user management
 app.use('/admin', adminRoutes);
 
-// Root route: send the static Ella Rises landing page HTML file directly
+// Root route - Serve the static landing page (marketing/informational site)
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'ella-rises-landingpage', 'index.html'));
 });
 
-// CSV upload is now handled by admin routes at /admin/csv-upload
-
-// Start the HTTP server. In production, Elastic Beanstalk will route
-// external traffic (HTTP/HTTPS) through a load balancer/Nginx to this port.
+// Start server
 app.listen(PORT, () => {
   console.log(`Server listening on http://localhost:${PORT}`);
 });

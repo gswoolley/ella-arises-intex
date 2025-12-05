@@ -1,5 +1,7 @@
+// Survey Repository - Database operations for surveys
 const knex = require('../util/db');
 
+// Get average satisfaction score from last 100 days
 async function getAvgSatisfactionLast100Days() {
   const result = await knex.raw(
     `SELECT ROUND(AVG(surveyoverallscore), 2) AS avg_satisfaction
