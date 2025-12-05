@@ -26,18 +26,34 @@ async function getActiveParticipantsCount() {
 }
 
 // List all participants with optional search and pagination
-async function listParticipants({ search = '', page = 1, limit = 25, orderBy = 'name_asc' } = {}) {
+async function listParticipants({ search = '', page = 1, limit = 25, orderBy = 'name_asc', surveyFilter = 'all' } = {}) {
   const offset = (page - 1) * limit;
 
-  let query = knex('personinfo').select('*');
+  let query = knex('personinfo as p');
+  
+  // Apply survey filter
+  if (surveyFilter === 'with_survey') {
+    query = query
+      .join('participantattendanceinstances as a', 'p.personid', 'a.personid')
+      .join('surveyinstances as s', 'a.attendanceinstanceid', 's.attendanceinstanceid')
+      .distinct('p.*');
+  } else if (surveyFilter === 'without_survey') {
+    query = query
+      .leftJoin('participantattendanceinstances as a', 'p.personid', 'a.personid')
+      .leftJoin('surveyinstances as s', 'a.attendanceinstanceid', 's.attendanceinstanceid')
+      .whereNull('s.attendanceinstanceid')
+      .distinct('p.*');
+  } else {
+    query = query.select('*');
+  }
 
   if (search) {
     query = query.where(function () {
-      this.whereILike('personemail', `%${search}%`)
-        .orWhereILike('personfirstname', `%${search}%`)
-        .orWhereILike('personlastname', `%${search}%`)
-        .orWhereILike('personcity', `%${search}%`)
-        .orWhereILike('personschooloremployer', `%${search}%`);
+      this.whereILike('p.personemail', `%${search}%`)
+        .orWhereILike('p.personfirstname', `%${search}%`)
+        .orWhereILike('p.personlastname', `%${search}%`)
+        .orWhereILike('p.personcity', `%${search}%`)
+        .orWhereILike('p.personschooloremployer', `%${search}%`);
     });
   }
 
@@ -66,17 +82,34 @@ async function listParticipants({ search = '', page = 1, limit = 25, orderBy = '
 
   const participants = await query.clone().limit(limit).offset(offset);
 
-  let countQuery = knex('personinfo');
+  let countQuery = knex('personinfo as p');
+  
+  // Apply survey filter to count query
+  if (surveyFilter === 'with_survey') {
+    countQuery = countQuery
+      .join('participantattendanceinstances as a', 'p.personid', 'a.personid')
+      .join('surveyinstances as s', 'a.attendanceinstanceid', 's.attendanceinstanceid')
+      .countDistinct('p.personid as count');
+  } else if (surveyFilter === 'without_survey') {
+    countQuery = countQuery
+      .leftJoin('participantattendanceinstances as a', 'p.personid', 'a.personid')
+      .leftJoin('surveyinstances as s', 'a.attendanceinstanceid', 's.attendanceinstanceid')
+      .whereNull('s.attendanceinstanceid')
+      .countDistinct('p.personid as count');
+  } else {
+    countQuery = countQuery.count('* as count');
+  }
+  
   if (search) {
     countQuery = countQuery.where(function () {
-      this.whereILike('personemail', `%${search}%`)
-        .orWhereILike('personfirstname', `%${search}%`)
-        .orWhereILike('personlastname', `%${search}%`)
-        .orWhereILike('personcity', `%${search}%`)
-        .orWhereILike('personschooloremployer', `%${search}%`);
+      this.whereILike('p.personemail', `%${search}%`)
+        .orWhereILike('p.personfirstname', `%${search}%`)
+        .orWhereILike('p.personlastname', `%${search}%`)
+        .orWhereILike('p.personcity', `%${search}%`)
+        .orWhereILike('p.personschooloremployer', `%${search}%`);
     });
   }
-  const countResult = await countQuery.count('* as count').first();
+  const countResult = await countQuery.first();
   const total = Number(countResult?.count || 0);
 
   return { participants, total, page, limit };

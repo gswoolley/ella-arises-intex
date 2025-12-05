@@ -5,7 +5,7 @@ const fs = require('fs');
 const csv = require('csv-parser');
 const knex = require('../util/db');
 const mapCsvRowsToStaging = require('../etl/mapCsvToStaging');
-const { runNormalization } = require('../etl/normalize');
+const runNormalization = require('../etl/normalize');
 const { getAdminGateway } = require('../controller/admin/auth/adminGatewayController');
 const {
   renderLogin,
@@ -142,6 +142,17 @@ router.post('/csv-upload', ensureAuthenticated, ensureManager, upload.single('cs
   try {
     console.log('--- Upload started ---');
     console.log('[upload] Received file', { originalname: req.file.originalname, size: req.file.size, path: filePath });
+    
+    // Clear normalized staging tables at the start of upload
+    console.log('[upload] Clearing normalized staging tables');
+    await knex('staging_personinfo').truncate();
+    await knex('staging_donations').truncate();
+    await knex('staging_participantmilestones').truncate();
+    await knex('staging_eventtypes').truncate();
+    await knex('staging_eventinstances').truncate();
+    await knex('staging_participantattendanceinstances').truncate();
+    await knex('staging_surveyinstances').truncate();
+    console.log('[upload] Normalized staging tables cleared');
     
     await new Promise((resolve, reject) => {
       fs.createReadStream(filePath)

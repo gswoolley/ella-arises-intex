@@ -13,8 +13,20 @@ function toNullIfBlank(value) {
 function parseDate(value) {
   const v = toNullIfBlank(value);
   if (!v) return null;
-  const dt = DateTime.fromFormat(v, 'yyyy-MM-dd HH:mm:ss', { zone: 'utc' });
+  
+  let dt = DateTime.fromFormat(v, 'yyyy-MM-dd HH:mm:ss', { zone: 'utc' });
   if (dt.isValid) return dt.toJSDate();
+  
+  // Try M/d/yy H:mm format (e.g., "10/6/24 10:00")
+  dt = DateTime.fromFormat(v, 'M/d/yy H:mm', { zone: 'utc' });
+  if (dt.isValid) {
+    // If the year is before 1950, assume it's 2000s
+    if (dt.year < 1950) {
+      dt = dt.plus({ years: 100 });
+    }
+    return dt.toJSDate();
+  }
+  
   const dt2 = DateTime.fromISO(v, { zone: 'utc' });
   return dt2.isValid ? dt2.toJSDate() : null;
 }
@@ -28,9 +40,29 @@ function parseDateOnly(value) {
   let dt = DateTime.fromFormat(v, 'yyyy-MM-dd', { zone: 'utc' });
   if (dt.isValid) return dt.toJSDate();
 
+  // Try M/D/YY format (e.g., "5/2/25")
+  dt = DateTime.fromFormat(v, 'M/d/yy', { zone: 'utc' });
+  if (dt.isValid) {
+    // If the year is before 1950, assume it's 2000s
+    if (dt.year < 1950) {
+      dt = dt.plus({ years: 100 });
+    }
+    return dt.toJSDate();
+  }
+
   // Then try a full datetime as described in creation_process.txt (YYYY-MM-DD HH:MM:SS)
   dt = DateTime.fromFormat(v, 'yyyy-MM-dd HH:mm:ss', { zone: 'utc' });
   if (dt.isValid) return dt.toJSDate();
+
+  // Try M/D/YY H:mm format with time
+  dt = DateTime.fromFormat(v, 'M/d/yy H:mm', { zone: 'utc' });
+  if (dt.isValid) {
+    // If the year is before 1950, assume it's 2000s
+    if (dt.year < 1950) {
+      dt = dt.plus({ years: 100 });
+    }
+    return dt.toJSDate();
+  }
 
   // Finally, fall back to generic ISO parsing
   const dt2 = DateTime.fromISO(v, { zone: 'utc' });
@@ -52,6 +84,18 @@ function toTimestampLiteral(value) {
   // trimmed value so Postgres can attempt to interpret it.
   let dt = DateTime.fromFormat(v, 'yyyy-MM-dd HH:mm:ss');
   if (dt.isValid) return dt.toFormat('yyyy-MM-dd HH:mm:ss');
+
+  // Try M/D/YY H:mm format (e.g., "10/6/24 10:00" or "9/18/25 10:00")
+  // Note: 'yy' in Luxon assumes 1900s for values >= 69, 2000s for < 69
+  // So we need to handle this manually for years like '25' (should be 2025)
+  dt = DateTime.fromFormat(v, 'M/d/yy H:mm');
+  if (dt.isValid) {
+    // If the year is before 1950, assume it's 2000s
+    if (dt.year < 1950) {
+      dt = dt.plus({ years: 100 });
+    }
+    return dt.toFormat('yyyy-MM-dd HH:mm:ss');
+  }
 
   dt = DateTime.fromISO(v);
   if (dt.isValid) return dt.toFormat('yyyy-MM-dd HH:mm:ss');
@@ -158,6 +202,8 @@ async function getOrCreateParticipant(knex, row) {
 
   if (existing) {
     console.log('[participant] Reusing existing participant', { email, personId: existing.personid });
+    // Still add to staging table even if participant exists
+    await knex('staging_personinfo').insert({ ...base, personid: existing.personid });
     return existing.personid;
   }
 
@@ -167,6 +213,10 @@ async function getOrCreateParticipant(knex, row) {
 
   const personId = inserted.personid ?? inserted;
   console.log('[participant] Inserted new participant', { email, personId });
+  
+  // Also insert into staging table
+  await knex('staging_personinfo').insert({ ...base, personid: personId });
+  
   return personId;
 }
 
@@ -180,19 +230,27 @@ async function getOrCreateEventType(knex, row) {
     .where({ eventname: eventName })
     .first();
 
-  if (existing) {
-    console.log('[eventtype] Reusing existing event type', { eventName });
-    return eventName;
-  }
-
-  await knex('eventtypes').insert({
+  const eventData = {
     eventname: eventName,
     eventtype: toNullIfBlank(row.eventtype),
     eventdescription: toNullIfBlank(row.eventdescription),
     eventrecourrancepatter: toNullIfBlank(row.eventrecurrencepattern),
     eventdefaultcapacity: parseIntOrNull(row.eventdefaultcapacity),
-  });
+  };
+
+  if (existing) {
+    console.log('[eventtype] Reusing existing event type', { eventName });
+    // Still add to staging table
+    await knex('staging_eventtypes').insert(eventData);
+    return eventName;
+  }
+
+  await knex('eventtypes').insert(eventData);
   console.log('[eventtype] Inserted new event type', { eventName });
+  
+  // Also insert into staging table
+  await knex('staging_eventtypes').insert(eventData);
+  
   return eventName;
 }
 
@@ -209,24 +267,32 @@ async function getOrCreateEventInstance(knex, row) {
     .where({ eventname: eventName, eventdatetimestart: startLiteral })
     .first();
 
+  const instanceData = {
+    eventname: eventName,
+    eventdatetimestart: startLiteral,
+    eventdatetimeend: toTimestampLiteral(row.eventdatetimeend),
+    eventlocation: toNullIfBlank(row.eventlocation),
+    eventcapacity: parseIntOrNull(row.eventcapacity),
+    eventregistrationdeadline: toTimestampLiteral(row.eventregistrationdeadline),
+  };
+
   if (existing) {
     console.log('[eventinstance] Reusing existing event instance', { eventName, eventStart: startLiteral, instanceId: existing.instanceid });
+    // Still add to staging table
+    await knex('staging_eventinstances').insert({ ...instanceData, instanceid: existing.instanceid });
     return existing.instanceid;
   }
 
   const [inserted] = await knex('eventinstances')
-    .insert({
-      eventname: eventName,
-      eventdatetimestart: startLiteral,
-      eventdatetimeend: toTimestampLiteral(row.eventdatetimeend),
-      eventlocation: toNullIfBlank(row.eventlocation),
-      eventcapacity: parseIntOrNull(row.eventcapacity),
-      eventregistrationdeadline: toTimestampLiteral(row.eventregistrationdeadline),
-    })
+    .insert(instanceData)
     .returning('instanceid');
 
   const instanceId = inserted.instanceid ?? inserted;
   console.log('[eventinstance] Inserted new event instance', { eventName, eventStart: startLiteral, instanceId });
+  
+  // Also insert into staging table
+  await knex('staging_eventinstances').insert({ ...instanceData, instanceid: instanceId });
+  
   return instanceId;
 }
 
@@ -239,25 +305,33 @@ async function getOrCreateAttendance(knex, participantId, instanceId, row) {
     .where({ personid: participantId, instanceid: instanceId })
     .first();
 
+  const attendanceData = {
+    personid: participantId,
+    instanceid: instanceId,
+    eventdatetimestart: toTimestampLiteral(row.eventdatetimestart),
+    registrationstatus: toNullIfBlank(row.registrationstatus),
+    registrationattendedflag: parseBoolean(row.registrationattendedflag),
+    registrationcheckintime: toTimestampLiteral(row.registrationcheckintime),
+    registrationcreateddate: toTimestampLiteral(row.registrationcreatedat),
+  };
+
   if (existing) {
     console.log('[attendance] Reusing existing attendance', { participantId, instanceId, attendanceId: existing.attendanceinstanceid });
+    // Still add to staging table
+    await knex('staging_participantattendanceinstances').insert({ ...attendanceData, attendanceinstanceid: existing.attendanceinstanceid });
     return existing.attendanceinstanceid;
   }
 
   const [inserted] = await knex('participantattendanceinstances')
-    .insert({
-      personid: participantId,
-      instanceid: instanceId,
-      eventdatetimestart: toTimestampLiteral(row.eventdatetimestart),
-      registrationstatus: toNullIfBlank(row.registrationstatus),
-      registrationattendedflag: parseBoolean(row.registrationattendedflag),
-      registrationcheckintime: toTimestampLiteral(row.registrationcheckintime),
-      registrationcreateddate: toTimestampLiteral(row.registrationcreatedat),
-    })
+    .insert(attendanceData)
     .returning('attendanceinstanceid');
 
   const attendanceId = inserted.attendanceinstanceid ?? inserted;
   console.log('[attendance] Inserted new attendance', { participantId, instanceId, attendanceId });
+  
+  // Also insert into staging table
+  await knex('staging_participantattendanceinstances').insert({ ...attendanceData, attendanceinstanceid: attendanceId });
+  
   return attendanceId;
 }
 
@@ -268,7 +342,7 @@ async function createSurveyIfNeeded(knex, attendanceId, row) {
 
   const fields = [
     row.surveysatisfactionscore,
-    row.surveyusefulnessscore,
+    row.surveyusefulnesscore,
     row.surveyinstructorscore,
     row.surveyrecommendationscore,
     row.surveyoverallscore,
@@ -287,23 +361,30 @@ async function createSurveyIfNeeded(knex, attendanceId, row) {
     .where({ attendanceinstanceid: attendanceId })
     .first();
 
-  if (existing) {
-    console.log('[survey] Survey already exists for attendance, skipping insert', { attendanceId });
-    return;
-  }
-
-  await knex('surveyinstances').insert({
+  const surveyData = {
     attendanceinstanceid: attendanceId,
     surveysatisfactionscore: parseFloatOrNull(row.surveysatisfactionscore),
-    surveyusefulnesscore: parseFloatOrNull(row.surveyusefulnessscore),
+    surveyusefulnesscore: parseFloatOrNull(row.surveyusefulnesscore),
     surveyinstructorscore: parseFloatOrNull(row.surveyinstructorscore),
     surveyrecommendationscore: parseFloatOrNull(row.surveyrecommendationscore),
     surveyoverallscore: parseFloatOrNull(row.surveyoverallscore),
     surveynpsbucket: normalizeNpsBucket(row.surveynpsbucket),
     surveycomments: toNullIfBlank(row.surveycomments),
     surveysubmissiondate: toTimestampLiteral(row.surveysubmissiondate),
-  });
+  };
+
+  if (existing) {
+    console.log('[survey] Survey already exists for attendance, skipping insert', { attendanceId });
+    // Still add to staging table
+    await knex('staging_surveyinstances').insert(surveyData);
+    return;
+  }
+
+  await knex('surveyinstances').insert(surveyData);
   console.log('[survey] Inserted survey for attendance', { attendanceId });
+  
+  // Also insert into staging table
+  await knex('staging_surveyinstances').insert(surveyData);
 }
 
 // Parse semi-colon separated milestone titles/dates and insert them into
@@ -340,18 +421,28 @@ async function createMilestonesIfNeeded(knex, participantId, row) {
       })
       .first();
 
+    const milestoneData = {
+      personid: participantId,
+      milestonetitle: title,
+      milestonedate: date,
+    };
+
     if (existing) {
       console.log('[milestones] Skipping duplicate milestone', { participantId, title, date });
+      // Still add to staging table with existing ID
+      // eslint-disable-next-line no-await-in-loop
+      await knex('staging_participantmilestones').insert({ ...milestoneData, participantmilestoneid: existing.participantmilestoneid, milestoneno: 0 });
       continue;
     }
 
     // eslint-disable-next-line no-await-in-loop
-    await knex('participantmilestones').insert({
-      personid: participantId,
-      milestonetitle: title,
-      milestonedate: date,
-    });
-    console.log('[milestones] Inserted milestone', { participantId, title, date });
+    const [inserted] = await knex('participantmilestones').insert(milestoneData).returning('participantmilestoneid');
+    const milestoneId = inserted.participantmilestoneid ?? inserted;
+    console.log('[milestones] Inserted milestone', { participantId, title, date, milestoneId });
+    
+    // Also insert into staging table
+    // eslint-disable-next-line no-await-in-loop
+    await knex('staging_participantmilestones').insert({ ...milestoneData, participantmilestoneid: milestoneId, milestoneno: 0 });
   }
 
   // Recompute milestoneno ordering for this participant
@@ -363,6 +454,11 @@ async function createMilestonesIfNeeded(knex, participantId, row) {
     const m = milestones[i];
     // eslint-disable-next-line no-await-in-loop
     await knex('participantmilestones')
+      .where({ participantmilestoneid: m.participantmilestoneid })
+      .update({ milestoneno: i + 1 });
+    // Also update in staging table if it exists
+    // eslint-disable-next-line no-await-in-loop
+    await knex('staging_participantmilestones')
       .where({ participantmilestoneid: m.participantmilestoneid })
       .update({ milestoneno: i + 1 });
   }
@@ -406,20 +502,30 @@ async function createDonationsIfNeeded(knex, participantId, row) {
       })
       .first();
 
-    if (existing) {
-      // eslint-disable-next-line no-continue
-      console.log('[donations] Skipping duplicate donation', { participantId, donationDate, donationAmount });
-      continue;
-    }
-
-    // eslint-disable-next-line no-await-in-loop
-    await knex('donations').insert({
+    const donationData = {
       personid: participantId,
       donationdate: donationDate,
       donationamount: donationAmount,
       donationno: 0,
-    });
-    console.log('[donations] Inserted donation', { participantId, donationDate, donationAmount });
+    };
+
+    if (existing) {
+      // eslint-disable-next-line no-continue
+      console.log('[donations] Skipping duplicate donation', { participantId, donationDate, donationAmount });
+      // Still add to staging table with existing ID
+      // eslint-disable-next-line no-await-in-loop
+      await knex('staging_donations').insert({ ...donationData, donationid: existing.donationid });
+      continue;
+    }
+
+    // eslint-disable-next-line no-await-in-loop
+    const [inserted] = await knex('donations').insert(donationData).returning('donationid');
+    const donationId = inserted.donationid ?? inserted;
+    console.log('[donations] Inserted donation', { participantId, donationDate, donationAmount, donationId });
+    
+    // Also insert into staging table
+    // eslint-disable-next-line no-await-in-loop
+    await knex('staging_donations').insert({ ...donationData, donationid: donationId });
   }
 
   // Recompute donationno for this participant
@@ -431,6 +537,11 @@ async function createDonationsIfNeeded(knex, participantId, row) {
     const d = donations[i];
     // eslint-disable-next-line no-await-in-loop
     await knex('donations')
+      .where({ donationid: d.donationid })
+      .update({ donationno: i + 1 });
+    // Also update in staging table if it exists
+    // eslint-disable-next-line no-await-in-loop
+    await knex('staging_donations')
       .where({ donationid: d.donationid })
       .update({ donationno: i + 1 });
   }
@@ -554,7 +665,7 @@ async function runNormalization(knex) {
       registrationcheckintime,
       registrationcreatedat,
       surveysatisfactionscore,
-      surveyusefulnessscore,
+      surveyusefulnesscore,
       surveyinstructorscore,
       surveyrecommendationscore,
       surveyoverallscore,
@@ -594,7 +705,7 @@ async function runNormalization(knex) {
       registrationcheckintime,
       registrationcreatedat,
       surveysatisfactionscore,
-      surveyusefulnessscore,
+      surveyusefulnesscore,
       surveyinstructorscore,
       surveyrecommendationscore,
       surveyoverallscore,

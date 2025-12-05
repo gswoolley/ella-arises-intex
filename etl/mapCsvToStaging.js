@@ -28,7 +28,7 @@ const COLUMN_MAP = {
   RegistrationCheckInTime: 'registrationcheckintime',
   RegistrationCreatedAt: 'registrationcreatedat',
   SurveySatisfactionScore: 'surveysatisfactionscore',
-  SurveyUsefulnessScore: 'surveyusefulnessscore',
+  SurveyUsefulnessScore: 'surveyusefulnesscore',
   SurveyInstructorScore: 'surveyinstructorscore',
   SurveyRecommendationScore: 'surveyrecommendationscore',
   SurveyOverallScore: 'surveyoverallscore',

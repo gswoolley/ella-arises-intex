@@ -109,7 +109,7 @@
         registrationcreatedat text,
 
         surveysatisfactionscore text,
-        surveyusefulnessscore text,
+        surveyusefulnesscore text,
         surveyinstructorscore text,
         surveyrecommendationscore text,
         surveyoverallscore text,
@@ -160,7 +160,7 @@
         registrationcreatedat text,
 
         surveysatisfactionscore text,
-        surveyusefulnessscore text,
+        surveyusefulnesscore text,
         surveyinstructorscore text,
         surveyrecommendationscore text,
         surveyoverallscore text,

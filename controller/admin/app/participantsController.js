@@ -10,11 +10,12 @@ const getParticipants = async (req, res) => {
   const search = req.query.q || '';
   const page = Math.max(1, parseInt(req.query.page, 10) || 1);
   const orderBy = req.query.orderBy || 'name_asc';
+  const surveyFilter = req.query.surveyFilter || 'all';
 
   try {
     // Load data for ALL tabs at once to support tab switching without page reload
     const [participantsData, surveysData, milestonesData] = await Promise.all([
-      participantRepository.listParticipants({ search: tab === 'participants' ? search : '', page: tab === 'participants' ? page : 1, limit: 25, orderBy: tab === 'participants' ? orderBy : 'name_asc' }),
+      participantRepository.listParticipants({ search: tab === 'participants' ? search : '', page: tab === 'participants' ? page : 1, limit: 25, orderBy: tab === 'participants' ? orderBy : 'name_asc', surveyFilter: tab === 'participants' ? surveyFilter : 'all' }),
       participantRepository.listRecentSurveys({ search: tab === 'surveys' ? search : '', page: tab === 'surveys' ? page : 1, limit: 25, orderBy: tab === 'surveys' ? orderBy : 'date_desc' }),
       participantRepository.listMilestones({ search: tab === 'milestones' ? search : '', page: tab === 'milestones' ? page : 1, limit: 25 }),
     ]);
@@ -36,6 +37,7 @@ const getParticipants = async (req, res) => {
       search,
       page,
       orderBy,
+      surveyFilter,
       participants: participantsData.participants || [],
       surveys: surveysData.surveys || [],
       milestones: milestonesData.milestones || [],
@@ -53,6 +55,7 @@ const getParticipants = async (req, res) => {
       search,
       page,
       orderBy: 'name_asc',
+      surveyFilter: 'all',
       participants: [],
       surveys: [],
       milestones: [],
