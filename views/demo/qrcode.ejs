@@ -1,0 +1,391 @@
+<!-- 
+  QR Code Display Page
+  Shows QR code for demo survey with live progress tracking
+  Features:
+  - Editable target submission count (1-100)
+  - Real-time progress bar updates every 2 seconds
+  - Auto-downloads CSV when target is reached
+  - Reset button to clear all demo survey data
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo Survey - QR Code | Ella Rises</title>
+  <style>
+    /* === BASE STYLES === */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 15px;
+      background-color: #ffece4;
+      color: #231815;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Background bubbles */
+    .bg-bubble {
+      position: absolute;
+      border-radius: 999px;
+      background-color: rgba(255, 255, 255, 0.26);
+      pointer-events: none;
+      animation: bubble-drift 20s ease-in-out infinite alternate;
+      z-index: 0;
+    }
+    
+    .bg-bubble--1 {
+      width: 180px;
+      height: 180px;
+      top: 10%;
+      left: 5%;
+      background-color: rgba(255, 194, 166, 0.32);
+      animation-duration: 25s;
+    }
+    
+    .bg-bubble--2 {
+      width: 140px;
+      height: 140px;
+      top: 60%;
+      right: 8%;
+      background-color: rgba(216, 205, 246, 0.36);
+      animation-duration: 30s;
+      animation-delay: -10s;
+    }
+    
+    .bg-bubble--3 {
+      width: 100px;
+      height: 100px;
+      bottom: 15%;
+      left: 15%;
+      background-color: rgba(204, 221, 205, 0.36);
+      animation-duration: 22s;
+      animation-delay: -5s;
+    }
+    
+    @keyframes bubble-drift {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(30px, -30px); }
+    }
+    
+    .container {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      padding: 48px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      max-width: 700px;
+      width: 100%;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    
+    h1 {
+      color: #8c6a61;
+      margin-bottom: 12px;
+      font-size: 2.2em;
+      font-weight: normal;
+      letter-spacing: 0.02em;
+    }
+    
+    .subtitle {
+      color: #6b5a56;
+      margin-bottom: 36px;
+      font-size: 1em;
+      line-height: 1.6;
+    }
+    
+    .qr-container {
+      background: rgba(255, 255, 255, 0.6);
+      padding: 32px;
+      border-radius: 16px;
+      margin: 32px 0;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    }
+    
+    #qrcode {
+      display: inline-block;
+    }
+    
+    .scan-text {
+      margin-top: 20px;
+      font-size: 1.1em;
+      color: #6b5a56;
+      font-weight: normal;
+    }
+    
+    .progress-section {
+      margin: 30px 0;
+    }
+    
+    .progress-label {
+      font-size: 1.2em;
+      color: #8c6a61;
+      margin-bottom: 16px;
+      font-weight: normal;
+    }
+    
+    .progress-bar-container {
+      background: rgba(140, 106, 97, 0.15);
+      height: 36px;
+      border-radius: 18px;
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 12px;
+    }
+    
+    .progress-bar {
+      background: linear-gradient(90deg, #d4a5a5 0%, #b89090 100%);
+      height: 100%;
+      transition: width 0.5s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: normal;
+      font-size: 1em;
+    }
+    
+    .progress-text {
+      color: #6b5a56;
+      font-size: 1em;
+      margin-top: 12px;
+    }
+    
+    .complete-message {
+      background: rgba(204, 221, 205, 0.8);
+      color: #3d5a3e;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 24px 0;
+      font-size: 1.1em;
+      font-weight: normal;
+      display: none;
+    }
+    
+    .complete-message.show {
+      display: block;
+      animation: slideIn 0.5s ease;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .buttons {
+      margin-top: 30px;
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+    
+    .btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 999px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-block;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    
+    .btn-download {
+      background: rgba(204, 221, 205, 0.9);
+      color: #3d5a3e;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+    }
+    
+    .btn-download:hover {
+      background: rgba(204, 221, 205, 1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      transform: translateY(-1px);
+    }
+    
+    .btn-download:disabled {
+      background: rgba(140, 106, 97, 0.2);
+      color: #a89892;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    .btn-reset {
+      background: rgba(255, 194, 166, 0.6);
+      color: #8c6a61;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+    }
+    
+    .btn-reset:hover {
+      background: rgba(255, 194, 166, 0.8);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      transform: translateY(-1px);
+    }
+    
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.05);
+      }
+    }
+  </style>
+  <!-- QR Code Library -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+  <!-- Background bubbles -->
+  <div class="bg-bubble bg-bubble--1"></div>
+  <div class="bg-bubble bg-bubble--2"></div>
+  <div class="bg-bubble bg-bubble--3"></div>
+  
+  <div class="container">
+    <h1>Demo Survey</h1>
+    <p class="subtitle">Scan the QR code below to participate in our demonstration</p>
+    
+    <div class="qr-container">
+      <div id="qrcode"></div>
+      <p class="scan-text">Scan with your phone</p>
+    </div>
+    
+    <div class="progress-section">
+      <div class="progress-label">Submission Progress</div>
+      <div class="progress-bar-container">
+        <div class="progress-bar" id="progressBar" style="width: <%= progress %>%;">
+          <span id="progressText"><%= progress %>%</span>
+        </div>
+      </div>
+      <p class="progress-text">
+        <span id="currentCount"><%= count %></span> of <input type="number" id="targetInput" value="<%= target %>" min="1" max="100" style="width: 60px; text-align: center; border: 1px solid #d4a5a5; border-radius: 4px; padding: 2px 4px; font-size: 14px;"> submissions received
+      </p>
+    </div>
+    
+    <div class="complete-message" id="completeMessage">
+      Target reached! CSV is ready for download!
+    </div>
+    
+    <div class="buttons">
+      <button class="btn btn-download" id="downloadBtn" <%= progress < 100 ? 'disabled' : '' %>>
+        Download CSV
+      </button>
+      <form action="/qrcode/reset" method="POST" style="display: inline;">
+        <button type="submit" class="btn btn-reset">Reset Demo</button>
+      </form>
+    </div>
+  </div>
+  
+  <script>
+    // Generate QR code
+    const surveyUrl = '<%= surveyUrl %>';
+    new QRCode(document.getElementById('qrcode'), {
+      text: surveyUrl,
+      width: 256,
+      height: 256,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+    });
+    
+    // Poll for progress updates
+    let isComplete = <%= progress >= 100 ? 'true' : 'false' %>;
+    let customTarget = <%= target %>;
+    
+    // Handle target input changes
+    const targetInput = document.getElementById('targetInput');
+    targetInput.addEventListener('input', function() {
+      const newTarget = parseInt(this.value) || 1;
+      customTarget = Math.max(1, Math.min(100, newTarget));
+      this.value = customTarget;
+      
+      // Recalculate progress with new target
+      const currentCount = parseInt(document.getElementById('currentCount').textContent);
+      const newProgress = Math.min((currentCount / customTarget) * 100, 100);
+      
+      document.getElementById('progressBar').style.width = newProgress + '%';
+      document.getElementById('progressText').textContent = Math.round(newProgress) + '%';
+      
+      // Update complete status
+      const downloadBtn = document.getElementById('downloadBtn');
+      const completeMessage = document.getElementById('completeMessage');
+      
+      if (newProgress >= 100) {
+        downloadBtn.disabled = false;
+        completeMessage.classList.add('show');
+      } else {
+        downloadBtn.disabled = true;
+        completeMessage.classList.remove('show');
+        isComplete = false;
+      }
+    });
+    
+    function updateProgress() {
+      fetch('/qrcode/progress')
+        .then(response => response.json())
+        .then(data => {
+          const progressBar = document.getElementById('progressBar');
+          const progressText = document.getElementById('progressText');
+          const currentCount = document.getElementById('currentCount');
+          const completeMessage = document.getElementById('completeMessage');
+          const downloadBtn = document.getElementById('downloadBtn');
+          
+          // Use custom target instead of server target
+          const progress = Math.min((data.count / customTarget) * 100, 100);
+          const isNowComplete = progress >= 100;
+          
+          progressBar.style.width = progress + '%';
+          progressText.textContent = Math.round(progress) + '%';
+          currentCount.textContent = data.count;
+          
+          if (isNowComplete && !isComplete) {
+            isComplete = true;
+            completeMessage.classList.add('show');
+            downloadBtn.disabled = false;
+            downloadBtn.classList.add('pulse');
+            
+            // Auto-download CSV
+            setTimeout(() => {
+              window.location.href = '/qrcode/download';
+            }, 1000);
+          } else if (!isNowComplete && isComplete) {
+            isComplete = false;
+            completeMessage.classList.remove('show');
+            downloadBtn.disabled = true;
+          }
+        })
+        .catch(error => console.error('Error fetching progress:', error));
+    }
+    
+    // Update every 2 seconds
+    setInterval(updateProgress, 2000);
+    
+    // Download button handler
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      window.location.href = '/qrcode/download';
+    });
+  </script>
+</body>
+</html>

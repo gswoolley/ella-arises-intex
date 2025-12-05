@@ -13,6 +13,7 @@ const runNormalization = require('./etl/normalize');
 const mapCsvRowsToStaging = require('./etl/mapCsvToStaging');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const demoSurveyRoutes = require('./routes/demoSurveyRoutes');
 
 const app = express();
 
@@ -90,9 +91,27 @@ app.use('/dashboard', dashboardRoutes);
 // Admin panel routes - Authentication, CRUD operations, CSV upload, user management
 app.use('/admin', adminRoutes);
 
+// Demo survey routes - QR code display and survey form submission
+app.use('/', demoSurveyRoutes);
+
 // Root route - Serve the static landing page (marketing/informational site)
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'ella-rises-landingpage', 'index.html'));
+});
+
+// Demo placeholder route for unfinished features
+app.get('/demo-placeholder', (req, res) => {
+  res.render('public/demo-placeholder');
+});
+
+// HTTP 418 I'm a teapot route (Easter egg)
+app.get('/teapot', (req, res) => {
+  res.status(418).render('public/418');
+});
+
+// 404 handler - must be last route
+app.use((req, res) => {
+  res.status(404).render('public/404');
 });
 
 // Start server

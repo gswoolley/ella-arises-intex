@@ -8,6 +8,8 @@ A comprehensive web application for managing participants, events, donations, an
 - [Database Schema](#database-schema)
 - [Getting Started](#getting-started)
 - [Application Features](#application-features)
+- [Website Sections & Routes](#website-sections--routes)
+- [Demo Survey Feature](#demo-survey-feature)
 - [CSV Upload & ETL Pipeline](#csv-upload--etl-pipeline)
 - [User Roles & Permissions](#user-roles--permissions)
 - [Deployment](#deployment)
@@ -20,18 +22,18 @@ The application follows a **Model-View-Controller (MVC)** architecture with an *
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                      Client Browser                          │
+│                      Client Browser                         │
 └─────────────────────────────────────────────────────────────┘
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                    Express.js Server                         │
+│                    Express.js Server                        │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
 │  │   Routes     │  │ Controllers  │  │    Views     │      │
 │  │ (adminRoutes)│─▶│ (CRUD logic) │─▶│  (EJS pages) │      │
 │  └──────────────┘  └──────────────┘  └──────────────┘      │
-│         │                  │                                 │
-│         ▼                  ▼                                 │
+│         │                  │                                │
+│         ▼                  ▼                                │
 │  ┌──────────────┐  ┌──────────────┐                        │
 │  │ Middleware   │  │  Repositories│                        │
 │  │ (auth/perms) │  │ (DB queries) │                        │
@@ -40,11 +42,11 @@ The application follows a **Model-View-Controller (MVC)** architecture with an *
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                  PostgreSQL Database                         │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │ Main Tables  │  │Staging Tables│  │ Archive      │      │
-│  │ (normalized) │  │ (recent data)│  │ (history)    │      │
-│  └──────────────┘  └──────────────┘  └──────────────┘      │
+│                  PostgreSQL Database                        │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐       │
+│  │ Main Tables  │  │Staging Tables│  │ Archive      │       │
+│  │ (normalized) │  │ (recent data)│  │ (history)    │       │
+│  └──────────────┘  └──────────────┘  └──────────────┘       │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -94,6 +96,8 @@ The application follows a **Model-View-Controller (MVC)** architecture with an *
 ## Database Schema
 
 ### Main Tables (Normalized Data)
+
+#### Participant & Event Data
 - `personinfo` - Participant information
 - `eventtypes` - Event templates
 - `eventinstances` - Specific event occurrences
@@ -101,8 +105,19 @@ The application follows a **Model-View-Controller (MVC)** architecture with an *
 - `surveyinstances` - Survey responses
 - `participantmilestones` - Participant achievements
 - `donations` - Donation records
-- `loginpermissions` - User accounts and permissions
-- `account_requests` - Pending access requests
+
+#### Authentication & User Management
+- `loginpermissions` - User accounts with hashed passwords and permission levels
+  - Fields: `id`, `email`, `password_hash`, `first_name`, `last_name`, `permission` ('manager' or 'user'), `created_at`, `updated_at`
+  - Passwords are hashed using bcrypt (12 rounds) in Node.js before storage
+  - Never stores plaintext passwords
+  
+- `account_requests` - Pending access requests from new users
+  - Fields: `id`, `email`, `first_name`, `last_name`, `organization`, `message`, `password_hash`, `status`, `created_at`, `reviewed_at`, `reviewed_by`
+  - Status values: 'pending', 'approved', 'rejected'
+  - Only managers can view and approve requests
+  - Approved requests are converted into `loginpermissions` records
+  - Provides audit trail of who approved/rejected requests and when
 
 ### Staging Tables (Recent Upload Data)
 - `stagingrawsurvey` - Raw CSV data (unnormalized)
@@ -120,55 +135,34 @@ The application follows a **Model-View-Controller (MVC)** architecture with an *
 
 ## Getting Started
 
-### Prerequisites
-- Node.js (v14 or higher)
-- PostgreSQL (v12 or higher)
-- npm or yarn
+### Accessing the Application
 
-### Installation
+The Ella Rises web application is deployed and accessible at: https://team3-01.is404.net/
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd ella-arises-intex
-   ```
+Manager login: 
+Email: manager@ellaarises.com
+Password: manager
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+User login: 
+Email: user@ellaarises.com
+Password: user
 
-3. **Set up environment variables**
-   
-   Create a `.env` file in the root directory:
-   ```env
-   # Database Configuration
-   DB_HOST=localhost
-   DB_USER=your_db_user
-   DB_PASSWORD=your_db_password
-   DB_NAME=ella_rises
-   DB_PORT=5432
+**Production URL**: 
 
-   # Session Secret
-   SESSION_SECRET=your-secret-key-here
+### Application Sections
 
-   # Environment
-   NODE_ENV=development
-   ```
+1. **Landing Page** - https://team3-01.is404.net/
+   - Public marketing and informational site
+   - No login required
 
-4. **Set up the database**
-   
-   Run the SQL schema from `/txt-instruction-files/main_tables.txt` to create all tables.
+2. **Public Dashboard** - https://team3-01.is404.net/dashboard
+   - Read-only data visualizations
+   - No login required
 
-5. **Start the server**
-   ```bash
-   npm start
-   ```
-
-6. **Access the application**
-   - Main site: `http://localhost:3016/`
-   - Admin panel: `http://localhost:3016/admin`
-   - Public dashboard: `http://localhost:3016/dashboard`
+3. **Admin Panel** - https://team3-01.is404.net/admin
+   - Requires authentication
+   - Login page: https://team3-01.is404.net/admin/login
+   - Request access: https://team3-01.is404.net/admin/create
 
 ---
 
@@ -228,6 +222,173 @@ The application follows a **Model-View-Controller (MVC)** architecture with an *
   - Elevate users to manager status
   - View pending requests count
 - **All CRUD operations** (regular users have read-only access)
+
+---
+
+## Website Sections & Routes
+
+### Public Pages (No Authentication Required)
+
+#### **1. Landing Page** - `/` or `/ella-rises-landingpage/`
+- Marketing and informational homepage
+- Ella Rises branding with logo and navigation
+- Header navigation includes:
+  - About, Programs, Events, Get Involved, Press, Contact Us (→ Demo Placeholder)
+  - "See the impact" (→ Dashboard)
+  - "Admin Portal" (→ Admin Login)
+  - 🫖 Teapot Easter egg (→ HTTP 418 page)
+  - Donate button (external link to GiveButter)
+- Background bubbles and animations
+- Mobile-responsive design
+
+#### **2. Public Dashboard** - `/dashboard`
+- Read-only data visualizations
+- Interactive charts and metrics
+- No login required
+
+#### **3. Demo Placeholder** - `/demo-placeholder`
+- Shown when users click unfinished features (About, Programs, Events, etc.)
+- Explains these sections are part of the full build
+- Provides navigation back to home or dashboard
+- Matches Ella Rises branding and styling
+
+#### **4. 404 Error Page** - Any non-existent route
+- Custom branded 404 page
+- Returns HTTP 404 status code
+- Large "404" error code with gradient styling
+- Helpful navigation buttons to return home or view dashboard
+- Background bubbles matching site theme
+
+#### **5. HTTP 418 "I'm a Teapot"** - `/teapot`
+- Easter egg page (accessible via 🫖 emoji in header)
+- Returns HTTP 418 status code
+- Fun reference to RFC 2324 (Hyper Text Coffee Pot Control Protocol)
+- Includes educational "Fun Fact" about the status code
+- Animated teapot emoji with steam effect
+
+### Admin Pages (Authentication Required)
+
+#### **Admin Login** - `/admin/login`
+- Secure login form with email and password
+- Session-based authentication
+- Redirects to admin home after successful login
+
+#### **Account Request** - `/admin/create`
+- New users can request access
+- Form includes: email, name, organization, message, password
+- Requests are reviewed by managers in Manager Corner
+- Passwords are hashed with bcrypt before storage
+
+#### **Admin Home** - `/admin`
+- Dashboard with quick links to all admin features
+- Shows user's name and permission level
+- Navigation to: Participants, Events, Donations, Surveys, Data Analysis
+- Manager-only links: Manager Corner, CSV Upload
+
+#### **Participants Management** - `/admin/participants`
+- View, search, and filter all participants
+- Detailed participant profiles with attendance, surveys, milestones, donations
+- Add, edit, delete participants (managers only)
+
+#### **Events Management** - `/admin/events`
+- View upcoming, past, or all events
+- Create event templates and instances
+- View participant lists for each event
+- Edit and delete events (managers only)
+
+#### **Donations Management** - `/admin/donations`
+- View all donations with search and sorting
+- Monthly and overall donation totals
+- Add, edit, delete donations (managers only)
+
+#### **Surveys Management** - `/admin/surveys`
+- View all survey responses
+- Filter by participant or event
+- Edit and delete surveys (managers only)
+
+#### **Data Analysis** - `/admin/data-analysis`
+- Embedded Tableau dashboard
+- Interactive data visualizations
+
+#### **Manager Corner** - `/admin/manager-corner` (Managers Only)
+- Approve/reject account requests
+- Manage user accounts and permissions
+- Elevate users to manager status
+- View pending requests count
+
+#### **CSV Upload** - `/admin/csv-upload` (Managers Only)
+- Upload CSV files with participant, event, and survey data
+- Automatic ETL pipeline processing
+- View upload results showing what was added
+- Download CSV button (enabled when target reached)
+- Reset demo button to clear all data
+
+---
+
+## Demo Survey Feature
+
+The demo survey feature allows users to submit survey responses via QR code or direct link.
+
+### **QR Code Display** - `/qrcode`
+- Displays QR code linking to demo survey form
+- **Live Progress Tracking**:
+  - Real-time progress bar (updates every 2 seconds)
+  - Editable target submission count (1-100)
+  - Shows current count vs. target
+  - Progress percentage display
+- **Auto-Download**: CSV automatically downloads when target is reached
+- **Download Button**: Manual CSV download (enabled at 100% progress)
+- **Reset Button**: Clears all demo survey submissions
+- Mobile-responsive with background bubbles
+
+### **Demo Survey Form** - `/demo-survey`
+- **Multi-step conversational survey** (12 steps total)
+- **Apple-like UX**: Premium, clean design with smooth transitions
+- **Max 4 questions per step** for better user experience
+- **Mobile-optimized**: Numeric keyboards, date dropdowns, responsive layout
+- **Progress indicator**: Shows "Step X of 12" at top
+- **Auto-advancing cards**: Role, field of interest, event, and NPS selections
+- **Background bubbles**: Animated decorative elements matching brand
+
+#### Survey Steps:
+1. **Basic Info**: First name, last name, date of birth, school/employer
+2. **Role Selection**: Participant or Admin (clickable cards, auto-advance)
+3. **Field of Interest**: STEM, Arts, or Both (clickable cards, auto-advance)
+4. **Location**: City, state, ZIP code
+5. **Contact**: Email and phone number
+6. **Event Selection**: Choose from 4 hardcoded events (auto-advance)
+   - Girls in STEAM Mentoring
+   - Monthly Coding Club
+   - Intro to Painting Class
+   - Monthly Art Studio Workshop
+7. **Event Survey**: 4 ratings out of 5 (satisfaction, usefulness, instructor, recommendation)
+8. **Overall Rating**: Overall event score out of 5
+9. **NPS Bucket**: Promoter or Passive (clickable cards, auto-advance)
+10. **Comments**: Open text feedback (textarea)
+11. **Milestones**: Dynamic milestone entry with add button, submit survey here
+12. **Thank You**: Confirmation message (no submit button)
+
+#### Data Format:
+- All data matches CSV upload format exactly
+- Date format: `YYYY-MM-DD HH:MM:SS`
+- Boolean flags: `TRUE` or `FALSE`
+- Milestones: Semicolon-separated (`;`) titles and dates
+- Scores: Decimal values allowed (e.g., `4.5`)
+- Event data: Hardcoded for each event option
+
+#### Technical Features:
+- **Enter key prevention**: Prevents accidental form submission
+- **Navigation**: Compact back/next buttons in bottom right
+- **Selection clearing**: Back button clears previous selections
+- **Hidden fields**: Captures all backend-required data
+- **Form validation**: Ensures data completeness before submission
+- **Responsive design**: Works seamlessly on mobile and desktop
+
+### Demo Survey Database
+- **Table**: `demo_survey`
+- **Purpose**: Stores all demo survey submissions
+- **Fields**: 37+ fields matching CSV format (participant info, event data, survey responses, milestones, donations)
+- **Reset functionality**: Can be cleared via "Reset Demo" button on QR page
 
 ---
 
@@ -367,23 +528,69 @@ ella-arises-intex/
 
 ---
 
-## Development
+## How to Use the Website
 
-### Running Locally
-```bash
-npm start
-```
+### For New Users
 
-### Environment
-- Development: Uses local PostgreSQL database
-- Production: Uses AWS RDS PostgreSQL
+1. **Request Access**
+   - Go to `https://[your-domain]/admin/create`
+   - Fill out the account request form with your email, name, and organization
+   - Create a password
+   - Submit your request
 
-### Adding New Features
-1. Create repository functions in `/models`
-2. Create controller logic in `/controller`
-3. Add routes in `/routes`
-4. Create EJS views in `/views`
-5. Update this README if needed
+2. **Wait for Approval**
+   - A manager will review your request
+   - You'll receive notification once approved
+
+3. **Login**
+   - Go to `https://[your-domain]/admin/login`
+   - Enter your email and password
+   - Click "Login"
+
+### For Regular Users (After Login)
+
+1. **View Participants**
+   - Navigate to "Participants" from the admin home
+   - Search and filter participants
+   - Click on any participant to view detailed information
+
+2. **View Events**
+   - Navigate to "Events"
+   - Filter by upcoming, past, or all events
+   - View participant lists for each event
+
+3. **View Donations**
+   - Navigate to "Donations"
+   - Search and sort donation records
+   - View monthly and overall totals
+
+4. **View Data Analysis**
+   - Navigate to "Data Analysis"
+   - Interact with Tableau dashboard visualizations
+
+### For Managers (Additional Features)
+
+1. **Approve Account Requests**
+   - Navigate to "Manager Corner"
+   - Review pending account requests
+   - Approve or reject requests
+   - Edit user permissions
+
+2. **Upload CSV Data**
+   - Navigate to "CSV Upload"
+   - Click "Choose File" and select your CSV
+   - Click "Upload"
+   - View results showing what was added to the database
+
+3. **Create/Edit/Delete Records**
+   - Managers have full CRUD access to all entities
+   - Use the "Add New" buttons on any page
+   - Click "Edit" or "Delete" on existing records
+
+4. **Manage Users**
+   - Elevate users to manager status
+   - Demote managers to regular users
+   - Delete user accounts
 
 ---
 

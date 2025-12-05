@@ -1,0 +1,1149 @@
+<!-- 
+  Demo Survey Form - Multi-step conversational survey
+  Collects participant info, event selection, and feedback
+  Max 4 questions per step, Apple-like UX, mobile-responsive
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo Survey Form | Ella Rises</title>
+  <style>
+    /* === BASE STYLES === */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 15px;
+      background-color: #ffece4;
+      color: #231815;
+      min-height: 100vh;
+      padding: 40px 20px;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    /* Background bubbles */
+    .bg-bubble {
+      position: absolute;
+      border-radius: 999px;
+      pointer-events: none;
+      animation: bubble-drift 20s ease-in-out infinite alternate;
+      z-index: 0;
+    }
+    
+    .bg-bubble--1 {
+      width: 200px;
+      height: 200px;
+      top: 5%;
+      right: 10%;
+      background-color: rgba(255, 194, 166, 0.32);
+      animation-duration: 28s;
+    }
+    
+    .bg-bubble--2 {
+      width: 150px;
+      height: 150px;
+      bottom: 10%;
+      left: 5%;
+      background-color: rgba(216, 205, 246, 0.36);
+      animation-duration: 32s;
+      animation-delay: -12s;
+    }
+    
+    .bg-bubble--3 {
+      width: 180px;
+      height: 180px;
+      top: 40%;
+      left: -30px;
+      background-color: rgba(204, 221, 205, 0.36);
+      animation-duration: 35s;
+      animation-delay: -8s;
+    }
+    
+    .bg-bubble--4 {
+      width: 120px;
+      height: 120px;
+      top: 70%;
+      right: 5%;
+      background-color: rgba(255, 194, 166, 0.28);
+      animation-duration: 30s;
+      animation-delay: -15s;
+    }
+    
+    .bg-bubble--5 {
+      width: 90px;
+      height: 90px;
+      top: 25%;
+      right: 20%;
+      background-color: rgba(216, 205, 246, 0.3);
+      animation-duration: 25s;
+      animation-delay: -5s;
+    }
+    
+    .bg-bubble--6 {
+      width: 110px;
+      height: 110px;
+      bottom: 30%;
+      left: 15%;
+      background-color: rgba(204, 221, 205, 0.32);
+      animation-duration: 27s;
+      animation-delay: -18s;
+    }
+    
+    @keyframes bubble-drift {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(40px, -40px); }
+    }
+    
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      padding: 48px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+      body {
+        padding: 20px 12px;
+      }
+      
+      .container {
+        padding: 32px 24px;
+        border-radius: 20px;
+      }
+      
+      h1 {
+        font-size: 1.6em;
+      }
+      
+      .section {
+        padding: 20px;
+        margin-bottom: 24px;
+      }
+      
+      .section-title {
+        font-size: 1.15em;
+      }
+      
+      .form-group {
+        margin-bottom: 16px;
+      }
+      
+      label {
+        font-size: 13px;
+      }
+      
+      input[type="text"],
+      input[type="email"],
+      input[type="tel"],
+      input[type="date"],
+      input[type="datetime-local"],
+      input[type="number"],
+      textarea,
+      select {
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 12px;
+      }
+      
+      .submit-btn {
+        font-size: 16px;
+        padding: 16px;
+      }
+      
+      /* Adjust bubbles for mobile */
+      .bg-bubble--1 {
+        width: 120px;
+        height: 120px;
+      }
+      
+      .bg-bubble--2 {
+        width: 100px;
+        height: 100px;
+      }
+      
+      .bg-bubble--3 {
+        width: 110px;
+        height: 110px;
+      }
+      
+      .bg-bubble--4 {
+        width: 80px;
+        height: 80px;
+      }
+      
+      .bg-bubble--5,
+      .bg-bubble--6 {
+        display: none; /* Hide some bubbles on mobile for performance */
+      }
+    }
+    
+    h1 {
+      color: #8c6a61;
+      text-align: center;
+      margin-bottom: 12px;
+      font-size: 2em;
+      font-weight: normal;
+      letter-spacing: 0.02em;
+    }
+    
+    .subtitle {
+      text-align: center;
+      color: #6b5a56;
+      margin-bottom: 36px;
+      font-size: 1em;
+      line-height: 1.6;
+    }
+    
+    .message {
+      background: rgba(204, 221, 205, 0.8);
+      color: #3d5a3e;
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    
+    .section {
+      margin-bottom: 28px;
+      padding: 24px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+    
+    .section-title {
+      font-size: 1.5em;
+      color: #8c6a61;
+      margin-bottom: 12px;
+      font-weight: 300;
+      line-height: 1.4;
+    }
+    
+    .section-subtitle {
+      font-size: 0.95em;
+      color: #9b8983;
+      margin-bottom: 28px;
+      line-height: 1.6;
+      font-weight: normal;
+    }
+    
+    .form-group {
+      margin-bottom: 24px;
+    }
+    
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 10px;
+      color: #6b5a56;
+      font-weight: 400;
+      font-size: 15px;
+      letter-spacing: -0.01em;
+    }
+    
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="date"],
+    input[type="datetime-local"],
+    input[type="number"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid rgba(140, 106, 97, 0.2);
+      border-radius: 10px;
+      font-size: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      background: rgba(255, 255, 255, 0.9);
+      color: #231815;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: #b89090;
+      background: rgba(255, 255, 255, 1);
+      box-shadow: 0 0 0 4px rgba(180, 144, 144, 0.12);
+      transform: translateY(-1px);
+    }
+    
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(90deg, #d4a5a5 0%, #b89090 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: normal;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(140, 106, 97, 0.2);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(140, 106, 97, 0.3);
+      background: linear-gradient(90deg, #d8b0b0 0%, #c49a9a 100%);
+    }
+    
+    /* Remove emoji styles */
+    
+    /* Smooth scrolling */
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    /* Progress bar */
+    .progress-container {
+      width: 100%;
+      background: rgba(140, 106, 97, 0.15);
+      height: 8px;
+      border-radius: 4px;
+      margin-bottom: 32px;
+      overflow: hidden;
+    }
+    
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #d4a5a5 0%, #b89090 100%);
+      transition: width 0.4s ease;
+      border-radius: 4px;
+    }
+    
+    .step-indicator {
+      text-align: center;
+      color: #6b5a56;
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+    
+    /* Hide all steps except active */
+    .form-step {
+      display: none;
+    }
+    
+    .form-step.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Navigation buttons */
+    .form-navigation {
+      display: flex;
+      gap: 10px;
+      margin-top: 28px;
+      justify-content: flex-end;
+    }
+    
+    .btn-nav {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      min-width: 90px;
+    }
+    
+    .btn-prev {
+      background: white;
+      color: #6b5a56;
+      border: 1.5px solid rgba(140, 106, 97, 0.3);
+    }
+    
+    .btn-prev:hover {
+      border-color: rgba(140, 106, 97, 0.5);
+      background: rgba(255, 255, 255, 0.95);
+    }
+    
+    .btn-next {
+      background: linear-gradient(90deg, #d4a5a5 0%, #b89090 100%);
+      color: white;
+      border: none;
+      box-shadow: 0 2px 8px rgba(140, 106, 97, 0.2);
+    }
+    
+    .btn-next:hover {
+      background: linear-gradient(90deg, #d8b0b0 0%, #c49a9a 100%);
+      box-shadow: 0 4px 12px rgba(140, 106, 97, 0.3);
+      transform: translateY(-1px);
+    }
+    
+    .btn-nav:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    /* Option cards for single-choice questions */
+    .option-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    
+    .option-card {
+      padding: 20px 24px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 2px solid rgba(140, 106, 97, 0.2);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      font-size: 16px;
+      color: #6b5a56;
+      text-align: left;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    }
+    
+    .option-card:hover {
+      background: rgba(255, 255, 255, 1);
+      border-color: #b89090;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(140, 106, 97, 0.15);
+    }
+    
+    .option-card:active {
+      transform: translateY(0);
+      background: linear-gradient(90deg, rgba(212, 165, 165, 0.15) 0%, rgba(184, 144, 144, 0.15) 100%);
+    }
+    
+    .option-card.selected {
+      background: linear-gradient(90deg, rgba(212, 165, 165, 0.2) 0%, rgba(184, 144, 144, 0.2) 100%);
+      border-color: #b89090;
+    }
+    
+    /* Milestone rows */
+    .milestone-row {
+      margin-bottom: 20px;
+    }
+    
+    .milestone-fields {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    
+    .milestone-fields .form-group {
+      margin-bottom: 0;
+    }
+    
+    .milestone-fields label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #6b5a56;
+      font-weight: 500;
+    }
+    
+    .milestone-fields input {
+      width: 100%;
+    }
+    
+    .btn-add-milestone {
+      width: 100%;
+      padding: 12px;
+      background: rgba(212, 165, 165, 0.15);
+      color: #6b5a56;
+      border: 1.5px dashed rgba(140, 106, 97, 0.3);
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+      margin-top: 12px;
+    }
+    
+    .btn-add-milestone:hover {
+      background: rgba(212, 165, 165, 0.25);
+      border-color: rgba(140, 106, 97, 0.5);
+    }
+    
+    @media (max-width: 600px) {
+      .milestone-fields {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Background bubbles -->
+  <div class="bg-bubble bg-bubble--1"></div>
+  <div class="bg-bubble bg-bubble--2"></div>
+  <div class="bg-bubble bg-bubble--3"></div>
+  <div class="bg-bubble bg-bubble--4"></div>
+  <div class="bg-bubble bg-bubble--5"></div>
+  <div class="bg-bubble bg-bubble--6"></div>
+  
+  <div class="container">
+    <h1>Demo Survey</h1>
+    <p class="subtitle">Help us demonstrate our data collection system</p>
+    
+    <% if (message) { %>
+      <div class="message"><%= message %></div>
+    <% } %>
+    
+    <!-- Progress Bar -->
+    <div class="progress-container">
+      <div class="progress-bar-fill" id="progressBar" style="width: 20%;"></div>
+    </div>
+    <div class="step-indicator" id="stepIndicator">Step 1 of 5</div>
+    
+    <form action="/demo-survey" method="POST" id="surveyForm">
+      <!-- Step 1: Let's get to know you -->
+      <div class="form-step active">
+      <div class="section">
+        <h2 class="section-title">Let's start with the basics</h2>
+        <p class="section-subtitle">We'd love to know who you are</p>
+        
+        <div class="form-group">
+          <label for="participantFirstName">First name</label>
+          <input type="text" id="participantFirstName" name="participantFirstName" placeholder="Jane">
+        </div>
+        
+        <div class="form-group">
+          <label for="participantLastName">Last name</label>
+          <input type="text" id="participantLastName" name="participantLastName" placeholder="Smith">
+        </div>
+        
+        <div class="form-group">
+          <label for="participantDOB">Date of birth</label>
+          <div style="display: flex; gap: 8px;">
+            <select id="dobMonth" style="flex: 2;" onchange="updateDOB()">
+              <option value="">Month</option>
+              <option value="01">January</option>
+              <option value="02">February</option>
+              <option value="03">March</option>
+              <option value="04">April</option>
+              <option value="05">May</option>
+              <option value="06">June</option>
+              <option value="07">July</option>
+              <option value="08">August</option>
+              <option value="09">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+            <input type="number" id="dobDay" style="flex: 1;" placeholder="Day" min="1" max="31" inputmode="numeric" pattern="[0-9]*" oninput="updateDOB()">
+            <input type="number" id="dobYear" style="flex: 1.5;" placeholder="Year" min="1920" max="2024" inputmode="numeric" pattern="[0-9]*" oninput="updateDOB()">
+          </div>
+          <input type="hidden" id="participantDOB" name="participantDOB">
+        </div>
+        
+        <div class="form-group">
+          <label for="participantSchoolOrEmployer">School or employer</label>
+          <input type="text" id="participantSchoolOrEmployer" name="participantSchoolOrEmployer" placeholder="University or Company">
+        </div>
+      </div>
+      <div class="form-navigation">
+        <button type="button" class="btn-nav btn-prev" onclick="prevStep()" disabled>← Previous</button>
+        <button type="button" class="btn-nav btn-next" onclick="nextStep()">Next →</button>
+      </div>
+      </div>
+      
+      <!-- Step 2: What best describes you? -->
+      <div class="form-step">
+      <div class="section">
+        <h2 class="section-title">What best describes you?</h2>
+        <p class="section-subtitle">Choose the option that fits you best</p>
+        
+        <input type="hidden" id="participantRole" name="participantRole">
+        
+        <div class="option-cards" id="roleOptions">
+          <div class="option-card" onclick="selectRole('participant')">
+            Participant
+          </div>
+          <div class="option-card" onclick="selectRole('admin')">
+            Admin
+          </div>
+        </div>
+      </div>
+      <div class="form-navigation">
+        <button type="button" class="btn-nav btn-prev" onclick="prevStep()">← Previous</button>
+        <button type="button" class="btn-nav btn-next" onclick="nextStep()">Next →</button>
+      </div>
+      </div>
+      
+      <!-- Step 3: Field of Interest -->
+      <div class="form-step">
+      <div class="section">
+        <h2 class="section-title">What's your field of interest?</h2>
+        <p class="section-subtitle">Choose the area that excites you most</p>
+        
+        <input type="hidden" id="participantFieldOfInterest" name="participantFieldOfInterest">
+        
+        <div class="option-cards" id="fieldOptions">
+          <div class="option-card" onclick="selectField('STEM')">
+            STEM
+          </div>
+          <div class="option-card" onclick="selectField('Arts')">
+            Arts
+          </div>
+          <div class="option-card" onclick="selectField('Both')">
+            Both
+          </div>
+        </div>
+      </div>
+      <div class="form-navigation">
+        <button type="button" class="btn-nav btn-prev" onclick="prevStep()">← Previous</button>
+        <button type="button" class="btn-nav btn-next" onclick="nextStep()">Next →</button>
+      </div>
+      </div>
+      
+      <!-- Step 4: Location -->
+      <div class="form-step">
+      <div class="section">
+        <h2 class="section-title">Where are you located?</h2>
+        <p class="section-subtitle">Help us understand where you're from</p>
+        
+        <div class="form-group">
+          <label for="participantCity">City</label>
+          <input type="text" id="participantCity" name="participantCity" placeholder="San Francisco">
+        </div>
+        
+        <div class="form-group">
+          <label for="participantState">State</label>
+          <input type="text" id="participantState" name="participantState" placeholder="California">
+        </div>
+        
+        <div class="form-group">
+          <label for="participantZip">ZIP code</label>
+          <input type="text" id="participantZip" name="participantZip" placeholder="94102" inputmode="numeric" pattern="[0-9]*">
+        </div>
+      </div>
+      <div class="form-navigation">
+        <button type="button" class="btn-nav btn-prev" onclick="prevStep()">← Previous</button>
+        <button type="button" class="btn-nav btn-next" onclick="nextStep()">Next →</button>
+      </div>
+      </div>
+      
+      <!-- Step 5: Contact Info -->
+      <div class="form-step">
+      <div class="section">
+        <h2 class="section-title">How can we reach you?</h2>
+        <p class="section-subtitle">We'd love to stay in touch</p>
+        
+        <div class="form-group">
+          <label for="participantEmail">Email address</label>
+          <input type="email" id="participantEmail" name="participantEmail" placeholder="you@example.com">
+        </div>
+        
+        <div class="form-group">
+          <label for="participantPhone">Phone number</label>
+          <input type="tel" id="participantPhone" name="participantPhone" placeholder="(555) 123-4567" inputmode="numeric" pattern="[0-9]*">
+        </div>
+      </div>
+      <div class="form-navigation">
+        <button type="button" class="btn-nav btn-prev" onclick="prevStep()">← Previous</button>
+        <button type="button" class="btn-nav btn-next" onclick="nextStep()">Next →</button>
+      </div>
+      </div>
+      
+      <!-- Step 6: Event Selection -->
+      <div class="form-step">
+      <div class="section">
+        <h2 class="section-title">Thanks <span id="displayFirstName"></span>!</h2>
+        <p class="section-subtitle">Now let's pretend you just attended an Ella Rises event as a participant. First, select which event you just attended:</p>
+        
+        <input type="hidden" id="selectedEvent" name="eventName">
+        
+        <div class="option-cards" id="eventOptions">
+          <div class="option-card" onclick="selectEvent('Girls in STEAM Mentoring')">
+            Girls in STEAM Mentoring
+          </div>
+          <div class="option-card" onclick="selectEvent('Monthly Coding Club')">
+            Monthly Coding Club
+          </div>
+          <div class="option-card" onclick="selectEvent('Intro to Painting Class')">
+            Intro to Painting Class
+          </div>
+          <div class="option-card" onclick="selectEvent('Monthly Art Studio Workshop')">
+            Monthly Art Studio Workshop
+          </div>
+        </div>
+      </div>
+      <div class="form-navigation">
+        <button type="button" class="btn-nav btn-prev" onclick="prevStep()">← Previous</button>
+        <button type="button" class="btn-nav btn-next" onclick="nextStep()">Next →</button>
+      </div>
+      </div>
+      
+      <!-- Step 7: Event Survey -->
+      <div class="form-step">
+      <div class="section">
+        <h2 class="section-title">Now let's fill out a survey about the event you attended</h2>
+        <p class="section-subtitle">Rate your experience on a scale of 1-5</p>
+        
+        <div class="form-group">
+          <label for="surveySatisfactionScore">How satisfied were you with the event?</label>
+          <input type="number" id="surveySatisfactionScore" name="surveySatisfactionScore" min="1" max="5" placeholder="5" inputmode="numeric">
+        </div>
+        
+        <div class="form-group">
+          <label for="surveyUsefulnessScore">How useful was the content?</label>
+          <input type="number" id="surveyUsefulnessScore" name="surveyUsefulnessScore" min="1" max="5" placeholder="5" inputmode="numeric">
+        </div>
+        
+        <div class="form-group">
+          <label for="surveyInstructorScore">How would you rate the instructor?</label>
+          <input type="number" id="surveyInstructorScore" name="surveyInstructorScore" min="1" max="5" placeholder="5" inputmode="numeric">
+        </div>
+        
+        <div class="form-group">
+          <label for="surveyRecommendationScore">How likely are you to recommend this to a friend?</label>
+          <input type="number" id="surveyRecommendationScore" name="surveyRecommendationScore" min="1" max="5" placeholder="5" inputmode="numeric">
+        </div>
+      </div>
+      <div class="form-navigation">
+        <button type="button" class="btn-nav btn-prev" onclick="prevStep()">← Previous</button>
+        <button type="button" class="btn-nav btn-next" onclick="nextStep()">Next →</button>
+      </div>
+      </div>
+      
+      <!-- Step 8: Overall Rating -->
+      <div class="form-step">
+      <div class="section">
+        <h2 class="section-title">One last rating</h2>
+        <p class="section-subtitle">Help us understand your overall experience</p>
+        
+        <div class="form-group">
+          <label for="surveyOverallScore">Overall, how would you rate this event?</label>
+          <input type="number" id="surveyOverallScore" name="surveyOverallScore" min="1" max="5" placeholder="5" inputmode="numeric">
+        </div>
+      </div>
+      <div class="form-navigation">
+        <button type="button" class="btn-nav btn-prev" onclick="prevStep()">← Previous</button>
+        <button type="button" class="btn-nav btn-next" onclick="nextStep()">Next →</button>
+      </div>
+      </div>
+      
+      <!-- Step 9: NPS Bucket -->
+      <div class="form-step">
+      <div class="section">
+        <h2 class="section-title">How would you describe yourself?</h2>
+        <p class="section-subtitle">Based on your experience with Ella Rises</p>
+        
+        <div class="option-cards" id="npsOptions">
+          <div class="option-card" onclick="selectNPS('Promoter')">
+            Promoter
+          </div>
+          <div class="option-card" onclick="selectNPS('Passive')">
+            Passive
+          </div>
+        </div>
+      </div>
+      <div class="form-navigation">
+        <button type="button" class="btn-nav btn-prev" onclick="prevStep()">← Previous</button>
+        <button type="button" class="btn-nav btn-next" onclick="nextStep()">Next →</button>
+      </div>
+      </div>
+      
+      <!-- Step 10: Comments -->
+      <div class="form-step">
+      <div class="section">
+        <h2 class="section-title">Any comments you'd like to share?</h2>
+        <p class="section-subtitle">We'd love to hear your thoughts</p>
+        
+        <div class="form-group">
+          <label for="surveyComments">Your feedback</label>
+          <textarea id="surveyComments" name="surveyComments" placeholder="Share your experience, suggestions, or any other thoughts..." rows="6"></textarea>
+        </div>
+      </div>
+      <div class="form-navigation">
+        <button type="button" class="btn-nav btn-prev" onclick="prevStep()">← Previous</button>
+        <button type="button" class="btn-nav btn-next" onclick="nextStep()">Next →</button>
+      </div>
+      </div>
+      
+      <!-- Step 11: Milestones -->
+      <div class="form-step">
+      <div class="section">
+        <h2 class="section-title">Do you have any milestones to report?</h2>
+        <p class="section-subtitle">Share your achievements with us</p>
+        
+        <div id="milestoneContainer">
+          <div class="milestone-row">
+            <div class="milestone-fields">
+              <div class="form-group">
+                <label>Milestone</label>
+                <input type="text" class="milestone-title" placeholder="e.g., Completed coding bootcamp">
+              </div>
+              <div class="form-group">
+                <label>Date received</label>
+                <input type="date" class="milestone-date">
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <button type="button" class="btn-add-milestone" onclick="addMilestone()">+ Add Another Milestone</button>
+      </div>
+      <div class="form-navigation">
+        <button type="button" class="btn-nav btn-prev" onclick="prevStep()">← Previous</button>
+        <button type="submit" class="btn-nav btn-next">Submit Survey</button>
+      </div>
+      </div>
+      
+      <!-- Step 12: Thank You -->
+      <div class="form-step">
+      <div class="section" style="text-align: center; padding: 40px 20px;">
+        <h2 class="section-title" style="font-size: 32px; margin-bottom: 16px;">Thank you for filling out the survey!</h2>
+        <p class="section-subtitle" style="font-size: 18px;">Your feedback helps us make Ella Rises even better</p>
+      </div>
+      </div>
+      
+      <!-- Hidden fields for data collection -->
+      <input type="hidden" name="eventType" id="hiddenEventType" value="">
+      <input type="hidden" name="eventDescription" value="">
+      <input type="hidden" name="eventRecurrencePattern" value="">
+      <input type="hidden" name="eventDefaultCapacity" value="">
+      <input type="hidden" name="eventLocation" value="">
+      <input type="hidden" name="eventCapacity" value="">
+      <input type="hidden" name="eventRegistrationDeadline" value="">
+      <input type="hidden" name="registrationStatus" value="">
+      <input type="hidden" name="registrationAttendedFlag" value="">
+      <input type="hidden" name="surveyNPSBucket" id="hiddenNPSBucket" value="">
+      <input type="hidden" name="eventDateTimeStart" id="hiddenEventStart" value="">
+      <input type="hidden" name="eventDateTimeEnd" id="hiddenEventEnd" value="">
+      <input type="hidden" name="registrationCheckInTime" id="hiddenCheckInTime" value="">
+      <input type="hidden" name="registrationCreatedAt" id="hiddenCreatedAt" value="">
+      <input type="hidden" name="surveySubmissionDate" id="hiddenSubmissionDate">
+      <input type="hidden" name="milestoneTitles" value="">
+      <input type="hidden" name="milestoneDates" value="">
+      <input type="hidden" name="donationHistory" value="">
+      <input type="hidden" name="totalDonations" value="">
+    </form>
+  </div>
+  
+  <script>
+    // Define all navigation functions first (must be global)
+    let currentStep = 1;
+    const totalSteps = 12;
+    
+    window.updateProgress = function() {
+      const steps = document.querySelectorAll('.form-step');
+      const progressBar = document.getElementById('progressBar');
+      const stepIndicator = document.getElementById('stepIndicator');
+      
+      const progress = (currentStep / totalSteps) * 100;
+      progressBar.style.width = progress + '%';
+      stepIndicator.textContent = `Step ${currentStep} of ${totalSteps}`;
+      
+      // Scroll to top smoothly
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    window.nextStep = function() {
+      console.log('nextStep called, currentStep:', currentStep);
+      const steps = document.querySelectorAll('.form-step');
+      if (currentStep < totalSteps) {
+        steps[currentStep - 1].classList.remove('active');
+        currentStep++;
+        steps[currentStep - 1].classList.add('active');
+        updateProgress();
+      }
+    }
+    
+    window.prevStep = function() {
+      console.log('prevStep called, currentStep:', currentStep);
+      const steps = document.querySelectorAll('.form-step');
+      if (currentStep > 1) {
+        steps[currentStep - 1].classList.remove('active');
+        currentStep--;
+        steps[currentStep - 1].classList.add('active');
+        updateProgress();
+        
+        // Clear role selection when going back to step 2
+        if (currentStep === 2) {
+          document.getElementById('participantRole').value = '';
+          const roleCards = document.querySelectorAll('#roleOptions .option-card');
+          roleCards.forEach(card => card.classList.remove('selected'));
+        }
+        
+        // Clear field selection when going back to step 3
+        if (currentStep === 3) {
+          document.getElementById('participantFieldOfInterest').value = '';
+          const fieldCards = document.querySelectorAll('#fieldOptions .option-card');
+          fieldCards.forEach(card => card.classList.remove('selected'));
+        }
+        
+        // Clear event selection when going back to step 6
+        if (currentStep === 6) {
+          document.getElementById('selectedEvent').value = '';
+          const eventCards = document.querySelectorAll('#eventOptions .option-card');
+          eventCards.forEach(card => card.classList.remove('selected'));
+        }
+        
+        // Clear NPS selection when going back to step 9
+        if (currentStep === 9) {
+          document.getElementById('hiddenNPSBucket').value = '';
+          const npsCards = document.querySelectorAll('#npsOptions .option-card');
+          npsCards.forEach(card => card.classList.remove('selected'));
+        }
+      }
+    }
+    
+    // Update first name display when moving to step 6
+    const originalNextStep = window.nextStep;
+    window.nextStep = function() {
+      originalNextStep();
+      if (currentStep === 6) {
+        const firstName = document.getElementById('participantFirstName').value || 'there';
+        document.getElementById('displayFirstName').textContent = firstName;
+      }
+    }
+    
+    window.selectRole = function(role) {
+      document.getElementById('participantRole').value = role;
+      
+      // Visual feedback
+      const cards = document.querySelectorAll('#roleOptions .option-card');
+      cards.forEach(card => card.classList.remove('selected'));
+      event.target.classList.add('selected');
+      
+      // Auto-advance after brief delay for visual feedback
+      setTimeout(() => {
+        nextStep();
+      }, 300);
+    }
+    
+    window.selectField = function(field) {
+      document.getElementById('participantFieldOfInterest').value = field;
+      
+      // Visual feedback
+      const cards = document.querySelectorAll('#fieldOptions .option-card');
+      cards.forEach(card => card.classList.remove('selected'));
+      event.target.classList.add('selected');
+      
+      // Auto-advance after brief delay for visual feedback
+      setTimeout(() => {
+        nextStep();
+      }, 300);
+    }
+    
+    window.selectNPS = function(npsBucket) {
+      document.getElementById('hiddenNPSBucket').value = npsBucket;
+      
+      // Visual feedback
+      const cards = document.querySelectorAll('#npsOptions .option-card');
+      cards.forEach(card => card.classList.remove('selected'));
+      event.target.classList.add('selected');
+      
+      // Auto-advance after brief delay for visual feedback
+      setTimeout(() => {
+        nextStep();
+      }, 300);
+    }
+    
+    window.selectEvent = function(eventName) {
+      document.getElementById('selectedEvent').value = eventName;
+      
+      // Visual feedback
+      const cards = document.querySelectorAll('#eventOptions .option-card');
+      cards.forEach(card => card.classList.remove('selected'));
+      event.target.classList.add('selected');
+      
+      // Set event-specific hidden fields based on selected event
+      const eventData = {
+        'Girls in STEAM Mentoring': {
+          eventType: 'Leadership',
+          eventDescription: 'Group mentoring on pathways into STEM careers',
+          eventRecurrencePattern: 'Weekly',
+          eventDefaultCapacity: '100',
+          eventDateTimeStart: '2024-11-05 10:00:00',
+          eventDateTimeEnd: '2024-11-05 12:00:00',
+          eventLocation: 'Community Center Room',
+          eventCapacity: '100',
+          eventRegistrationDeadline: '2024-10-29 10:00:00',
+          registrationStatus: 'attended',
+          registrationAttendedFlag: 'TRUE',
+          registrationCheckInTime: '2024-11-05 10:19:00',
+          registrationCreatedAt: '2024-10-24 10:00:00'
+        },
+        'Monthly Coding Club': {
+          eventType: 'STEM',
+          eventDescription: 'Guided coding sessions and peer projects',
+          eventRecurrencePattern: 'Monthly',
+          eventDefaultCapacity: '100',
+          eventDateTimeStart: '2024-06-15 10:00:00',
+          eventDateTimeEnd: '2024-06-15 12:00:00',
+          eventLocation: 'Virtual Zoom',
+          eventCapacity: '100',
+          eventRegistrationDeadline: '2024-06-08 10:00:00',
+          registrationStatus: 'attended',
+          registrationAttendedFlag: 'TRUE',
+          registrationCheckInTime: '2024-06-15 10:02:00',
+          registrationCreatedAt: '2024-05-24 10:00:00'
+        },
+        'Intro to Painting Class': {
+          eventType: 'Arts',
+          eventDescription: 'Foundations of painting, color theory, and practical skills',
+          eventRecurrencePattern: 'Weekly',
+          eventDefaultCapacity: '100',
+          eventDateTimeStart: '2024-09-05 10:00:00',
+          eventDateTimeEnd: '2024-09-05 12:00:00',
+          eventLocation: 'Community Center Room',
+          eventCapacity: '100',
+          eventRegistrationDeadline: '2024-08-29 10:00:00',
+          registrationStatus: 'attended',
+          registrationAttendedFlag: 'TRUE',
+          registrationCheckInTime: '2024-09-05 10:26:00',
+          registrationCreatedAt: '2024-08-12 10:00:00'
+        },
+        'Monthly Art Studio Workshop': {
+          eventType: 'Arts',
+          eventDescription: 'Studio time with rotating media and guest artists',
+          eventRecurrencePattern: 'Monthly',
+          eventDefaultCapacity: '100',
+          eventDateTimeStart: '2022-07-15 10:00:00',
+          eventDateTimeEnd: '2022-07-15 12:00:00',
+          eventLocation: 'Local Library',
+          eventCapacity: '100',
+          eventRegistrationDeadline: '2022-07-08 10:00:00',
+          registrationStatus: 'attended',
+          registrationAttendedFlag: 'TRUE',
+          registrationCheckInTime: '2022-07-15 10:24:00',
+          registrationCreatedAt: '2022-06-19 10:00:00'
+        }
+      };
+      
+      const data = eventData[eventName];
+      if (data) {
+        document.getElementById('hiddenEventType').value = data.eventType;
+        document.querySelector('input[name="eventDescription"]').value = data.eventDescription;
+        document.querySelector('input[name="eventRecurrencePattern"]').value = data.eventRecurrencePattern;
+        document.querySelector('input[name="eventDefaultCapacity"]').value = data.eventDefaultCapacity;
+        document.getElementById('hiddenEventStart').value = data.eventDateTimeStart;
+        document.getElementById('hiddenEventEnd').value = data.eventDateTimeEnd;
+        document.querySelector('input[name="eventLocation"]').value = data.eventLocation;
+        document.querySelector('input[name="eventCapacity"]').value = data.eventCapacity;
+        document.querySelector('input[name="eventRegistrationDeadline"]').value = data.eventRegistrationDeadline;
+        document.querySelector('input[name="registrationStatus"]').value = data.registrationStatus;
+        document.querySelector('input[name="registrationAttendedFlag"]').value = data.registrationAttendedFlag;
+        document.getElementById('hiddenCheckInTime').value = data.registrationCheckInTime;
+        document.getElementById('hiddenCreatedAt').value = data.registrationCreatedAt;
+      }
+      
+      // Auto-advance after brief delay for visual feedback
+      setTimeout(() => {
+        nextStep();
+      }, 300);
+    }
+    
+    window.updateDOB = function() {
+      const month = document.getElementById('dobMonth').value;
+      const day = document.getElementById('dobDay').value;
+      const year = document.getElementById('dobYear').value;
+      
+      if (month && day && year) {
+        const paddedDay = day.toString().padStart(2, '0');
+        document.getElementById('participantDOB').value = `${year}-${month}-${paddedDay}`;
+      }
+    }
+    
+    // Add milestone row
+    window.addMilestone = function() {
+      const container = document.getElementById('milestoneContainer');
+      const newRow = document.createElement('div');
+      newRow.className = 'milestone-row';
+      newRow.innerHTML = `
+        <div class="milestone-fields">
+          <div class="form-group">
+            <label>Milestone</label>
+            <input type="text" class="milestone-title" placeholder="e.g., Completed coding bootcamp">
+          </div>
+          <div class="form-group">
+            <label>Date received</label>
+            <input type="date" class="milestone-date">
+          </div>
+        </div>
+      `;
+      container.appendChild(newRow);
+    }
+    
+    // Prevent Enter key from submitting form early (but allow it in textareas)
+    document.getElementById('surveyForm').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        return false;
+      }
+    });
+    
+    // Collect milestone data before form submission
+    document.getElementById('surveyForm').addEventListener('submit', function(e) {
+      const milestoneTitles = [];
+      const milestoneDates = [];
+      
+      document.querySelectorAll('.milestone-title').forEach(input => {
+        if (input.value.trim()) {
+          milestoneTitles.push(input.value.trim());
+        }
+      });
+      
+      document.querySelectorAll('.milestone-date').forEach(input => {
+        if (input.value) {
+          milestoneDates.push(input.value);
+        }
+      });
+      
+      // Use semicolon with space separator to match CSV format
+      document.querySelector('input[name="milestoneTitles"]').value = milestoneTitles.join('; ');
+      document.querySelector('input[name="milestoneDates"]').value = milestoneDates.join('; ');
+    });
+    
+    // Set survey submission date (current timestamp in YYYY-MM-DD HH:MM:SS format)
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    document.getElementById('hiddenSubmissionDate').value = formattedDate;
+    
+    // Initialize progress bar
+    updateProgress();
+  </script>
+</body>
+</html>

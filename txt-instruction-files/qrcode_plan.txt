@@ -1,0 +1,166 @@
+okay generate a full instruction files with everything.
+
+follow this format:
+
+1. qr code view with a live updating progress bar as judges submit the survey. 
+2. the qr code will send the judges to this page. It will have a form with the following questions: 
+    ParticipantEmail	
+    ParticipantFirstName	
+    ParticipantLastName	
+    ParticipantDOB	
+    ParticipantRole	
+    ParticipantPhone	
+    ParticipantCity	
+    ParticipantState	
+    ParticipantZip	
+    ParticipantSchoolOrEmployer	
+    ParticipantFieldOfInterest	
+    EventName	
+    EventType	
+    EventDescription	
+    EventRecurrencePattern	
+    EventDefaultCapacity	
+    EventDateTimeStart	
+    EventDateTimeEnd	
+    EventLocation	
+    EventCapacity	
+    EventRegistrationDeadline	
+    RegistrationStatus	
+    RegistrationAttendedFlag	
+    RegistrationCheckInTime	
+    RegistrationCreatedAt	
+    SurveySatisfactionScore	
+    SurveyUsefulnessScore	
+    SurveyInstructorScore	
+    SurveyRecommendationScore	
+    SurveyOverallScore	
+    SurveyNPSBucket	
+    SurveyComments	
+    SurveySubmissionDate	
+    MilestoneTitles	
+    MilestoneDates	
+    DonationHistory	
+    TotalDonations
+When they submit it will send the results to a table in the database called demo_survey.
+3. There will be logic in the back end telling the programm bar how many records in the demo_survey table it will take to reach 100% (it will probably be 6). this will auto update on the page to increase little by little as each jusdge presses submit.
+4. Once the demo_survey table hits hits the target number of records to make the progress bar hit 100%, we want it to automactially download a csv of the tables contents to the computer that has the qr code page open's downloads folder.
+5. Then we breifly open this csv file to show the judges how their data is messy and in the same state as the data the collect per participant at the end of each EventCapacity.
+6. Then we will upload this csv file to the csv upload page and let it run through the etl pipeline.
+7. Then we will show the judges how we can search for an view their data on the web application users page.
+
+
+In order to accomplish this we need:
+1. A page that has a qr code, progress bar, and csv download logic. it should be accessable at "/qrcode"
+2. A table in the database called demo_survey. 
+- it will have all of those fields listed above.
+3. A page with a form that has all the questions listed above. It doens't need to be so dry and should be asked in a fun and engaging way. It should be accessable at "/demo_survey"
+
+demo_survey table creation script:
+create table demo_survey (
+        rowid serial primary key,
+
+        participantemail text,
+        participantfirstname text,
+        participantlastname text,
+        participantdob text,
+        participantrole text,
+        participantphone text,
+        participantcity text,
+        participantstate text,
+        participantzip text,
+        participantschooloremployer text,
+        participantfieldofinterest text,
+
+        eventname text,
+        eventtype text,
+        eventdescription text,
+        eventrecurrencepattern text,
+        eventdefaultcapacity text,
+
+        eventdatetimestart text,
+        eventdatetimeend text,
+        eventlocation text,
+        eventcapacity text,
+        eventregistrationdeadline text,
+
+        registrationstatus text,
+        registrationattendedflag text,
+        registrationcheckintime text,
+        registrationcreatedat text,
+
+        surveysatisfactionscore text,
+        surveyusefulnesscore text,
+        surveyinstructorscore text,
+        surveyrecommendationscore text,
+        surveyoverallscore text,
+        surveynpsbucket text,
+        surveycomments text,
+        surveysubmissiondate text,
+
+        milestonetitles text,
+        milestonedates text,
+
+        donationhistory text,
+        totaldonations text
+    );
+
+Hardcoded demo_survey event data:
+    eventname: Girls in STEAM Mentoring
+    eventtype: Leadership
+    eventdescription: Group mentoring on pathways into STEM careers
+    eventoccurrencepattern: Weekly
+    eventdefaultcapacity: 100
+    eventdatetimestart: '2024-11-05 10:00:00'
+    eventdatetimeend: '2024-11-05 12:00:00'
+    eventlocation: Community Center Room
+    eventcapacity: 100
+    eventregistrationdeadline: '2024-10-29 10:00:00'
+    registrationstatus: attended
+    registrationattendedflag: TRUE
+    registrationcheckintime: '2024-11-05 10:19:00'
+    registrationcreatedat: '2024-10-24 10:00:00'
+
+    eventname: Monthly Coding Club
+    eventtype: STEM
+    eventdescription: Guided coding sessions and peer projects
+    eventoccurrencepattern: Monthly
+    eventdefaultcapacity: 100
+    eventdatetimestart: '2024-06-15 10:00:00'
+    eventdatetimeend: '2024-06-15 12:00:00'
+    eventlocation: Virtual Zoom
+    eventcapacity: 100
+    eventregistrationdeadline: '2024-06-08 10:00:00'
+    registrationstatus: attended
+    registrationattendedflag: TRUE
+    registrationcheckintime: '2024-06-15 10:02:00'
+    registrationcreatedat: '2024-05-24 10:00:00'
+
+    eventname: Intro to Painting Class
+    eventtype: Arts
+    eventdescription: Foundations of painting, color theory, and practical skills
+    eventoccurrencepattern: Weekly
+    eventdefaultcapacity: 100
+    eventdatetimestart: '2024-09-05 10:00:00'
+    eventdatetimeend: '2024-09-05 12:00:00'
+    eventlocation: Community Center Room
+    eventcapacity: 100
+    eventregistrationdeadline: '2024-08-29 10:00:00'
+    registrationstatus: attended
+    registrationattendedflag: TRUE
+    registrationcheckintime: '2024-09-05 10:26:00'
+    registrationcreatedat: '2024-08-12 10:00:00'
+
+    eventname: Monthly Art Studio Workshop
+    eventtype: Arts
+    eventdescription: Studio time with rotating media and guest artists
+    eventoccurrencepattern: Monthly
+    eventdefaultcapacity: 100
+    eventdatetimestart: '2022-07-15 10:00:00'
+    eventdatetimeend: '2022-07-15 12:00:00'
+    eventlocation: Local Library
+    eventcapacity: 100
+    eventregistrationdeadline: '2022-07-08 10:00:00'
+    registrationstatus: attended
+    registrationattendedflag: TRUE
+    registrationcheckintime: '2022-07-15 10:24:00'
+    registrationcreatedat: '2022-06-19 10:00:00'
